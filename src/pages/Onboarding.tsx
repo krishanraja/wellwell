@@ -55,7 +55,7 @@ export default function Onboarding() {
     switch (step) {
       case 0:
         return (
-          <div className="flex-1 flex flex-col items-center justify-center text-center animate-fade-up">
+          <div className="flex-1 flex flex-col items-center justify-center text-center animate-fade-up min-h-0">
             <LogoFull className="h-28 mb-6" />
             <p className="text-muted-foreground text-base max-w-xs leading-relaxed mb-8">
               Think clearly under pressure. Seconds, not minutes.
@@ -69,7 +69,7 @@ export default function Onboarding() {
 
       case 1:
         return (
-          <div className="flex-1 flex flex-col animate-fade-up">
+          <div className="flex-1 flex flex-col min-h-0 animate-fade-up">
             <div className="mb-4">
               <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 What throws you off?
@@ -77,7 +77,7 @@ export default function Onboarding() {
               <p className="text-sm text-muted-foreground">Select all that apply</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 flex-1 content-start">
+            <div className="grid grid-cols-2 gap-2 flex-1 content-start min-h-0 overflow-y-auto">
               {challenges.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
@@ -101,7 +101,7 @@ export default function Onboarding() {
             <Button
               variant="brand"
               size="lg"
-              className="w-full mt-4"
+              className="w-full mt-auto pt-4 shrink-0"
               onClick={() => setStep(2)}
               disabled={selectedChallenges.length === 0}
             >
@@ -113,7 +113,7 @@ export default function Onboarding() {
 
       case 2:
         return (
-          <div className="flex-1 flex flex-col animate-fade-up">
+          <div className="flex-1 flex flex-col min-h-0 animate-fade-up">
             <div className="mb-4">
               <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 What do you want more of?
@@ -121,7 +121,7 @@ export default function Onboarding() {
               <p className="text-sm text-muted-foreground">Select your goals</p>
             </div>
 
-            <div className="flex flex-wrap gap-2 flex-1 content-start">
+            <div className="flex flex-wrap gap-2 flex-1 content-start min-h-0 overflow-y-auto">
               {goals.map(({ id, label }) => (
                 <button
                   key={id}
@@ -141,7 +141,7 @@ export default function Onboarding() {
             <Button
               variant="brand"
               size="lg"
-              className="w-full mt-4"
+              className="w-full mt-auto pt-4 shrink-0"
               onClick={() => setStep(3)}
               disabled={selectedGoals.length === 0}
             >
@@ -153,7 +153,7 @@ export default function Onboarding() {
 
       case 3:
         return (
-          <div className="flex-1 flex flex-col animate-fade-up">
+          <div className="flex-1 flex flex-col min-h-0 animate-fade-up">
             <div className="mb-4">
               <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 Choose your guide
@@ -161,7 +161,7 @@ export default function Onboarding() {
               <p className="text-sm text-muted-foreground">Same logic, different tone</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 flex-1 content-start">
+            <div className="grid grid-cols-2 gap-2 flex-1 content-start min-h-0 overflow-y-auto">
               {personas.map(({ id, label, tagline }) => (
                 <button
                   key={id}
@@ -182,7 +182,7 @@ export default function Onboarding() {
             <Button
               variant="brand"
               size="lg"
-              className="w-full mt-4"
+              className="w-full mt-auto pt-4 shrink-0"
               onClick={() => setStep(4)}
               disabled={!selectedPersona}
             >
@@ -194,7 +194,7 @@ export default function Onboarding() {
 
       case 4:
         return (
-          <div className="flex-1 flex flex-col animate-fade-up">
+          <div className="flex-1 flex flex-col min-h-0 animate-fade-up">
             <div className="mb-4">
               <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 One thing on your mind
@@ -204,7 +204,7 @@ export default function Onboarding() {
               </p>
             </div>
 
-            <div className="flex-1 flex items-center">
+            <div className="flex-1 flex items-center min-h-0">
               <MicroInput
                 placeholder="What's weighing on you?"
                 value={baselineMoment}
@@ -215,7 +215,7 @@ export default function Onboarding() {
             <Button
               variant="brand"
               size="lg"
-              className="w-full mt-4"
+              className="w-full mt-auto pt-4 shrink-0"
               onClick={handleComplete}
               disabled={!baselineMoment.trim()}
             >
@@ -235,7 +235,7 @@ export default function Onboarding() {
       {/* Background glow */}
       <div className="fixed inset-0 bg-glow pointer-events-none" />
 
-      <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full px-6 py-6 safe-area-top safe-area-bottom overflow-hidden">
+      <div className="relative flex-1 flex flex-col min-h-0 max-w-lg mx-auto w-full px-6 py-4 safe-area-top safe-area-bottom overflow-hidden">
         {/* Progress */}
         {step > 0 && step < 5 && (
           <div className="flex gap-2 mb-4">
