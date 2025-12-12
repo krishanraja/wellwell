@@ -87,7 +87,7 @@
 }
 
 @layer components {
-  .gradient-text { @apply bg-clip-text text-transparent; background-image: var(--gradient-brand); }
+  .gradient-text { @apply bg-clip-text text-transparent; background-image: var(--gradient-brand); filter: drop-shadow(0 2px 4px hsl(187 100% 50% / 0.25)); }
   .stoic-card { @apply bg-card rounded-2xl p-4 border border-border; box-shadow: var(--shadow-card); }
   .stoic-card-compact { @apply bg-card rounded-xl p-3 border border-border; box-shadow: var(--shadow-card); }
   .glow { box-shadow: var(--shadow-glow); }

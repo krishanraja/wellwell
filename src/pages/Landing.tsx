@@ -48,7 +48,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
       </video>
 
       {/* Single-screen content */}
-      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-background/70">
+      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-background/80">
         {/* Hero Section - 50% */}
         <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
           <div className="animate-fade-up">
@@ -107,7 +107,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
           </p>
           <button
             onClick={() => navigate("/auth")}
-            className="text-sm text-primary font-medium hover:underline"
+            className="text-sm text-primary font-medium hover:underline [text-shadow:0_1px_3px_hsl(187_100%_50%/0.3)]"
           >
             Already have an account? Sign in
           </button>

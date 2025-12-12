@@ -21,7 +21,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // WellWell custom variants
         brand:
-          "bg-gradient-to-br from-mint to-aqua text-primary-foreground font-semibold hover:opacity-90 shadow-md hover:shadow-lg",
+          "bg-gradient-to-br from-mint to-aqua text-primary-foreground font-semibold hover:opacity-90 shadow-[0_4px_20px_hsl(187_100%_50%/0.35)] hover:shadow-[0_6px_24px_hsl(187_100%_50%/0.45)]",
         stoic:
           "bg-card text-card-foreground border border-border hover:border-primary/30 hover:-translate-y-0.5 shadow-sm hover:shadow-md",
         minimal:
