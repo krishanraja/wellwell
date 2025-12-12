@@ -22,6 +22,11 @@ import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import Library from "./pages/Library";
+import History from "./pages/History";
+import EditProfile from "./pages/EditProfile";
+import DailyStancesLibrary from "./pages/DailyStancesLibrary";
+import MeditationsLibrary from "./pages/MeditationsLibrary";
+import WisdomLibrary from "./pages/WisdomLibrary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +48,7 @@ const App = () => (
             <Route path="/debrief" element={<ProtectedRoute><Debrief /></ProtectedRoute>} />
             <Route path="/more" element={<ProtectedRoute><More /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
             <Route path="/decision" element={<ProtectedRoute><Decision /></ProtectedRoute>} />
             <Route path="/conflict" element={<ProtectedRoute><Conflict /></ProtectedRoute>} />
             <Route path="/weekly-reset" element={<ProtectedRoute><WeeklyReset /></ProtectedRoute>} />
@@ -51,6 +57,10 @@ const App = () => (
             <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
             <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
             <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+            <Route path="/library/stances" element={<ProtectedRoute><DailyStancesLibrary /></ProtectedRoute>} />
+            <Route path="/library/meditations" element={<ProtectedRoute><MeditationsLibrary /></ProtectedRoute>} />
+            <Route path="/library/wisdom" element={<ProtectedRoute><WisdomLibrary /></ProtectedRoute>} />
+            <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
