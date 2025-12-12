@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { LogoFull } from "@/components/wellwell/Header";
 import { ArrowRight, Shield, Zap, Brain, Sparkles } from "lucide-react";
@@ -5,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 
-export default function Landing() {
+const Landing = forwardRef<HTMLDivElement>((_, ref) => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
@@ -17,7 +18,7 @@ export default function Landing() {
 
   if (loading) {
     return (
-      <div className="viewport-container bg-background flex items-center justify-center">
+      <div ref={ref} className="viewport-container bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -31,21 +32,20 @@ export default function Landing() {
   ];
 
   return (
-    <div className="viewport-container bg-background overflow-hidden">
-      {/* Video Background - visible at 25% opacity */}
+    <div ref={ref} className="viewport-container bg-background overflow-hidden">
+      {/* Video Background - 20% opacity, no overlay */}
       <video
         autoPlay
         muted
         loop
         playsInline
-        className="fixed inset-0 w-full h-full object-cover -z-20 opacity-25"
+        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-20"
         poster="/placeholder.svg"
+        onLoadedData={() => console.log('[Landing] Video loaded successfully')}
+        onError={(e) => console.error('[Landing] Video failed to load:', e)}
       >
         <source src="/videos/Wellwell_video.mp4" type="video/mp4" />
       </video>
-
-      {/* Overlay for color contrast - WCAG AA compliant */}
-      <div className="video-overlay" />
 
       {/* Background Glow */}
       <div className="fixed inset-0 bg-glow pointer-events-none -z-5" />
@@ -55,7 +55,7 @@ export default function Landing() {
         {/* Hero Section - 50% */}
         <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
           <div className="animate-fade-up">
-            <LogoFull className="h-24 sm:h-28 mx-auto mb-4" />
+            <LogoFull className="h-32 sm:h-36 mx-auto mb-4" />
           </div>
 
           <div className="space-y-3 animate-fade-up" style={{ animationDelay: "100ms" }}>
@@ -118,4 +118,8 @@ export default function Landing() {
       </div>
     </div>
   );
-}
+});
+
+Landing.displayName = "Landing";
+
+export default Landing;
