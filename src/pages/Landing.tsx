@@ -33,15 +33,31 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
 
   return (
     <div ref={ref} className="viewport-container overflow-hidden">
-      {/* Video Background */}
+      {/* Instant background fallback */}
+      <div className="fixed inset-0 -z-20 bg-[hsl(165_20%_13%)]" />
+      
+      {/* Poster image - loads instantly via preload */}
+      <img
+        src="/video-poster.jpg"
+        alt=""
+        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-40"
+        loading="eager"
+        fetchPriority="high"
+      />
+      
+      {/* Video Background - fades in over poster */}
       <video
         autoPlay
         muted
         loop
         playsInline
-        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-30"
-        poster="/placeholder.svg"
-        onLoadedData={() => console.log('[Landing] Video loaded successfully')}
+        preload="metadata"
+        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-0 transition-opacity duration-700"
+        onLoadedData={(e) => {
+          console.log('[Landing] Video loaded successfully');
+          (e.target as HTMLVideoElement).classList.remove('opacity-0');
+          (e.target as HTMLVideoElement).classList.add('opacity-40');
+        }}
         onError={(e) => console.error('[Landing] Video failed to load:', e)}
       >
         <source src="/videos/Wellwell_video.mp4" type="video/mp4" />
