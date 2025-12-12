@@ -1,1 +1,13 @@
 project_id = "snmkgsiepqhsujrstjvo"
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false
+
+[functions.customer-portal]
+verify_jwt = false
+
+[functions.stoic-analyzer]
+verify_jwt = true

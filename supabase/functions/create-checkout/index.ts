@@ -35,7 +35,8 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    const maskedEmail = user.email.replace(/^(.{2})(.*)(@.*)$/, '$1***$3');
+    logStep("User authenticated", { userId: user.id, email: maskedEmail });
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
