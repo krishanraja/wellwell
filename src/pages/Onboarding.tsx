@@ -3,8 +3,13 @@ import { LogoFull } from "@/components/wellwell/Header";
 import { Button } from "@/components/ui/button";
 import { MicroInput } from "@/components/wellwell/MicroInput";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Brain, Heart, Compass, Users } from "lucide-react";
+import { ArrowRight, Brain, Heart, Compass, Users, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
+import { useEvents } from "@/hooks/useEvents";
+import { toast } from "sonner";
+import type { Persona } from "@/types/database";
+import { logger } from "@/lib/logger";
 
 const challenges = [
   { id: "conflict", label: "Conflict", icon: Users },
@@ -29,11 +34,14 @@ const personas = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { updateProfile, isUpdating } = useProfile();
+  const { createEvent } = useEvents();
   const [step, setStep] = useState(0);
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [selectedPersona, setSelectedPersona] = useState("");
   const [baselineMoment, setBaselineMoment] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const toggleChallenge = (id: string) => {
     setSelectedChallenges((prev) =>
@@ -47,8 +55,47 @@ export default function Onboarding() {
     );
   };
 
-  const handleComplete = () => {
-    navigate("/");
+  const handleComplete = async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    try {
+      logger.info("Saving onboarding data", {
+        challenges: selectedChallenges,
+        goals: selectedGoals,
+        persona: selectedPersona,
+        hasBaselineMoment: !!baselineMoment,
+      });
+
+      // Save profile data
+      await updateProfile({
+        challenges: selectedChallenges,
+        goals: selectedGoals,
+        persona: selectedPersona as Persona,
+        baseline_moment: baselineMoment,
+      });
+
+      // Create an initial event with the baseline moment
+      await createEvent({
+        tool_name: "onboarding",
+        raw_input: baselineMoment,
+        question_key: "baseline_moment",
+        structured_values: {
+          challenges: selectedChallenges,
+          goals: selectedGoals,
+          persona: selectedPersona,
+        },
+      });
+
+      logger.info("Onboarding completed successfully");
+      toast.success("Welcome to WellWell!");
+      navigate("/");
+    } catch (error) {
+      logger.error("Failed to save onboarding data", { error });
+      toast.error("Failed to save your preferences. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const renderStep = () => {
@@ -217,10 +264,19 @@ export default function Onboarding() {
               size="lg"
               className="w-full mt-auto pt-4 shrink-0"
               onClick={handleComplete}
-              disabled={!baselineMoment.trim()}
+              disabled={!baselineMoment.trim() || isSaving || isUpdating}
             >
-              Show me clarity
-              <ArrowRight className="w-4 h-4" />
+              {isSaving || isUpdating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  Show me clarity
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </Button>
           </div>
         );
