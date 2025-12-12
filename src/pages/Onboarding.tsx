@@ -57,8 +57,7 @@ export default function Onboarding() {
       case 0:
         return (
           <div className="flex flex-col items-center justify-center min-h-[70vh] text-center animate-fade-up">
-            <LogoIcon className="h-16 mb-8" />
-            <LogoFull className="h-10 mb-6" />
+            <LogoFull className="h-40 mb-8" />
             <p className="text-muted-foreground text-lg max-w-xs leading-relaxed mb-12">
               Think clearly under pressure. Seconds, not minutes. No journaling. No quotes.
             </p>
