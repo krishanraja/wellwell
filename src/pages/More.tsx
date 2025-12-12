@@ -64,14 +64,14 @@ export default function More() {
             icon={Settings}
             title="Settings"
             description="Persona, notifications, privacy"
-            onClick={() => {}}
+            onClick={() => navigate("/settings")}
           />
           
           <FeatureButton
             icon={Info}
             title="About WellWell"
             description="Philosophy and principles"
-            onClick={() => {}}
+            onClick={() => navigate("/about")}
           />
         </div>
       </div>

@@ -1,13 +1,14 @@
 import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { ReactNode, CSSProperties } from "react";
 
 interface StoicCardProps {
   children: ReactNode;
   className?: string;
   variant?: "default" | "elevated" | "bordered";
+  style?: CSSProperties;
 }
 
-export function StoicCard({ children, className, variant = "default" }: StoicCardProps) {
+export function StoicCard({ children, className, variant = "default", style }: StoicCardProps) {
   return (
     <div
       className={cn(
@@ -16,6 +17,7 @@ export function StoicCard({ children, className, variant = "default" }: StoicCar
         variant === "bordered" && "gradient-border",
         className
       )}
+      style={style}
     >
       {children}
     </div>
