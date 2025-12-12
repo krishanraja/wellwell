@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import wellwellLogo from "@/assets/wellwell-logo.png";
@@ -34,15 +35,20 @@ export function Header({ showLogo = true, className }: HeaderProps) {
   );
 }
 
-export function LogoFull({ className }: { className?: string }) {
-  return (
-    <img 
-      src={wellwellLogo} 
-      alt="WellWell" 
-      className={cn("h-10 w-auto", className)}
-    />
-  );
-}
+export const LogoFull = forwardRef<HTMLImageElement, { className?: string }>(
+  ({ className }, ref) => {
+    return (
+      <img 
+        ref={ref}
+        src={wellwellLogo} 
+        alt="WellWell" 
+        className={cn("h-10 w-auto", className)}
+      />
+    );
+  }
+);
+
+LogoFull.displayName = "LogoFull";
 
 export function LogoIcon({ className }: { className?: string }) {
   return (
