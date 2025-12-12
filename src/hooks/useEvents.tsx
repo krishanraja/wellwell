@@ -2,7 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { logger } from '@/lib/logger';
-import type { Event, EventInsert, ToolName } from '@/types/database';
+import type { Tables, TablesInsert } from '@/integrations/supabase/types';
+
+type Event = Tables<'events'>;
+type ToolName = 'pulse' | 'intervene' | 'debrief' | 'decision' | 'conflict' | 'onboarding';
 
 export function useEvents(toolName?: ToolName) {
   const { user } = useAuth();
@@ -34,29 +37,27 @@ export function useEvents(toolName?: ToolName) {
       }
 
       logger.debug('Events fetched', { count: data?.length || 0 });
-      return (data || []) as Event[];
+      return data || [];
     },
     enabled: !!user?.id,
   });
 
   const createEventMutation = useMutation({
-    mutationFn: async (event: Omit<EventInsert, 'profile_id'>) => {
+    mutationFn: async (event: { tool_name: string; raw_input: string; question_key?: string; session_id?: string; structured_values?: Record<string, unknown> }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
       logger.db('INSERT', 'events', { userId: user.id, toolName: event.tool_name });
       
-      const insertData = {
-        profile_id: user.id,
-        tool_name: event.tool_name,
-        raw_input: event.raw_input,
-        question_key: event.question_key,
-        session_id: event.session_id,
-        structured_values: event.structured_values,
-      };
-      
       const { data, error } = await supabase
         .from('events')
-        .insert(insertData)
+        .insert([{
+          profile_id: user.id,
+          tool_name: event.tool_name,
+          raw_input: event.raw_input,
+          question_key: event.question_key ?? null,
+          session_id: event.session_id ?? null,
+          structured_values: (event.structured_values ?? null) as unknown as null,
+        }])
         .select()
         .single();
 
@@ -66,7 +67,7 @@ export function useEvents(toolName?: ToolName) {
       }
 
       logger.info('Event created', { eventId: data.id, toolName: event.tool_name });
-      return data as Event;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events', user?.id] });

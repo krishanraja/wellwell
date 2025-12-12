@@ -21,7 +21,7 @@ export default function Home() {
       <div className="space-y-8 stagger-children">
         {/* Hero Section */}
         <div className="pt-8 pb-4 animate-fade-up">
-          <LogoFull className="h-8 mb-6" />
+          <LogoFull className="h-32 mb-6" />
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">
             Good morning
           </h1>
