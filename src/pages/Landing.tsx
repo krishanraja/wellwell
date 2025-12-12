@@ -157,18 +157,6 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
           </div>
         </div>
 
-        {/* Sample AI Response */}
-        <div className="mt-6 animate-fade-up" style={{ animationDelay: "250ms" }}>
-          <div className="bg-[hsl(165_20%_13%/0.8)] border border-primary/20 rounded-xl p-4">
-            <p className="text-xs text-muted-foreground mb-2">Example insight:</p>
-            <p className="text-sm text-[hsl(160_15%_75%)] italic mb-2">
-              "{sampleInsights[0].trigger}"
-            </p>
-            <p className="text-sm text-foreground font-medium">
-              → {sampleInsights[0].response}
-            </p>
-          </div>
-        </div>
 
         {/* Features Grid */}
         <div className="mt-6">
