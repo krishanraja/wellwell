@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
-import wellwellLogo from '@/assets/wellwell-logo.png';
+import wellwellIcon from '@/assets/wellwell-icon.png';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -122,7 +122,7 @@ export default function Auth() {
       <div className="relative z-10 w-full max-w-sm space-y-8">
         {/* Logo */}
         <div className="flex flex-col items-center space-y-4">
-          <img src={wellwellLogo} alt="WellWell" className="h-16" />
+          <img src={wellwellIcon} alt="WellWell" className="h-14 w-14" />
           <p className="text-muted-foreground text-center">
             {isLogin ? 'Welcome back' : 'Create your account'}
           </p>
