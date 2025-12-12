@@ -52,7 +52,7 @@ export default function MonthlyNarrative() {
               <span className="text-sm text-muted-foreground">Overall Progress</span>
               <span className="text-2xl font-display font-bold gradient-text">{avgScore}%</span>
             </div>
-            <VirtueBarCompact virtues={virtues} />
+            <VirtueBarCompact courage={virtues.courage} temperance={virtues.temperance} justice={virtues.justice} wisdom={virtues.wisdom} />
           </StoicCardContent>
         </StoicCard>
 

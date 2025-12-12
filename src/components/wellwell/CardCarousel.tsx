@@ -1,13 +1,14 @@
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CardCarouselProps {
   children: ReactNode[];
   className?: string;
+  style?: CSSProperties;
 }
 
-export function CardCarousel({ children, className }: CardCarouselProps) {
+export function CardCarousel({ children, className, style }: CardCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const totalCards = children.length;
 
@@ -22,7 +23,7 @@ export function CardCarousel({ children, className }: CardCarouselProps) {
   if (totalCards === 0) return null;
 
   return (
-    <div className={cn("flex flex-col flex-1 min-h-0", className)}>
+    <div className={cn("flex flex-col flex-1 min-h-0", className)} style={style}>
       {/* Card Container */}
       <div className="flex-1 min-h-0 relative">
         {children.map((child, index) => (

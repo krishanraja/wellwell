@@ -6,9 +6,10 @@ interface ActionChipProps {
   action: string;
   onComplete?: () => void;
   className?: string;
+  duration?: string;
 }
 
-export function ActionChip({ action, onComplete, className }: ActionChipProps) {
+export function ActionChip({ action, onComplete, className, duration }: ActionChipProps) {
   const [completed, setCompleted] = useState(false);
 
   const handleComplete = () => {
@@ -46,7 +47,7 @@ export function ActionChip({ action, onComplete, className }: ActionChipProps) {
           {action}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5">
-          {completed ? "Completed" : "Tap when done"}
+          {completed ? "Completed" : duration ? `${duration} · Tap when done` : "Tap when done"}
         </p>
       </div>
     </button>
