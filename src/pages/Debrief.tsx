@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { StoicCard } from "@/components/wellwell/StoicCard";
 import { VirtueBar } from "@/components/wellwell/VirtueBar";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
+import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { Moon, ArrowRight, TrendingUp, TrendingDown, Minus, Target, RotateCcw } from "lucide-react";
 
 const questions = [
@@ -17,11 +19,19 @@ export default function Debrief() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentAnswer, setCurrentAnswer] = useState("");
+  const { trackUsage } = useUsageLimit("debrief");
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (currentAnswer.trim()) {
-      setAnswers({ ...answers, [questions[step].key]: currentAnswer });
+      const newAnswers = { ...answers, [questions[step].key]: currentAnswer };
+      setAnswers(newAnswers);
       setCurrentAnswer("");
+      
+      // Track usage on the last question
+      if (step === questions.length - 1) {
+        await trackUsage();
+      }
+      
       setStep(step + 1);
     }
   };
@@ -37,24 +47,26 @@ export default function Debrief() {
   if (!isComplete) {
     return (
       <Layout>
-        <div className="flex-1 flex flex-col">
-          <div className="text-center py-4 animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-cinder/10 rounded-full mb-3">
-              <Moon className="w-4 h-4 text-cinder" />
-              <span className="text-sm font-medium text-cinder">Evening Debrief</span>
+        <UsageLimitGate toolName="debrief">
+          <div className="flex-1 flex flex-col">
+            <div className="text-center py-4 animate-fade-up">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-cinder/10 rounded-full mb-3">
+                <Moon className="w-4 h-4 text-cinder" />
+                <span className="text-sm font-medium text-cinder">Evening Debrief</span>
+              </div>
+              <h1 className="font-display text-xl font-bold text-foreground">{questions[step].label}</h1>
             </div>
-            <h1 className="font-display text-xl font-bold text-foreground">{questions[step].label}</h1>
+            <div className="flex gap-2 py-2 animate-fade-up" style={{ animationDelay: "50ms" }}>
+              {questions.map((_, i) => <div key={i} className={`flex-1 h-1 rounded-full transition-all duration-300 ${i <= step ? "bg-brand-gradient" : "bg-muted"}`} />)}
+            </div>
+            <div className="flex-1 flex flex-col justify-center py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <MicroInput placeholder="Reflect honestly..." value={currentAnswer} onChange={(e) => setCurrentAnswer(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleContinue()} />
+            </div>
+            <div className="py-4 animate-fade-up" style={{ animationDelay: "150ms" }}>
+              <Button variant="brand" size="lg" className="w-full" onClick={handleContinue} disabled={!currentAnswer.trim()}>{step < questions.length - 1 ? "Continue" : "Complete"}<ArrowRight className="w-4 h-4" /></Button>
+            </div>
           </div>
-          <div className="flex gap-2 py-2 animate-fade-up" style={{ animationDelay: "50ms" }}>
-            {questions.map((_, i) => <div key={i} className={`flex-1 h-1 rounded-full transition-all duration-300 ${i <= step ? "bg-brand-gradient" : "bg-muted"}`} />)}
-          </div>
-          <div className="flex-1 flex flex-col justify-center py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
-            <MicroInput placeholder="Reflect honestly..." value={currentAnswer} onChange={(e) => setCurrentAnswer(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleContinue()} />
-          </div>
-          <div className="py-4 animate-fade-up" style={{ animationDelay: "150ms" }}>
-            <Button variant="brand" size="lg" className="w-full" onClick={handleContinue} disabled={!currentAnswer.trim()}>{step < questions.length - 1 ? "Continue" : "Complete"}<ArrowRight className="w-4 h-4" /></Button>
-          </div>
-        </div>
+        </UsageLimitGate>
       </Layout>
     );
   }

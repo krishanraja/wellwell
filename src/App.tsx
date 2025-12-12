@@ -19,6 +19,7 @@ import Conflict from "./pages/Conflict";
 import WeeklyReset from "./pages/WeeklyReset";
 import MonthlyNarrative from "./pages/MonthlyNarrative";
 import Settings from "./pages/Settings";
+import Pricing from "./pages/Pricing";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/weekly-reset" element={<ProtectedRoute><WeeklyReset /></ProtectedRoute>} />
             <Route path="/monthly-narrative" element={<ProtectedRoute><MonthlyNarrative /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
             <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
