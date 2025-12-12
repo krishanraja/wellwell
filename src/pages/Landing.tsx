@@ -48,7 +48,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
       </video>
 
       {/* Single-screen content */}
-      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-background/95 backdrop-blur-md">
+      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-[hsl(165_20%_3%/0.75)] backdrop-blur-md">
         {/* Hero Section - 50% */}
         <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
           <div className="animate-fade-up">
