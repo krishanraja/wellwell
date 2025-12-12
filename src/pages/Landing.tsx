@@ -17,121 +17,103 @@ export default function Landing() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="viewport-container bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   const features = [
-    {
-      icon: Zap,
-      title: "Seconds, not minutes",
-      description: "Get clarity in under 60 seconds. No long journaling sessions."
-    },
-    {
-      icon: Brain,
-      title: "AI-powered Stoic wisdom",
-      description: "Ancient philosophy meets modern intelligence for real guidance."
-    },
-    {
-      icon: Shield,
-      title: "Build mental resilience",
-      description: "Track your growth across four cardinal virtues over time."
-    },
-    {
-      icon: Sparkles,
-      title: "Personalized insights",
-      description: "Every response tailored to your context and patterns."
-    }
+    { icon: Zap, title: "60 seconds", desc: "to clarity" },
+    { icon: Brain, title: "AI-powered", desc: "stoic wisdom" },
+    { icon: Shield, title: "Track", desc: "4 virtues" },
+    { icon: Sparkles, title: "Personalized", desc: "insights" },
   ];
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
-      {/* Hero Section */}
-      <div className="relative px-6 pt-16 pb-24">
-        {/* Background Glow */}
-        <div className="absolute inset-0 bg-glow opacity-50" />
-        
-        <div className="relative max-w-lg mx-auto text-center space-y-8">
-          {/* Logo - 4X larger */}
+    <div className="viewport-container bg-background overflow-hidden">
+      {/* Video Background at 10% opacity */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="fixed inset-0 w-full h-full object-cover -z-20 opacity-10"
+        poster="/placeholder.svg"
+      >
+        <source src="/videos/Wellwell_video.mp4" type="video/mp4" />
+      </video>
+
+      {/* Overlay for color contrast - WCAG AA compliant */}
+      <div className="video-overlay" />
+
+      {/* Background Glow */}
+      <div className="fixed inset-0 bg-glow pointer-events-none -z-5" />
+
+      {/* Single-screen content */}
+      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom">
+        {/* Hero Section - 50% */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
           <div className="animate-fade-up">
-            <LogoFull className="h-32 mx-auto mb-8" />
+            <LogoFull className="h-24 sm:h-28 mx-auto mb-4" />
           </div>
 
-          {/* Tagline */}
-          <div className="space-y-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
-            <h1 className="font-display text-4xl font-bold text-foreground leading-tight">
+          <div className="space-y-3 animate-fade-up" style={{ animationDelay: "100ms" }}>
+            <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground leading-tight">
               Think clearly<br />
               <span className="gradient-text">under pressure</span>
             </h1>
-            <p className="text-lg text-muted-foreground max-w-sm mx-auto">
-              Stoic philosophy in your pocket. No quotes. No journaling. Just clarity when you need it most.
+            <p className="text-base text-muted-foreground max-w-xs mx-auto">
+              Stoic philosophy in your pocket. No quotes. No journaling. Just clarity.
             </p>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="space-y-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          <div className="mt-6 animate-fade-up" style={{ animationDelay: "200ms" }}>
             <Button
               variant="brand"
               size="lg"
-              className="w-full max-w-xs"
               onClick={() => navigate("/auth")}
             >
               Get Started
               <ArrowRight className="w-4 h-4" />
             </Button>
-            <p className="text-sm text-muted-foreground">
-              Free to start. No credit card required.
-            </p>
           </div>
         </div>
-      </div>
 
-      {/* Features Section */}
-      <div className="px-6 pb-16">
-        <div className="max-w-lg mx-auto space-y-6">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground text-center mb-8 animate-fade-up" style={{ animationDelay: "300ms" }}>
-            Why WellWell?
-          </h2>
-          
-          <div className="grid gap-4">
+        {/* Features Grid - 35% */}
+        <div className="py-6">
+          <div className="grid grid-cols-4 gap-2 animate-fade-up" style={{ animationDelay: "300ms" }}>
             {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className="stoic-card flex items-start gap-4 animate-fade-up"
-                style={{ animationDelay: `${400 + index * 80}ms` }}
+                className="flex flex-col items-center text-center p-2"
+                style={{ animationDelay: `${350 + index * 50}ms` }}
               >
-                <div className="p-2 rounded-xl bg-primary/10">
+                <div className="p-2 rounded-xl bg-primary/10 mb-2">
                   <feature.icon className="w-5 h-5 text-primary" />
                 </div>
-                <div>
-                  <h3 className="font-display font-semibold text-foreground mb-1">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </div>
+                <span className="text-xs font-medium text-foreground leading-tight">
+                  {feature.title}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {feature.desc}
+                </span>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Bottom CTA */}
-      <div className="px-6 pb-16">
-        <div className="max-w-lg mx-auto text-center space-y-4 animate-fade-up" style={{ animationDelay: "700ms" }}>
-          <p className="text-muted-foreground">
-            Join thousands finding clarity daily
+        {/* Footer - 15% */}
+        <div className="text-center pb-4 animate-fade-up" style={{ animationDelay: "500ms" }}>
+          <p className="text-sm text-muted-foreground mb-3">
+            Free to start. No credit card required.
           </p>
-          <Button
-            variant="outline"
-            size="lg"
+          <button
             onClick={() => navigate("/auth")}
+            className="text-sm text-primary font-medium hover:underline"
           >
-            Start Your Journey
-          </Button>
+            Already have an account? Sign in
+          </button>
         </div>
       </div>
     </div>

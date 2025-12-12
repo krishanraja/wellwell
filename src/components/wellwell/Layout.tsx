@@ -17,23 +17,22 @@ export function Layout({
   className 
 }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="viewport-container bg-background">
       {/* Subtle background glow */}
       <div className="fixed inset-0 bg-glow pointer-events-none" />
       
-      <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full px-4">
+      <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full overflow-hidden">
         {showHeader && <Header />}
         
         <main className={cn(
-          "flex-1 py-4",
-          showNav && "pb-28",
+          "flex-1 flex flex-col min-h-0 px-4 py-3 overflow-hidden",
           className
         )}>
           {children}
         </main>
+        
+        {showNav && <BottomNav />}
       </div>
-      
-      {showNav && <BottomNav />}
     </div>
   );
 }

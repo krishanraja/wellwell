@@ -2,125 +2,62 @@ import { useState } from "react";
 import { Layout } from "@/components/wellwell/Layout";
 import { MicroInput } from "@/components/wellwell/MicroInput";
 import { IntensitySlider } from "@/components/wellwell/IntensitySlider";
-import { StoicCard, StoicCardHeader, StoicCardContent } from "@/components/wellwell/StoicCard";
-import { ActionChip } from "@/components/wellwell/ActionChip";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, RefreshCw, Target, Scale, Zap } from "lucide-react";
+import { StoicCard } from "@/components/wellwell/StoicCard";
+import { ActionChip } from "@/components/wellwell/ActionChip";
+import { CardCarousel } from "@/components/wellwell/CardCarousel";
+import { Flame, ArrowRight, RefreshCw, Target, Shield, RotateCcw } from "lucide-react";
 
 export default function Intervene() {
   const [trigger, setTrigger] = useState("");
-  const [intensity, setIntensity] = useState(3);
+  const [intensity, setIntensity] = useState(5);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = () => {
-    if (trigger.trim()) {
-      setSubmitted(true);
-    }
-  };
+  if (!submitted) {
+    return (
+      <Layout>
+        <div className="flex-1 flex flex-col">
+          <div className="text-center py-4 animate-fade-up">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-coral/10 rounded-full mb-3">
+              <Flame className="w-4 h-4 text-coral" />
+              <span className="text-sm font-medium text-coral">Intervene</span>
+            </div>
+            <h1 className="font-display text-2xl font-bold text-foreground">What triggered you?</h1>
+          </div>
+          <div className="flex-1 flex flex-col justify-center gap-6 py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
+            <MicroInput placeholder="e.g., An email that made me furious" value={trigger} onChange={(e) => setTrigger(e.target.value)} />
+            <div>
+              <p className="text-sm text-muted-foreground mb-3">Intensity: <span className="text-foreground font-medium">{intensity}/10</span></p>
+              <IntensitySlider value={intensity} onChange={setIntensity} />
+            </div>
+          </div>
+          <div className="py-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
+            <Button variant="brand" size="lg" className="w-full" onClick={() => setSubmitted(true)} disabled={!trigger.trim()}>Recalibrate<ArrowRight className="w-4 h-4" /></Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
-  const handleReset = () => {
-    setTrigger("");
-    setIntensity(3);
-    setSubmitted(false);
-  };
+  const cards = [
+    <StoicCard key="rewrite" icon={RefreshCw} title="Rewrite" className="h-full flex flex-col"><p className="text-muted-foreground text-sm"><span className="text-foreground font-medium">Reframe:</span> Their words reveal their stress, not your worth.</p></StoicCard>,
+    <StoicCard key="control" icon={Target} title="Control" className="h-full flex flex-col"><p className="text-sm"><span className="text-coral font-medium">Not yours:</span> <span className="text-muted-foreground">Their tone, urgency.</span></p><p className="text-sm mt-2"><span className="text-primary font-medium">Yours:</span> <span className="text-muted-foreground">Your response, your state.</span></p></StoicCard>,
+    <StoicCard key="virtue" icon={Shield} title="Virtue Call" className="h-full flex flex-col"><p className="text-muted-foreground text-sm flex-1"><span className="text-primary font-medium">Temperance</span>: respond with measure.</p><div className="mt-3"><ActionChip action="Wait 10 minutes before responding." duration="10m" /></div></StoicCard>,
+  ];
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="animate-fade-up">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-            Intervene
-          </h1>
-          <p className="text-muted-foreground">
-            Fast emotional recalibration. Shift your state in seconds.
-          </p>
-        </div>
-
-        {!submitted ? (
-          <>
-            {/* Input */}
-            <div className="space-y-6 animate-fade-up" style={{ animationDelay: "80ms" }}>
-              <MicroInput
-                label="What's pulling you off balance?"
-                placeholder="Describe the trigger..."
-                value={trigger}
-                onChange={(e) => setTrigger(e.target.value)}
-              />
-
-              <IntensitySlider
-                value={intensity}
-                onChange={setIntensity}
-              />
-            </div>
-
-            {/* Submit */}
-            <div className="animate-fade-up" style={{ animationDelay: "160ms" }}>
-              <Button
-                variant="brand"
-                size="lg"
-                className="w-full"
-                onClick={handleSubmit}
-                disabled={!trigger.trim()}
-              >
-                Shift my state
-                <Zap className="w-4 h-4" />
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-4 stagger-children">
-            {/* Rewrite */}
-            <StoicCard>
-              <StoicCardHeader label="Rewrite" icon={<RefreshCw className="w-4 h-4" />} />
-              <StoicCardContent>
-                <p className="text-base leading-relaxed">
-                  It feels bigger than it is. The emotional weight you're carrying is a signal, not a verdict.
-                </p>
-              </StoicCardContent>
-            </StoicCard>
-
-            {/* Control */}
-            <StoicCard>
-              <StoicCardHeader label="Control" icon={<Target className="w-4 h-4" />} />
-              <StoicCardContent>
-                <p className="text-muted-foreground mb-2">You cannot control:</p>
-                <p className="text-foreground">Their actions, the outcome, external circumstances.</p>
-                <p className="text-muted-foreground mt-4 mb-2">You can control:</p>
-                <p className="text-foreground font-medium">Your response. Your next move. Your composure.</p>
-              </StoicCardContent>
-            </StoicCard>
-
-            {/* Virtue */}
-            <StoicCard>
-              <StoicCardHeader label="Virtue" icon={<Scale className="w-4 h-4" />} />
-              <StoicCardContent>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-aqua/20 text-foreground text-sm font-medium mb-3">
-                  Temperance
-                </div>
-                <p className="text-muted-foreground">
-                  This moment calls for moderation. Don't match the heat. Stay measured.
-                </p>
-              </StoicCardContent>
-            </StoicCard>
-
-            {/* Action */}
-            <ActionChip
-              action="Pause for 10 seconds. Then respond with one calm sentence."
-              onComplete={() => console.log("Completed intervention")}
-            />
-
-            {/* Reset */}
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={handleReset}
-            >
-              Another thought
-            </Button>
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="text-center py-3 animate-fade-up">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-coral/10 rounded-full mb-2">
+            <Flame className="w-4 h-4 text-coral" />
+            <span className="text-sm font-medium text-coral">Recalibrating</span>
           </div>
-        )}
+        </div>
+        <CardCarousel className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>{cards}</CardCarousel>
+        <div className="py-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          <Button variant="outline" size="lg" className="w-full" onClick={() => { setTrigger(""); setIntensity(5); setSubmitted(false); }}><RotateCcw className="w-4 h-4" />New Trigger</Button>
+        </div>
       </div>
     </Layout>
   );
