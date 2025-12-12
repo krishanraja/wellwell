@@ -39,7 +39,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
         muted
         loop
         playsInline
-        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-20"
+        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-30"
         poster="/placeholder.svg"
         onLoadedData={() => console.log('[Landing] Video loaded successfully')}
         onError={(e) => console.error('[Landing] Video failed to load:', e)}
