@@ -32,13 +32,13 @@ export default function Landing() {
 
   return (
     <div className="viewport-container bg-background overflow-hidden">
-      {/* Video Background at 10% opacity */}
+      {/* Video Background - visible at 25% opacity */}
       <video
         autoPlay
         muted
         loop
         playsInline
-        className="fixed inset-0 w-full h-full object-cover -z-20 opacity-10"
+        className="fixed inset-0 w-full h-full object-cover -z-20 opacity-25"
         poster="/placeholder.svg"
       >
         <source src="/videos/Wellwell_video.mp4" type="video/mp4" />
