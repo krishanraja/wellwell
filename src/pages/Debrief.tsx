@@ -9,7 +9,8 @@ import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
-import { Moon, ArrowRight, TrendingUp, TrendingDown, Minus, Target, RotateCcw, Loader2 } from "lucide-react";
+import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
+import { Moon, ArrowRight, TrendingUp, TrendingDown, Minus, Target, RotateCcw, Loader2, Sunrise } from "lucide-react";
 
 const questions = [
   { key: "controlled", label: "What did you control well today?" },
@@ -24,6 +25,7 @@ export default function Debrief() {
   const { trackUsage } = useUsageLimit("debrief");
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
   const { scoresMap } = useVirtueScores();
+  const { todayMorning } = useCrossSessionMemory();
 
   const handleContinue = async () => {
     if (currentAnswer.trim()) {
@@ -85,6 +87,21 @@ export default function Debrief() {
               </div>
               <h1 className="font-display text-xl font-bold text-foreground">{questions[step].label}</h1>
             </div>
+
+            {/* Morning context - Cross-session memory */}
+            {step === 0 && todayMorning.challenge && (
+              <div className="px-4 py-3 bg-muted/50 rounded-xl mb-4 animate-fade-up" style={{ animationDelay: "50ms" }}>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <Sunrise className="w-3 h-3" />
+                  <span>This morning you anticipated:</span>
+                </div>
+                <p className="text-sm text-foreground line-clamp-2">{todayMorning.challenge}</p>
+                {todayMorning.stance && (
+                  <p className="text-xs text-primary mt-1">Stance: "{todayMorning.stance}"</p>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-2 py-2 animate-fade-up" style={{ animationDelay: "50ms" }}>
               {questions.map((_, i) => (
                 <div 

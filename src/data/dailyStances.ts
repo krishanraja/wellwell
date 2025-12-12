@@ -40,6 +40,54 @@ export const dailyStances: DailyStance[] = [
   { day: 30, stance: "Embrace the journey of learning.", virtue: "wisdom" },
 ];
 
+// Challenge-specific stances for personalization
+const challengeStances: Record<string, DailyStance[]> = {
+  conflict: [
+    { day: 0, stance: "Seek to understand before seeking to be understood.", virtue: "wisdom" },
+    { day: 0, stance: "Respond to hostility with composure.", virtue: "temperance" },
+    { day: 0, stance: "Stand firm in your values while staying open.", virtue: "courage" },
+  ],
+  pressure: [
+    { day: 0, stance: "Break the impossible into possible steps.", virtue: "wisdom" },
+    { day: 0, stance: "Pressure reveals character. Rise to meet it.", virtue: "courage" },
+    { day: 0, stance: "Pace yourself. Sustainable effort wins.", virtue: "temperance" },
+  ],
+  uncertainty: [
+    { day: 0, stance: "Embrace not knowing as the beginning of wisdom.", virtue: "wisdom" },
+    { day: 0, stance: "Act despite uncertainty. Clarity comes through action.", virtue: "courage" },
+    { day: 0, stance: "Trust the process, not just the outcome.", virtue: "justice" },
+  ],
+  overwhelm: [
+    { day: 0, stance: "One thing at a time. This moment only.", virtue: "temperance" },
+    { day: 0, stance: "Let go of what doesn't serve you now.", virtue: "wisdom" },
+    { day: 0, stance: "Ask for help. It's a strength, not weakness.", virtue: "courage" },
+  ],
+};
+
+// Virtue-specific stances for when a virtue is low
+const virtueBoostStances: Record<string, DailyStance[]> = {
+  courage: [
+    { day: 0, stance: "Today, do one thing that scares you.", virtue: "courage" },
+    { day: 0, stance: "Fear is a compass. Move toward it.", virtue: "courage" },
+    { day: 0, stance: "Courage is not the absence of fear, but action despite it.", virtue: "courage" },
+  ],
+  temperance: [
+    { day: 0, stance: "Before reacting, count to ten.", virtue: "temperance" },
+    { day: 0, stance: "Less is more. Simplify today.", virtue: "temperance" },
+    { day: 0, stance: "Moderation in all things, including moderation.", virtue: "temperance" },
+  ],
+  justice: [
+    { day: 0, stance: "Give everyone the benefit of the doubt today.", virtue: "justice" },
+    { day: 0, stance: "Be fair, even when it costs you.", virtue: "justice" },
+    { day: 0, stance: "Your integrity is your most valuable asset.", virtue: "justice" },
+  ],
+  wisdom: [
+    { day: 0, stance: "Ask more questions. Make fewer assumptions.", virtue: "wisdom" },
+    { day: 0, stance: "Learn something new today, however small.", virtue: "wisdom" },
+    { day: 0, stance: "The wise person knows what they don't know.", virtue: "wisdom" },
+  ],
+};
+
 export function getTodayStance(): DailyStance {
   const dayOfMonth = new Date().getDate();
   return dailyStances[(dayOfMonth - 1) % 30];
@@ -47,4 +95,36 @@ export function getTodayStance(): DailyStance {
 
 export function getStanceByDay(day: number): DailyStance {
   return dailyStances[(day - 1) % 30];
+}
+
+/**
+ * Get a personalized stance based on user context
+ * Priority: 1. Boost lowest virtue, 2. Match primary challenge, 3. Default daily
+ */
+export function getPersonalizedStance(context: {
+  challenges?: string[];
+  lowestVirtue?: string;
+  lowestVirtueScore?: number;
+}): DailyStance {
+  const dayOfMonth = new Date().getDate();
+  
+  // If user has a very low virtue (below 40), prioritize boosting it
+  if (context.lowestVirtue && context.lowestVirtueScore !== undefined && context.lowestVirtueScore < 40) {
+    const boostStances = virtueBoostStances[context.lowestVirtue];
+    if (boostStances) {
+      return boostStances[dayOfMonth % boostStances.length];
+    }
+  }
+  
+  // If user has challenges, pick a stance for their primary challenge
+  if (context.challenges && context.challenges.length > 0) {
+    const primaryChallenge = context.challenges[0];
+    const stances = challengeStances[primaryChallenge];
+    if (stances) {
+      return stances[dayOfMonth % stances.length];
+    }
+  }
+  
+  // Default to day-based stance
+  return dailyStances[(dayOfMonth - 1) % 30];
 }
