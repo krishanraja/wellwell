@@ -48,7 +48,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
       </video>
 
       {/* Single-screen content */}
-      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-[hsl(165_20%_3%/0.75)] backdrop-blur-md">
+      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-[hsl(165_20%_13%/0.75)] backdrop-blur-md">
         {/* Hero Section - 50% */}
         <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
           <div className="animate-fade-up">
@@ -56,11 +56,11 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
           </div>
 
           <div className="space-y-3 animate-fade-up" style={{ animationDelay: "100ms" }}>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground leading-tight">
+            <h1 className="font-display text-3xl sm:text-4xl font-bold text-[hsl(160_20%_95%)] leading-tight">
               Think clearly<br />
               <span className="gradient-text">under pressure</span>
             </h1>
-            <p className="text-base text-muted-foreground max-w-xs mx-auto">
+            <p className="text-base text-[hsl(160_15%_75%)] max-w-xs mx-auto">
               Stoic philosophy in your pocket. No quotes. No journaling. Just clarity.
             </p>
           </div>
@@ -89,10 +89,10 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
                 <div className="p-2 rounded-xl bg-primary/10 mb-2">
                   <feature.icon className="w-5 h-5 text-primary" />
                 </div>
-                <span className="text-xs font-medium text-foreground leading-tight">
+                <span className="text-xs font-medium text-[hsl(160_20%_95%)] leading-tight">
                   {feature.title}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-[hsl(160_15%_70%)]">
                   {feature.desc}
                 </span>
               </div>
@@ -102,7 +102,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
 
         {/* Footer - 15% */}
         <div className="text-center pb-4 animate-fade-up" style={{ animationDelay: "500ms" }}>
-          <p className="text-sm text-muted-foreground mb-3">
+          <p className="text-sm text-[hsl(160_15%_75%)] mb-3">
             Free to start. No credit card required.
           </p>
           <button
