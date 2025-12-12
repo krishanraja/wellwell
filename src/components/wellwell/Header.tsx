@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 import wellwellLogo from "@/assets/wellwell-logo.png";
 import wellwellIcon from "@/assets/wellwell-icon.png";
 import { Menu, User } from "lucide-react";
@@ -10,9 +11,11 @@ interface HeaderProps {
 }
 
 export function Header({ showLogo = true, className }: HeaderProps) {
+  const navigate = useNavigate();
+  
   return (
     <header className={cn("flex items-center justify-between py-4 px-1", className)}>
-      <Button variant="ghost" size="icon" className="text-muted-foreground">
+      <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => navigate('/more')}>
         <Menu className="w-5 h-5" />
       </Button>
       
@@ -24,7 +27,7 @@ export function Header({ showLogo = true, className }: HeaderProps) {
         />
       )}
       
-      <Button variant="ghost" size="icon" className="text-muted-foreground">
+      <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => navigate('/profile')}>
         <User className="w-5 h-5" />
       </Button>
     </header>
