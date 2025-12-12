@@ -1,5 +1,4 @@
 import { Layout } from "@/components/wellwell/Layout";
-import { LogoFull } from "@/components/wellwell/Header";
 import { StoicCard, StoicCardContent } from "@/components/wellwell/StoicCard";
 
 export default function About() {
@@ -8,7 +7,6 @@ export default function About() {
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center animate-fade-up">
-          <LogoFull className="h-16 mx-auto mb-6" />
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">
             About WellWell
           </h1>

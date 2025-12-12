@@ -35,7 +35,7 @@ export default function Pulse() {
               </div>
               <h1 className="font-display text-2xl font-bold text-foreground">What might challenge you today?</h1>
             </div>
-            <div className="flex-1 flex flex-col justify-center py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
+            <div className="flex-1 flex flex-col py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
               <MicroInput placeholder="e.g., A difficult conversation" value={challenge} onChange={(e) => setChallenge(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
             </div>
             <div className="text-center py-2 animate-fade-up" style={{ animationDelay: "150ms" }}>

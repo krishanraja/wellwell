@@ -25,7 +25,7 @@ export function Layout({
         {showHeader && <Header />}
         
         <main className={cn(
-          "flex-1 flex flex-col min-h-0 px-4 py-3 overflow-hidden",
+          "flex-1 flex flex-col min-h-0 px-4 py-3 pb-24 overflow-y-auto",
           className
         )}>
           {children}

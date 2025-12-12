@@ -1,5 +1,4 @@
 import { Layout } from "@/components/wellwell/Layout";
-import { LogoFull } from "@/components/wellwell/Header";
 import { FeatureButton } from "@/components/wellwell/FeatureButton";
 import { VirtueBar } from "@/components/wellwell/VirtueBar";
 import { useNavigate } from "react-router-dom";
@@ -13,11 +12,7 @@ export default function Home() {
 
   return (
     <Layout className="gap-3">
-      <div className="flex justify-center pt-2 pb-1 animate-fade-up">
-        <LogoFull className="h-12" />
-      </div>
-
-      <div className="stoic-card-compact text-center animate-fade-up" style={{ animationDelay: "50ms" }}>
+      <div className="stoic-card-compact text-center animate-fade-up">
         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Today's Stance</p>
         <p className="text-sm font-medium text-foreground">"{todayStance.stance}"</p>
         <span className="inline-block mt-1 px-2 py-0.5 bg-primary/10 rounded-full text-xs text-primary capitalize">{todayStance.virtue}</span>
