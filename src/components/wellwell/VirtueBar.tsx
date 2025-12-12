@@ -1,57 +1,45 @@
 import { cn } from "@/lib/utils";
 
 interface VirtueBarProps {
-  virtues: {
-    courage: number;
-    temperance: number;
-    justice: number;
-    wisdom: number;
-  };
+  courage: number;
+  temperance: number;
+  justice: number;
+  wisdom: number;
   className?: string;
+  compact?: boolean;
 }
 
-const virtueConfig = [
-  { key: "courage", label: "Courage", color: "bg-coral" },
-  { key: "temperance", label: "Temperance", color: "bg-aqua" },
-  { key: "justice", label: "Justice", color: "bg-mint" },
-  { key: "wisdom", label: "Wisdom", color: "bg-primary" },
-] as const;
+const virtueColors = { courage: "bg-coral", temperance: "bg-mint", justice: "bg-primary", wisdom: "bg-sand" };
 
-export function VirtueBar({ virtues, className }: VirtueBarProps) {
+export function VirtueBar({ courage, temperance, justice, wisdom, className, compact = false }: VirtueBarProps) {
+  const virtues = { courage, temperance, justice, wisdom };
   return (
-    <div className={cn("space-y-3", className)}>
-      {virtueConfig.map(({ key, label, color }) => (
-        <div key={key} className="space-y-1.5">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {label}
-            </span>
-            <span className="text-xs font-display font-semibold text-foreground">
-              {virtues[key]}%
-            </span>
+    <div className={cn("space-y-2", compact && "space-y-1.5", className)}>
+      {(Object.keys(virtues) as Array<keyof typeof virtues>).map((key) => (
+        <div key={key} className={cn("flex items-center gap-2", compact && "gap-1.5")}>
+          <span className={cn("text-muted-foreground capitalize flex-shrink-0", compact ? "text-xs w-16" : "text-sm w-20")}>{compact ? key.slice(0, 4) : key}</span>
+          <div className={cn("flex-1 bg-muted rounded-full overflow-hidden", compact ? "h-1.5" : "h-2")}>
+            <div className={cn("virtue-segment", virtueColors[key])} style={{ width: `${virtues[key]}%` }} />
           </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className={cn("virtue-segment", color)}
-              style={{ width: `${virtues[key]}%` }}
-            />
-          </div>
+          <span className={cn("text-foreground font-medium text-right", compact ? "text-xs w-6" : "text-sm w-8")}>{virtues[key]}</span>
         </div>
       ))}
     </div>
   );
 }
 
-export function VirtueBarCompact({ virtues, className }: VirtueBarProps) {
+export function VirtueBarCompact({ courage, temperance, justice, wisdom, className }: Omit<VirtueBarProps, "compact">) {
+  const total = courage + temperance + justice + wisdom;
+  const segments = [
+    { key: "courage", value: courage, color: virtueColors.courage },
+    { key: "temperance", value: temperance, color: virtueColors.temperance },
+    { key: "justice", value: justice, color: virtueColors.justice },
+    { key: "wisdom", value: wisdom, color: virtueColors.wisdom },
+  ];
   return (
-    <div className={cn("flex gap-1 h-2", className)}>
-      {virtueConfig.map(({ key, color }) => (
-        <div
-          key={key}
-          className={cn("virtue-segment flex-1", color)}
-          style={{ opacity: virtues[key] / 100 }}
-          title={`${key}: ${virtues[key]}%`}
-        />
+    <div className={cn("flex h-1.5 rounded-full overflow-hidden bg-muted", className)}>
+      {segments.map(({ key, value, color }) => (
+        <div key={key} className={cn("transition-all duration-500", color)} style={{ width: `${(value / total) * 100}%` }} />
       ))}
     </div>
   );

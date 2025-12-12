@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogoFull, LogoIcon } from "@/components/wellwell/Header";
+import { LogoFull } from "@/components/wellwell/Header";
 import { Button } from "@/components/ui/button";
 import { MicroInput } from "@/components/wellwell/MicroInput";
 import { cn } from "@/lib/utils";
@@ -14,17 +14,17 @@ const challenges = [
 ];
 
 const goals = [
-  { id: "calm", label: "Calmness" },
+  { id: "calm", label: "Calm" },
   { id: "clarity", label: "Clarity" },
   { id: "composure", label: "Composure" },
-  { id: "decisiveness", label: "Decisiveness" },
+  { id: "decisive", label: "Decisive" },
 ];
 
 const personas = [
-  { id: "strategist", label: "Strategist", tagline: "Keep me sharp", description: "Clean logic, direct structure" },
-  { id: "monk", label: "Monk", tagline: "Keep me steady", description: "Slower, more spacious pacing" },
-  { id: "commander", label: "Commander", tagline: "Keep me decisive", description: "Clipped directives, no cushioning" },
-  { id: "friend", label: "Friend", tagline: "Keep me grounded", description: "Warm, practical tone" },
+  { id: "strategist", label: "Strategist", tagline: "Keep me sharp" },
+  { id: "monk", label: "Monk", tagline: "Keep me steady" },
+  { id: "commander", label: "Commander", tagline: "Keep me decisive" },
+  { id: "friend", label: "Friend", tagline: "Keep me grounded" },
 ];
 
 export default function Onboarding() {
@@ -48,7 +48,6 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-    // In real app, would save to state/backend
     navigate("/");
   };
 
@@ -56,45 +55,45 @@ export default function Onboarding() {
     switch (step) {
       case 0:
         return (
-          <div className="flex flex-col items-center justify-center min-h-[70vh] text-center animate-fade-up">
-            <LogoFull className="h-40 mb-8" />
-            <p className="text-muted-foreground text-lg max-w-xs leading-relaxed mb-12">
-              Think clearly under pressure. Seconds, not minutes. No journaling. No quotes.
+          <div className="flex-1 flex flex-col items-center justify-center text-center animate-fade-up">
+            <LogoFull className="h-28 mb-6" />
+            <p className="text-muted-foreground text-base max-w-xs leading-relaxed mb-8">
+              Think clearly under pressure. Seconds, not minutes.
             </p>
-            <Button variant="brand" size="xl" onClick={() => setStep(1)}>
+            <Button variant="brand" size="lg" onClick={() => setStep(1)}>
               Begin
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         );
 
       case 1:
         return (
-          <div className="space-y-8 animate-fade-up">
-            <div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+          <div className="flex-1 flex flex-col animate-fade-up">
+            <div className="mb-4">
+              <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 What throws you off?
               </h2>
-              <p className="text-muted-foreground">Select all that apply</p>
+              <p className="text-sm text-muted-foreground">Select all that apply</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 flex-1 content-start">
               {challenges.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => toggleChallenge(id)}
                   className={cn(
-                    "p-4 rounded-2xl border-2 transition-all duration-300 text-left",
+                    "p-3 rounded-xl border-2 transition-all duration-300 text-left",
                     selectedChallenges.includes(id)
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/30"
                   )}
                 >
                   <Icon className={cn(
-                    "w-5 h-5 mb-2",
+                    "w-4 h-4 mb-1",
                     selectedChallenges.includes(id) ? "text-primary" : "text-muted-foreground"
                   )} />
-                  <span className="font-medium text-foreground">{label}</span>
+                  <span className="font-medium text-sm text-foreground">{label}</span>
                 </button>
               ))}
             </div>
@@ -102,7 +101,7 @@ export default function Onboarding() {
             <Button
               variant="brand"
               size="lg"
-              className="w-full"
+              className="w-full mt-4"
               onClick={() => setStep(2)}
               disabled={selectedChallenges.length === 0}
             >
@@ -114,21 +113,21 @@ export default function Onboarding() {
 
       case 2:
         return (
-          <div className="space-y-8 animate-fade-up">
-            <div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+          <div className="flex-1 flex flex-col animate-fade-up">
+            <div className="mb-4">
+              <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 What do you want more of?
               </h2>
-              <p className="text-muted-foreground">Select your goals</p>
+              <p className="text-sm text-muted-foreground">Select your goals</p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 flex-1 content-start">
               {goals.map(({ id, label }) => (
                 <button
                   key={id}
                   onClick={() => toggleGoal(id)}
                   className={cn(
-                    "px-5 py-2.5 rounded-full border-2 transition-all duration-300 font-medium",
+                    "px-4 py-2 rounded-full border-2 transition-all duration-300 font-medium text-sm",
                     selectedGoals.includes(id)
                       ? "border-primary bg-primary/5 text-foreground"
                       : "border-border text-muted-foreground hover:border-primary/30"
@@ -142,7 +141,7 @@ export default function Onboarding() {
             <Button
               variant="brand"
               size="lg"
-              className="w-full"
+              className="w-full mt-4"
               onClick={() => setStep(3)}
               disabled={selectedGoals.length === 0}
             >
@@ -154,31 +153,28 @@ export default function Onboarding() {
 
       case 3:
         return (
-          <div className="space-y-8 animate-fade-up">
-            <div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+          <div className="flex-1 flex flex-col animate-fade-up">
+            <div className="mb-4">
+              <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 Choose your guide
               </h2>
-              <p className="text-muted-foreground">Same logic, different tone</p>
+              <p className="text-sm text-muted-foreground">Same logic, different tone</p>
             </div>
 
-            <div className="space-y-3">
-              {personas.map(({ id, label, tagline, description }) => (
+            <div className="grid grid-cols-2 gap-2 flex-1 content-start">
+              {personas.map(({ id, label, tagline }) => (
                 <button
                   key={id}
                   onClick={() => setSelectedPersona(id)}
                   className={cn(
-                    "w-full p-4 rounded-2xl border-2 transition-all duration-300 text-left",
+                    "p-3 rounded-xl border-2 transition-all duration-300 text-left",
                     selectedPersona === id
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/30"
                   )}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-display font-semibold text-foreground">{label}</span>
-                    <span className="text-sm text-primary font-medium">{tagline}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{description}</p>
+                  <span className="font-display font-semibold text-sm text-foreground block">{label}</span>
+                  <span className="text-xs text-primary">{tagline}</span>
                 </button>
               ))}
             </div>
@@ -186,7 +182,7 @@ export default function Onboarding() {
             <Button
               variant="brand"
               size="lg"
-              className="w-full"
+              className="w-full mt-4"
               onClick={() => setStep(4)}
               disabled={!selectedPersona}
             >
@@ -198,26 +194,28 @@ export default function Onboarding() {
 
       case 4:
         return (
-          <div className="space-y-8 animate-fade-up">
-            <div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+          <div className="flex-1 flex flex-col animate-fade-up">
+            <div className="mb-4">
+              <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 One thing on your mind
               </h2>
-              <p className="text-muted-foreground">
-                Let's see how WellWell helps you think clearer.
+              <p className="text-sm text-muted-foreground">
+                Let's see how WellWell helps.
               </p>
             </div>
 
-            <MicroInput
-              placeholder="What's been weighing on you lately?"
-              value={baselineMoment}
-              onChange={(e) => setBaselineMoment(e.target.value)}
-            />
+            <div className="flex-1 flex items-center">
+              <MicroInput
+                placeholder="What's weighing on you?"
+                value={baselineMoment}
+                onChange={(e) => setBaselineMoment(e.target.value)}
+              />
+            </div>
 
             <Button
               variant="brand"
               size="lg"
-              className="w-full"
+              className="w-full mt-4"
               onClick={handleComplete}
               disabled={!baselineMoment.trim()}
             >
@@ -233,14 +231,14 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Subtle background glow */}
+    <div className="viewport-container bg-background">
+      {/* Background glow */}
       <div className="fixed inset-0 bg-glow pointer-events-none" />
 
-      <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full px-6 py-8">
+      <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full px-6 py-6 safe-area-top safe-area-bottom overflow-hidden">
         {/* Progress */}
         {step > 0 && step < 5 && (
-          <div className="flex gap-2 mb-8">
+          <div className="flex gap-2 mb-4">
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}

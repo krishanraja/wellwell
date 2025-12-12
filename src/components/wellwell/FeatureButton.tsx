@@ -1,61 +1,34 @@
-import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CSSProperties } from "react";
 
 interface FeatureButtonProps {
   icon: LucideIcon;
-  title: string;
-  description: string;
+  label: string;
+  sublabel?: string;
   onClick?: () => void;
-  variant?: "default" | "highlight";
   className?: string;
+  compact?: boolean;
+  style?: CSSProperties;
 }
 
-export function FeatureButton({
-  icon: Icon,
-  title,
-  description,
-  onClick,
-  variant = "default",
-  className
-}: FeatureButtonProps) {
+export function FeatureButton({ icon: Icon, label, sublabel, onClick, className, compact = false, style }: FeatureButtonProps) {
   return (
     <button
       onClick={onClick}
+      style={style}
       className={cn(
-        "w-full flex items-center gap-4 p-5 rounded-2xl transition-all duration-300 text-left group",
-        variant === "default" 
-          ? "bg-card border border-border hover:border-primary/30 hover:-translate-y-1 hover:shadow-md"
-          : "bg-brand-gradient hover:opacity-90 hover:-translate-y-1 hover:shadow-lg",
+        "stoic-card hover-lift flex items-center gap-3 w-full text-left transition-all duration-300 hover:border-primary/30 active:scale-[0.98]",
+        compact ? "p-3" : "p-4",
         className
       )}
     >
-      <div
-        className={cn(
-          "flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
-          variant === "default"
-            ? "bg-muted group-hover:bg-primary/10 text-foreground group-hover:text-primary"
-            : "bg-primary-foreground/20 text-primary-foreground"
-        )}
-      >
-        <Icon className="w-5 h-5" />
+      <div className={cn("rounded-xl bg-primary/10 flex items-center justify-center", compact ? "p-2" : "p-3")}>
+        <Icon className={cn("text-primary", compact ? "w-4 h-4" : "w-5 h-5")} />
       </div>
       <div className="flex-1 min-w-0">
-        <h3
-          className={cn(
-            "font-display font-semibold text-base",
-            variant === "default" ? "text-foreground" : "text-primary-foreground"
-          )}
-        >
-          {title}
-        </h3>
-        <p
-          className={cn(
-            "text-sm mt-0.5",
-            variant === "default" ? "text-muted-foreground" : "text-primary-foreground/80"
-          )}
-        >
-          {description}
-        </p>
+        <span className={cn("font-display font-semibold text-foreground block", compact ? "text-sm" : "text-base")}>{label}</span>
+        {sublabel && <span className={cn("text-muted-foreground block truncate", compact ? "text-xs" : "text-sm")}>{sublabel}</span>}
       </div>
     </button>
   );
