@@ -40,7 +40,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
       <img
         src="/video-poster.jpg"
         alt=""
-        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-40"
+        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-60"
         loading="eager"
         fetchPriority="high"
       />
@@ -56,7 +56,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
         onLoadedData={(e) => {
           console.log('[Landing] Video loaded successfully');
           (e.target as HTMLVideoElement).classList.remove('opacity-0');
-          (e.target as HTMLVideoElement).classList.add('opacity-40');
+          (e.target as HTMLVideoElement).classList.add('opacity-60');
         }}
         onError={(e) => console.error('[Landing] Video failed to load:', e)}
       >
