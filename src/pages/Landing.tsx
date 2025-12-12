@@ -1,20 +1,72 @@
-import { forwardRef } from "react";
+import { forwardRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { LogoFull } from "@/components/wellwell/Header";
-import { ArrowRight, Shield, Zap, Brain, Sparkles } from "lucide-react";
+import { ArrowRight, Shield, Zap, Brain, Sparkles, Quote, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+// Sample AI responses to showcase
+const sampleInsights = [
+  {
+    trigger: "Boss criticized my presentation",
+    response: "Their feedback reflects their standards, not your worth. Focus on what you can improve.",
+  },
+  {
+    trigger: "Deadline feels impossible",
+    response: "Break it down. What's the one thing you can control in the next hour?",
+  },
+  {
+    trigger: "Conflict with a coworker",
+    response: "Seek to understand their perspective first. Your composure is your power.",
+  },
+];
+
+const testimonials = [
+  {
+    quote: "Finally, philosophy that actually works in the moment.",
+    author: "Product Manager",
+  },
+  {
+    quote: "60 seconds to clarity. It's become my morning ritual.",
+    author: "Startup Founder",
+  },
+  {
+    quote: "The Intervene feature has saved me from countless reactive emails.",
+    author: "Team Lead",
+  },
+];
 
 const Landing = forwardRef<HTMLDivElement>((_, ref) => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [insightsCount, setInsightsCount] = useState<number>(0);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   useEffect(() => {
     if (!loading && user) {
       navigate("/", { replace: true });
     }
   }, [user, loading, navigate]);
+
+  // Fetch total insights count (public stat)
+  useEffect(() => {
+    async function fetchStats() {
+      const { count } = await supabase
+        .from('events')
+        .select('*', { count: 'exact', head: true });
+      setInsightsCount(count || 0);
+    }
+    fetchStats();
+  }, []);
+
+  // Rotate testimonials
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (loading) {
     return (
@@ -64,37 +116,62 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
       </video>
 
       {/* Single-screen content */}
-      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-[hsl(165_20%_13%/0.75)] backdrop-blur-md">
-        {/* Hero Section - 50% */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
+      <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-[hsl(165_20%_13%/0.75)] backdrop-blur-md overflow-y-auto">
+        {/* Hero Section */}
+        <div className="flex flex-col items-center text-center">
           <div className="animate-fade-up">
-            <LogoFull className="h-32 sm:h-36 mx-auto mb-4" />
+            <LogoFull className="h-24 sm:h-28 mx-auto mb-3" />
           </div>
 
-          <div className="space-y-3 animate-fade-up" style={{ animationDelay: "100ms" }}>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold text-[hsl(160_20%_95%)] leading-tight">
+          <div className="space-y-2 animate-fade-up" style={{ animationDelay: "100ms" }}>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[hsl(160_20%_95%)] leading-tight">
               Think clearly<br />
               <span className="gradient-text">under pressure</span>
             </h1>
-            <p className="text-base text-[hsl(160_15%_75%)] max-w-xs mx-auto">
+            <p className="text-sm text-[hsl(160_15%_75%)] max-w-xs mx-auto">
               Stoic philosophy in your pocket. No quotes. No journaling. Just clarity.
             </p>
           </div>
 
-          <div className="mt-6 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          {/* Live counter */}
+          {insightsCount > 0 && (
+            <div className="mt-4 animate-fade-up" style={{ animationDelay: "150ms" }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
+                <Users className="w-3 h-3 text-primary" />
+                <span className="text-xs text-primary font-medium">
+                  {insightsCount.toLocaleString()}+ insights generated
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
             <Button
               variant="brand"
               size="lg"
               onClick={() => navigate("/auth")}
             >
-              Get Started
+              Get Started Free
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
-        {/* Features Grid - 35% */}
-        <div className="py-6">
+        {/* Sample AI Response */}
+        <div className="mt-6 animate-fade-up" style={{ animationDelay: "250ms" }}>
+          <div className="bg-[hsl(165_20%_13%/0.8)] border border-primary/20 rounded-xl p-4">
+            <p className="text-xs text-muted-foreground mb-2">Example insight:</p>
+            <p className="text-sm text-[hsl(160_15%_75%)] italic mb-2">
+              "{sampleInsights[0].trigger}"
+            </p>
+            <p className="text-sm text-foreground font-medium">
+              → {sampleInsights[0].response}
+            </p>
+          </div>
+        </div>
+
+        {/* Features Grid */}
+        <div className="mt-6">
           <div className="grid grid-cols-4 gap-2 animate-fade-up" style={{ animationDelay: "300ms" }}>
             {features.map((feature, index) => (
               <div
@@ -116,8 +193,31 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
           </div>
         </div>
 
-        {/* Footer - 15% */}
-        <div className="text-center pb-4 animate-fade-up" style={{ animationDelay: "500ms" }}>
+        {/* Testimonial Carousel */}
+        <div className="mt-6 animate-fade-up" style={{ animationDelay: "400ms" }}>
+          <div className="text-center">
+            <Quote className="w-5 h-5 text-primary/50 mx-auto mb-2" />
+            <p className="text-sm text-[hsl(160_20%_95%)] italic transition-all duration-500">
+              "{testimonials[currentTestimonial].quote}"
+            </p>
+            <p className="text-xs text-primary mt-2">
+              — {testimonials[currentTestimonial].author}
+            </p>
+          </div>
+          <div className="flex justify-center gap-1.5 mt-3">
+            {testimonials.map((_, i) => (
+              <div 
+                key={i} 
+                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  i === currentTestimonial ? 'bg-primary' : 'bg-muted'
+                }`} 
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-auto pt-6 text-center animate-fade-up" style={{ animationDelay: "500ms" }}>
           <p className="text-sm text-[hsl(160_15%_75%)] mb-3">
             Free to start. No credit card required.
           </p>

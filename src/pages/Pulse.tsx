@@ -8,14 +8,30 @@ import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
-import { Sunrise, ArrowRight, Target, Shield, Compass, RotateCcw, Loader2 } from "lucide-react";
-import { getTodayStance } from "@/data/dailyStances";
+import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
+import { useProfile } from "@/hooks/useProfile";
+import { useVirtueScores } from "@/hooks/useVirtueScores";
+import { getPersonalizedStance } from "@/data/dailyStances";
+import { Sunrise, ArrowRight, Target, Shield, Compass, RotateCcw, Loader2, History } from "lucide-react";
 
 export default function Pulse() {
   const [challenge, setChallenge] = useState("");
-  const todayStance = getTodayStance();
   const { trackUsage } = useUsageLimit("pulse");
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
+  const { yesterday } = useCrossSessionMemory();
+  const { profile } = useProfile();
+  const { scoresMap } = useVirtueScores();
+
+  // Get personalized stance based on user context
+  const lowestVirtue = Object.entries(scoresMap).length > 0
+    ? Object.entries(scoresMap).reduce((a, b) => (a[1]?.score || 50) < (b[1]?.score || 50) ? a : b)
+    : null;
+  
+  const personalizedStance = getPersonalizedStance({
+    challenges: profile?.challenges || [],
+    lowestVirtue: lowestVirtue?.[0],
+    lowestVirtueScore: lowestVirtue?.[1]?.score,
+  });
 
   const handleSubmit = async () => {
     if (challenge.trim()) {
@@ -44,6 +60,18 @@ export default function Pulse() {
               </div>
               <h1 className="font-display text-2xl font-bold text-foreground">What might challenge you today?</h1>
             </div>
+
+            {/* Yesterday's context - Cross-session memory */}
+            {yesterday.challenge && (
+              <div className="px-4 py-3 bg-muted/50 rounded-xl mb-4 animate-fade-up" style={{ animationDelay: "50ms" }}>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                  <History className="w-3 h-3" />
+                  <span>Yesterday you worked on:</span>
+                </div>
+                <p className="text-sm text-foreground line-clamp-2">{yesterday.challenge}</p>
+              </div>
+            )}
+
             <div className="flex-1 flex flex-col py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
               <MicroInput 
                 placeholder="e.g., A difficult conversation" 
@@ -53,7 +81,12 @@ export default function Pulse() {
               />
             </div>
             <div className="text-center py-2 animate-fade-up" style={{ animationDelay: "150ms" }}>
-              <p className="text-xs text-muted-foreground">Today: <span className="text-foreground">"{todayStance.stance}"</span></p>
+              <p className="text-xs text-muted-foreground">
+                Today: <span className="text-foreground">"{personalizedStance.stance}"</span>
+              </p>
+              <p className="text-xs text-primary/70 mt-1 capitalize">
+                Focus: {personalizedStance.virtue}
+              </p>
             </div>
             <div className="py-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
               <Button 
