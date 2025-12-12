@@ -4,30 +4,57 @@ import { ReactNode, CSSProperties, ElementType } from "react";
 interface StoicCardProps {
   children: ReactNode;
   className?: string;
-  variant?: "default" | "elevated" | "bordered";
+  variant?: "default" | "elevated" | "bordered" | "glass" | "hero";
   style?: CSSProperties;
   icon?: ElementType;
   title?: string;
+  glowColor?: string;
 }
 
-export function StoicCard({ children, className, variant = "default", style, icon: Icon, title }: StoicCardProps) {
+export function StoicCard({ 
+  children, 
+  className, 
+  variant = "default", 
+  style, 
+  icon: Icon, 
+  title,
+  glowColor 
+}: StoicCardProps) {
+  const baseStyles = "animate-fade-up";
+  
+  const variantStyles = {
+    default: "stoic-card",
+    elevated: "stoic-card shadow-elevated",
+    bordered: "glass-card-glow",
+    glass: "glass-card p-4",
+    hero: "hero-card",
+  };
+
   return (
     <div
-      className={cn(
-        "stoic-card animate-fade-up",
-        variant === "elevated" && "shadow-md",
-        variant === "bordered" && "gradient-border",
-        className
-      )}
-      style={style}
+      className={cn(baseStyles, variantStyles[variant], className)}
+      style={{
+        ...style,
+        ...(glowColor && { 
+          boxShadow: `0 0 30px ${glowColor}`,
+        }),
+      }}
     >
       {(Icon || title) && (
-        <div className="flex items-center gap-2 mb-3">
-          {Icon && <Icon className="w-4 h-4 text-primary" />}
-          {title && <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{title}</span>}
+        <div className="flex items-center gap-2 mb-3 relative z-10">
+          {Icon && (
+            <div className="p-1.5 rounded-lg bg-primary/10">
+              <Icon className="w-4 h-4 text-primary" />
+            </div>
+          )}
+          {title && (
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {title}
+            </span>
+          )}
         </div>
       )}
-      {children}
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }
@@ -40,8 +67,12 @@ interface StoicCardHeaderProps {
 export function StoicCardHeader({ label, icon }: StoicCardHeaderProps) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      {icon && <span className="text-primary">{icon}</span>}
-      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      {icon && (
+        <div className="p-1.5 rounded-lg bg-primary/10">
+          <span className="text-primary">{icon}</span>
+        </div>
+      )}
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
     </div>

@@ -15,8 +15,8 @@ export function BottomNav() {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-border z-50 safe-area-inset-bottom">
-      <div className="flex items-center justify-around py-2 px-4 max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 nav-glass z-50 safe-area-inset-bottom">
+      <div className="flex items-center justify-around py-2 px-2 max-w-lg mx-auto">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = location.pathname === path;
           return (
@@ -24,21 +24,22 @@ export function BottomNav() {
               key={path}
               onClick={() => navigate(path)}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all duration-300",
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                "nav-pill flex flex-col items-center gap-1 min-w-[60px] transition-all duration-300",
+                isActive && "nav-pill-active"
               )}
             >
-              <div
-                className={cn(
-                  "p-2 rounded-xl transition-all duration-300",
-                  isActive && "bg-primary/10"
-                )}
-              >
+              <div className={cn(
+                "transition-all duration-300",
+                isActive ? "text-primary scale-110" : "text-muted-foreground"
+              )}>
                 <Icon className="w-5 h-5" />
               </div>
-              <span className="text-xs font-medium">{label}</span>
+              <span className={cn(
+                "text-[10px] font-medium transition-all duration-300",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )}>
+                {label}
+              </span>
             </button>
           );
         })}
