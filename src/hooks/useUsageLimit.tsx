@@ -5,10 +5,13 @@ import { useSubscription } from './useSubscription';
 import { logger } from '@/lib/logger';
 
 // Daily limits for free tier
+// Daily limits for free tier - give users real value before asking to upgrade
 const FREE_TIER_LIMITS: Record<string, number> = {
-  pulse: 1,
-  intervene: 1,
-  debrief: 1,
+  pulse: 3,
+  intervene: 3,
+  debrief: 3,
+  decision: 3,
+  conflict: 3,
 };
 
 // Pro tier has unlimited usage

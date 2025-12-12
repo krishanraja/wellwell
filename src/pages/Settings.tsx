@@ -97,15 +97,15 @@ export default function Settings() {
           <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">Account</h2>
           <div className="stoic-card">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">{user?.email}</p>
-                <button onClick={() => navigate("/profile")} className="text-sm text-primary hover:underline">Edit profile</button>
-              </div>
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <User className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-foreground">{user?.email}</p>
+              <button onClick={() => navigate("/edit-profile")} className="text-sm text-primary hover:underline">Edit profile</button>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Preferences Section */}

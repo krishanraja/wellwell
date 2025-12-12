@@ -9,6 +9,7 @@ interface StoicCardProps {
   icon?: ElementType;
   title?: string;
   glowColor?: string;
+  onClick?: () => void;
 }
 
 export function StoicCard({ 
@@ -18,9 +19,11 @@ export function StoicCard({
   style, 
   icon: Icon, 
   title,
-  glowColor 
+  glowColor,
+  onClick 
 }: StoicCardProps) {
   const baseStyles = "animate-fade-up";
+  const Component = onClick ? "button" : "div";
   
   const variantStyles = {
     default: "stoic-card",
@@ -31,14 +34,15 @@ export function StoicCard({
   };
 
   return (
-    <div
-      className={cn(baseStyles, variantStyles[variant], className)}
+    <Component
+      className={cn(baseStyles, variantStyles[variant], onClick && "text-left w-full", className)}
       style={{
         ...style,
         ...(glowColor && { 
           boxShadow: `0 0 30px ${glowColor}`,
         }),
       }}
+      onClick={onClick}
     >
       {(Icon || title) && (
         <div className="flex items-center gap-2 mb-3 relative z-10">
@@ -55,7 +59,7 @@ export function StoicCard({
         </div>
       )}
       <div className="relative z-10">{children}</div>
-    </div>
+    </Component>
   );
 }
 

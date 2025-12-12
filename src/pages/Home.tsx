@@ -85,21 +85,21 @@ export default function Home() {
           <FeatureCard 
             icon={Sunrise} 
             label="Pulse" 
-            sublabel="Morning"
+            sublabel="Morning Mindset"
             onClick={() => navigate("/pulse")} 
             accentColor={colors.pulse}
           />
           <FeatureCard 
             icon={Flame} 
             label="Intervene" 
-            sublabel="Recalibrate"
+            sublabel="Recalibrate Now"
             onClick={() => navigate("/intervene")} 
             accentColor={colors.intervene}
           />
           <FeatureCard 
             icon={Moon} 
             label="Debrief" 
-            sublabel="Evening"
+            sublabel="Evening Reflection"
             onClick={() => navigate("/debrief")} 
             accentColor={colors.debrief}
           />

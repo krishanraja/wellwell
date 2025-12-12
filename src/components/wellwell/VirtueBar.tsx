@@ -79,9 +79,9 @@ export function VirtueBar({
             )}
             <span className={cn(
               "text-muted-foreground capitalize flex-shrink-0 font-medium",
-              compact ? "text-xs w-16" : "text-sm w-20"
+              compact ? "text-xs w-20" : "text-sm w-24"
             )}>
-              {compact ? key.slice(0, 4) : config.label}
+              {config.label}
             </span>
             <div className={cn(
               "flex-1 rounded-full overflow-hidden bg-muted/50 relative",
