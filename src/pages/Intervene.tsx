@@ -8,22 +8,32 @@ import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
-import { Flame, ArrowRight, RefreshCw, Target, Shield, RotateCcw } from "lucide-react";
+import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
+import { Flame, ArrowRight, RefreshCw, Target, Shield, RotateCcw, Loader2 } from "lucide-react";
 
 export default function Intervene() {
   const [trigger, setTrigger] = useState("");
   const [intensity, setIntensity] = useState(5);
-  const [submitted, setSubmitted] = useState(false);
   const { trackUsage } = useUsageLimit("intervene");
+  const { analyze, isLoading, response, reset } = useStoicAnalyzer();
 
   const handleSubmit = async () => {
     if (trigger.trim()) {
       await trackUsage();
-      setSubmitted(true);
+      await analyze({
+        tool: "intervene",
+        input: JSON.stringify({ trigger, intensity }),
+      });
     }
   };
 
-  if (!submitted) {
+  const handleReset = () => {
+    setTrigger("");
+    setIntensity(5);
+    reset();
+  };
+
+  if (!response) {
     return (
       <Layout>
         <UsageLimitGate toolName="intervene">
@@ -36,14 +46,36 @@ export default function Intervene() {
               <h1 className="font-display text-2xl font-bold text-foreground">What triggered you?</h1>
             </div>
             <div className="flex-1 flex flex-col justify-center gap-6 py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
-              <MicroInput placeholder="e.g., An email that made me furious" value={trigger} onChange={(e) => setTrigger(e.target.value)} />
+              <MicroInput 
+                placeholder="e.g., An email that made me furious" 
+                value={trigger} 
+                onChange={(e) => setTrigger(e.target.value)} 
+              />
               <div>
                 <p className="text-sm text-muted-foreground mb-3">Intensity: <span className="text-foreground font-medium">{intensity}/10</span></p>
                 <IntensitySlider value={intensity} onChange={setIntensity} />
               </div>
             </div>
             <div className="py-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
-              <Button variant="brand" size="lg" className="w-full" onClick={handleSubmit} disabled={!trigger.trim()}>Recalibrate<ArrowRight className="w-4 h-4" /></Button>
+              <Button 
+                variant="brand" 
+                size="lg" 
+                className="w-full" 
+                onClick={handleSubmit} 
+                disabled={!trigger.trim() || isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Recalibrating...
+                  </>
+                ) : (
+                  <>
+                    Recalibrate
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </UsageLimitGate>
@@ -52,9 +84,26 @@ export default function Intervene() {
   }
 
   const cards = [
-    <StoicCard key="rewrite" icon={RefreshCw} title="Rewrite" className="h-full flex flex-col"><p className="text-muted-foreground text-sm"><span className="text-foreground font-medium">Reframe:</span> Their words reveal their stress, not your worth.</p></StoicCard>,
-    <StoicCard key="control" icon={Target} title="Control" className="h-full flex flex-col"><p className="text-sm"><span className="text-coral font-medium">Not yours:</span> <span className="text-muted-foreground">Their tone, urgency.</span></p><p className="text-sm mt-2"><span className="text-primary font-medium">Yours:</span> <span className="text-muted-foreground">Your response, your state.</span></p></StoicCard>,
-    <StoicCard key="virtue" icon={Shield} title="Virtue Call" className="h-full flex flex-col"><p className="text-muted-foreground text-sm flex-1"><span className="text-primary font-medium">Temperance</span>: respond with measure.</p><div className="mt-3"><ActionChip action="Wait 10 minutes before responding." duration="10m" /></div></StoicCard>,
+    <StoicCard key="rewrite" icon={RefreshCw} title="Rewrite" className="h-full flex flex-col">
+      <p className="text-muted-foreground text-sm">
+        <span className="text-foreground font-medium">Reframe:</span> {response.summary || "Their words reveal their stress, not your worth."}
+      </p>
+    </StoicCard>,
+    <StoicCard key="control" icon={Target} title="Control" className="h-full flex flex-col">
+      <p className="text-muted-foreground text-sm">
+        {response.control_map || "Focus on your response, not their reaction."}
+      </p>
+    </StoicCard>,
+    <StoicCard key="virtue" icon={Shield} title="Virtue Call" className="h-full flex flex-col">
+      <p className="text-muted-foreground text-sm flex-1">
+        {response.virtue_focus || "Temperance: respond with measure."}
+      </p>
+      {response.action && (
+        <div className="mt-3">
+          <ActionChip action={response.action} duration="10m" />
+        </div>
+      )}
+    </StoicCard>,
   ];
 
   return (
@@ -68,7 +117,10 @@ export default function Intervene() {
         </div>
         <CardCarousel className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>{cards}</CardCarousel>
         <div className="py-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
-          <Button variant="outline" size="lg" className="w-full" onClick={() => { setTrigger(""); setIntensity(5); setSubmitted(false); }}><RotateCcw className="w-4 h-4" />New Trigger</Button>
+          <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
+            <RotateCcw className="w-4 h-4" />
+            New Trigger
+          </Button>
         </div>
       </div>
     </Layout>
