@@ -6,35 +6,47 @@ import { Button } from "@/components/ui/button";
 import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
+import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { Flame, ArrowRight, RefreshCw, Target, Shield, RotateCcw } from "lucide-react";
 
 export default function Intervene() {
   const [trigger, setTrigger] = useState("");
   const [intensity, setIntensity] = useState(5);
   const [submitted, setSubmitted] = useState(false);
+  const { trackUsage } = useUsageLimit("intervene");
+
+  const handleSubmit = async () => {
+    if (trigger.trim()) {
+      await trackUsage();
+      setSubmitted(true);
+    }
+  };
 
   if (!submitted) {
     return (
       <Layout>
-        <div className="flex-1 flex flex-col">
-          <div className="text-center py-4 animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-coral/10 rounded-full mb-3">
-              <Flame className="w-4 h-4 text-coral" />
-              <span className="text-sm font-medium text-coral">Intervene</span>
+        <UsageLimitGate toolName="intervene">
+          <div className="flex-1 flex flex-col">
+            <div className="text-center py-4 animate-fade-up">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-coral/10 rounded-full mb-3">
+                <Flame className="w-4 h-4 text-coral" />
+                <span className="text-sm font-medium text-coral">Intervene</span>
+              </div>
+              <h1 className="font-display text-2xl font-bold text-foreground">What triggered you?</h1>
             </div>
-            <h1 className="font-display text-2xl font-bold text-foreground">What triggered you?</h1>
-          </div>
-          <div className="flex-1 flex flex-col justify-center gap-6 py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
-            <MicroInput placeholder="e.g., An email that made me furious" value={trigger} onChange={(e) => setTrigger(e.target.value)} />
-            <div>
-              <p className="text-sm text-muted-foreground mb-3">Intensity: <span className="text-foreground font-medium">{intensity}/10</span></p>
-              <IntensitySlider value={intensity} onChange={setIntensity} />
+            <div className="flex-1 flex flex-col justify-center gap-6 py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <MicroInput placeholder="e.g., An email that made me furious" value={trigger} onChange={(e) => setTrigger(e.target.value)} />
+              <div>
+                <p className="text-sm text-muted-foreground mb-3">Intensity: <span className="text-foreground font-medium">{intensity}/10</span></p>
+                <IntensitySlider value={intensity} onChange={setIntensity} />
+              </div>
+            </div>
+            <div className="py-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
+              <Button variant="brand" size="lg" className="w-full" onClick={handleSubmit} disabled={!trigger.trim()}>Recalibrate<ArrowRight className="w-4 h-4" /></Button>
             </div>
           </div>
-          <div className="py-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
-            <Button variant="brand" size="lg" className="w-full" onClick={() => setSubmitted(true)} disabled={!trigger.trim()}>Recalibrate<ArrowRight className="w-4 h-4" /></Button>
-          </div>
-        </div>
+        </UsageLimitGate>
       </Layout>
     );
   }

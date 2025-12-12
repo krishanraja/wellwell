@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
+import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { Sunrise, ArrowRight, Target, Shield, Compass, RotateCcw } from "lucide-react";
 import { getTodayStance } from "@/data/dailyStances";
 
@@ -12,28 +14,38 @@ export default function Pulse() {
   const [challenge, setChallenge] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const todayStance = getTodayStance();
+  const { trackUsage } = useUsageLimit("pulse");
+
+  const handleSubmit = async () => {
+    if (challenge.trim()) {
+      await trackUsage();
+      setSubmitted(true);
+    }
+  };
 
   if (!submitted) {
     return (
       <Layout>
-        <div className="flex-1 flex flex-col">
-          <div className="text-center py-4 animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full mb-3">
-              <Sunrise className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Morning Pulse</span>
+        <UsageLimitGate toolName="pulse">
+          <div className="flex-1 flex flex-col">
+            <div className="text-center py-4 animate-fade-up">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full mb-3">
+                <Sunrise className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Morning Pulse</span>
+              </div>
+              <h1 className="font-display text-2xl font-bold text-foreground">What might challenge you today?</h1>
             </div>
-            <h1 className="font-display text-2xl font-bold text-foreground">What might challenge you today?</h1>
+            <div className="flex-1 flex flex-col justify-center py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <MicroInput placeholder="e.g., A difficult conversation" value={challenge} onChange={(e) => setChallenge(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSubmit()} />
+            </div>
+            <div className="text-center py-2 animate-fade-up" style={{ animationDelay: "150ms" }}>
+              <p className="text-xs text-muted-foreground">Today: <span className="text-foreground">"{todayStance.stance}"</span></p>
+            </div>
+            <div className="py-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
+              <Button variant="brand" size="lg" className="w-full" onClick={handleSubmit} disabled={!challenge.trim()}>Get My Stance<ArrowRight className="w-4 h-4" /></Button>
+            </div>
           </div>
-          <div className="flex-1 flex flex-col justify-center py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
-            <MicroInput placeholder="e.g., A difficult conversation" value={challenge} onChange={(e) => setChallenge(e.target.value)} onKeyDown={(e) => e.key === "Enter" && challenge.trim() && setSubmitted(true)} />
-          </div>
-          <div className="text-center py-2 animate-fade-up" style={{ animationDelay: "150ms" }}>
-            <p className="text-xs text-muted-foreground">Today: <span className="text-foreground">"{todayStance.stance}"</span></p>
-          </div>
-          <div className="py-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
-            <Button variant="brand" size="lg" className="w-full" onClick={() => setSubmitted(true)} disabled={!challenge.trim()}>Get My Stance<ArrowRight className="w-4 h-4" /></Button>
-          </div>
-        </div>
+        </UsageLimitGate>
       </Layout>
     );
   }
