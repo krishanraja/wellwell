@@ -61,7 +61,7 @@ export default function Home() {
             </span>
           </div>
         </div>
-        <p className="text-lg font-display font-semibold text-foreground leading-relaxed">
+        <p className="text-base font-display font-semibold text-foreground leading-relaxed break-words">
           "{todayStance.stance}"
         </p>
       </div>

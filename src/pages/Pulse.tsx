@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Layout } from "@/components/wellwell/Layout";
-import { MicroInput } from "@/components/wellwell/MicroInput";
+import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
 import { Button } from "@/components/ui/button";
 import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
@@ -12,7 +12,7 @@ import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
 import { useProfile } from "@/hooks/useProfile";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
 import { getPersonalizedStance } from "@/data/dailyStances";
-import { Sunrise, ArrowRight, Target, Shield, Compass, RotateCcw, Loader2, History } from "lucide-react";
+import { Sunrise, Target, Shield, Compass, RotateCcw, Quote } from "lucide-react";
 
 export default function Pulse() {
   const [challenge, setChallenge] = useState("");
@@ -33,14 +33,13 @@ export default function Pulse() {
     lowestVirtueScore: lowestVirtue?.[1]?.score,
   });
 
-  const handleSubmit = async () => {
-    if (challenge.trim()) {
-      await trackUsage();
-      await analyze({
-        tool: "pulse",
-        input: challenge,
-      });
-    }
+  const handleTranscript = async (text: string) => {
+    setChallenge(text);
+    await trackUsage();
+    await analyze({
+      tool: "pulse",
+      input: text,
+    });
   };
 
   const handleReset = () => {
@@ -53,61 +52,51 @@ export default function Pulse() {
       <Layout>
         <UsageLimitGate toolName="pulse">
           <div className="flex-1 flex flex-col">
+            {/* Value First: Show wisdom immediately */}
             <div className="text-center py-4 animate-fade-up">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full mb-4">
                 <Sunrise className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-primary">Morning Pulse</span>
               </div>
-              <h1 className="font-display text-2xl font-bold text-foreground">What might challenge you today?</h1>
+              
+              {/* Today's wisdom - value upfront */}
+              <div className="mb-6 p-4 bg-muted/30 rounded-2xl border border-border/50">
+                <div className="flex items-center gap-2 justify-center mb-2">
+                  <Quote className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-xs uppercase tracking-wider text-muted-foreground">Today's Stance</span>
+                </div>
+                <p className="text-foreground font-display text-lg leading-relaxed">
+                  "{personalizedStance.stance}"
+                </p>
+                <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary capitalize">
+                  {personalizedStance.virtue}
+                </span>
+              </div>
             </div>
 
-            {/* Yesterday's context - Cross-session memory */}
+            {/* Yesterday's context if available */}
             {yesterday.challenge && (
-              <div className="px-4 py-3 bg-muted/50 rounded-xl mb-4 animate-fade-up" style={{ animationDelay: "50ms" }}>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                  <History className="w-3 h-3" />
-                  <span>Yesterday you worked on:</span>
-                </div>
-                <p className="text-sm text-foreground line-clamp-2">{yesterday.challenge}</p>
+              <div className="px-4 py-3 bg-muted/30 rounded-xl mb-4 animate-fade-up" style={{ animationDelay: "50ms" }}>
+                <p className="text-xs text-muted-foreground mb-1">Yesterday:</p>
+                <p className="text-sm text-foreground/80">{yesterday.challenge}</p>
               </div>
             )}
 
-            <div className="flex-1 flex flex-col py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
-              <MicroInput 
-                placeholder="e.g., A difficult conversation" 
-                value={challenge} 
-                onChange={(e) => setChallenge(e.target.value)} 
-                onKeyDown={(e) => e.key === "Enter" && !isLoading && handleSubmit()} 
+            {/* Voice-first input */}
+            <div className="flex-1 flex flex-col justify-center animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <h2 className="text-center text-xl font-display font-semibold text-foreground mb-2">
+                What might challenge you today?
+              </h2>
+              <p className="text-center text-sm text-muted-foreground mb-6">
+                Speak freely — I'll find the Stoic wisdom within
+              </p>
+              
+              <VoiceFirstInput
+                onTranscript={handleTranscript}
+                placeholder="Tap to speak your challenge"
+                processingText="Finding your Stoic stance..."
+                isProcessing={isLoading}
               />
-            </div>
-            <div className="text-center py-2 animate-fade-up" style={{ animationDelay: "150ms" }}>
-              <p className="text-xs text-muted-foreground">
-                Today: <span className="text-foreground">"{personalizedStance.stance}"</span>
-              </p>
-              <p className="text-xs text-primary/70 mt-1 capitalize">
-                Focus: {personalizedStance.virtue}
-              </p>
-            </div>
-            <div className="py-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
-              <Button 
-                variant="brand" 
-                size="lg" 
-                className="w-full" 
-                onClick={handleSubmit} 
-                disabled={!challenge.trim() || isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    Get My Stance
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </UsageLimitGate>
@@ -151,6 +140,11 @@ export default function Pulse() {
             <Sunrise className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-primary">Your Stance</span>
           </div>
+          {challenge && (
+            <p className="text-sm text-muted-foreground mt-2 px-4">
+              "{challenge.slice(0, 60)}{challenge.length > 60 ? '...' : ''}"
+            </p>
+          )}
         </div>
         <CardCarousel className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>{cards}</CardCarousel>
         <div className="py-3 animate-fade-up" style={{ animationDelay: "200ms" }}>

@@ -54,8 +54,25 @@ export function useCrossSessionMemory(): CrossSessionMemory {
       }
 
       if (data && data.length > 0) {
+        // Parse JSON if stored as JSON string (from Debrief)
+        let challengeText = data[0].raw_input;
+        try {
+          const parsed = JSON.parse(challengeText);
+          if (typeof parsed === 'object') {
+            // Format object into readable text
+            const parts: string[] = [];
+            if (parsed.controlled) parts.push(`Controlled: ${parsed.controlled}`);
+            if (parsed.escaped) parts.push(`Escaped: ${parsed.escaped}`);
+            if (parsed.tomorrow) parts.push(`Tomorrow: ${parsed.tomorrow}`);
+            if (parsed.trigger) parts.push(`Trigger: ${parsed.trigger}`);
+            challengeText = parts.length > 0 ? parts.join(' • ') : challengeText;
+          }
+        } catch {
+          // Not JSON, use as-is
+        }
+        
         return {
-          challenge: data[0].raw_input,
+          challenge: challengeText,
           tool: data[0].tool_name,
           timestamp: data[0].created_at,
         };
