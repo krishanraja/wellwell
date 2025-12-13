@@ -10,6 +10,8 @@ WellWell is a personal Stoic practice app that helps users build mental resilien
 - **Contextual Home**: Smart nudges based on time of day and your activity
 - **Welcome Back Screen**: Personalized greeting for returning users
 - **Virtue Tracking**: Monitor your Stoic growth across 4 cardinal virtues
+- **SEO-Optimized Blog**: Articles on Stoicism, mental health, and productivity
+- **FAQ Center**: 20+ questions with FAQ schema for rich search results
 
 ## Documentation
 

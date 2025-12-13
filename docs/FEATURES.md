@@ -184,6 +184,36 @@ if (timeContext === 'evening' && !hasCompletedDebriefToday) → 'debrief'
 
 ---
 
+## SEO Infrastructure
+
+### FAQ Page (`/faq`)
+- 20+ SEO-optimized FAQs targeting high-volume searches
+- Categories: Stoicism, App, Mental Health, Practices, Pricing
+- Full-text search functionality
+- FAQ schema markup for rich snippets in Google
+- Accessible from Settings > Support & Resources
+
+### Blog (`/blog`, `/blog/:slug`)
+- 5 initial SEO-optimized articles targeting:
+  - "how to stay calm under pressure"
+  - "stoic morning routine"
+  - "dealing with difficult people"
+  - "stoic journaling prompts"
+  - "stoicism for beginners"
+- Article schema markup for rich snippets
+- Previous/Next navigation
+- Share functionality
+- CTA to sign up on every article
+
+### Technical SEO
+- **Structured Data**: WebApplication, Organization, SoftwareApplication, Article, FAQPage schemas
+- **Sitemap**: All public pages included with lastmod dates
+- **Robots.txt**: Proper directives for public/private routes
+- **Meta Tags**: Open Graph, Twitter Cards, canonical URLs
+- **HelmetProvider**: Dynamic meta tags per page
+
+---
+
 ## Feature Flags
 
 | Flag | Status | Description |

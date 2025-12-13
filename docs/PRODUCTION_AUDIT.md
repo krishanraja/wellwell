@@ -230,6 +230,17 @@ Most lint warnings are from shadcn/ui components (expected). Core application co
 | `src/pages/Home.tsx` | Complete redesign with contextual experience |
 | `src/components/wellwell/BottomNav.tsx` | Added contextual nudge indicators |
 | `docs/FEATURES.md` | Added Contextual Home Experience documentation |
+| `src/data/faqData.ts` | **New** - 20+ SEO-optimized FAQs with schema markup |
+| `src/pages/FAQ.tsx` | **New** - FAQ page with search, categories, and FAQ schema |
+| `src/data/blogData.ts` | **New** - 5 SEO-optimized blog articles |
+| `src/pages/Blog.tsx` | **New** - Blog listing page |
+| `src/pages/BlogArticle.tsx` | **New** - Individual article page with Article schema |
+| `index.html` | Enhanced structured data (Organization, SoftwareApplication) |
+| `public/sitemap.xml` | Updated with all public SEO pages |
+| `public/robots.txt` | Enhanced with proper Allow/Disallow directives |
+| `src/pages/Settings.tsx` | Added Support & Resources section with FAQ/Blog links |
+| `src/pages/Landing.tsx` | Added footer SEO links |
+| `src/App.tsx` | Added HelmetProvider, FAQ, Blog routes |
 
 ---
 
