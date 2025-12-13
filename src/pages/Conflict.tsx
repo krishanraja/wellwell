@@ -1,136 +1,133 @@
 import { useState } from "react";
 import { Layout } from "@/components/wellwell/Layout";
-import { MicroInput } from "@/components/wellwell/MicroInput";
-import { StoicCard, StoicCardHeader, StoicCardContent } from "@/components/wellwell/StoicCard";
+import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
+import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Users, Heart, Eye, Sparkles } from "lucide-react";
+import { CardCarousel } from "@/components/wellwell/CardCarousel";
+import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
+import { Button } from "@/components/ui/button";
+import { Swords, Users, Heart, Eye, Sparkles, RotateCcw } from "lucide-react";
 
 export default function Conflict() {
-  const [person, setPerson] = useState("");
   const [situation, setSituation] = useState("");
-  const [feeling, setFeeling] = useState("");
-  const { analyze, isLoading, response } = useStoicAnalyzer();
+  const { trackUsage } = useUsageLimit("conflict");
+  const { analyze, isLoading, response, reset } = useStoicAnalyzer();
 
-  const handleSubmit = async () => {
-    if (person.trim() && situation.trim()) {
-      await analyze({
-        tool: "conflict",
-        input: `Person: ${person}\nSituation: ${situation}\nFeeling: ${feeling}`,
-      });
-    }
+  const handleTranscript = async (text: string) => {
+    setSituation(text);
+    await trackUsage();
+    await analyze({
+      tool: "conflict",
+      input: text,
+    });
   };
+
+  const handleReset = () => {
+    setSituation("");
+    reset();
+  };
+
+  if (!response) {
+    return (
+      <Layout>
+        <UsageLimitGate toolName="conflict">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            {/* Header */}
+            <div className="text-center py-2 animate-fade-up shrink-0">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-coral/10 rounded-full mb-2">
+                <Swords className="w-4 h-4 text-coral" />
+                <span className="text-sm font-medium text-coral">Conflict Copilot</span>
+              </div>
+              
+              <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
+                <p className="text-foreground font-display text-base leading-snug mb-1">
+                  "Waste no more time arguing about what a good man should be. Be one."
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  — Marcus Aurelius
+                </p>
+              </div>
+            </div>
+
+            {/* Voice input */}
+            <div className="flex-1 flex flex-col justify-center min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <h2 className="text-center text-lg font-display font-semibold text-foreground mb-1">
+                What happened?
+              </h2>
+              <p className="text-center text-sm text-muted-foreground mb-4">
+                Tell me about the conflict — I'll help you find perspective
+              </p>
+              
+              <VoiceFirstInput
+                onTranscript={handleTranscript}
+                placeholder="Tap to describe the situation"
+                processingText="Finding perspective..."
+                isProcessing={isLoading}
+              />
+            </div>
+            
+            <div className="h-4 shrink-0" />
+          </div>
+        </UsageLimitGate>
+      </Layout>
+    );
+  }
+
+  const cards = [
+    <StoicCard key="perspective" icon={Users} title="Their Perspective" className="h-full flex flex-col">
+      <p className="text-muted-foreground text-sm flex-1">
+        {response.control_map || "Consider what pressures or fears might be driving their behavior."}
+      </p>
+    </StoicCard>,
+    <StoicCard key="role" icon={Heart} title="Your Role" className="h-full flex flex-col">
+      <p className="text-muted-foreground text-sm flex-1">
+        {response.virtue_focus || "Focus on what you can control: your response, your boundaries."}
+      </p>
+    </StoicCard>,
+    <StoicCard key="pattern" icon={Eye} title="Deeper Pattern" className="h-full flex flex-col">
+      <p className="text-muted-foreground text-sm flex-1">
+        {response.surprise_or_tension || "This conflict may reveal something about your values."}
+      </p>
+    </StoicCard>,
+    <StoicCard key="forward" icon={Sparkles} title="Path Forward" className="h-full flex flex-col">
+      <p className="text-foreground font-medium text-sm flex-1">
+        "{response.stance || "Seek first to understand, then to be understood."}"
+      </p>
+      {response.action && (
+        <div className="mt-2">
+          <ActionChip action={response.action} />
+        </div>
+      )}
+    </StoicCard>,
+  ];
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="animate-fade-up">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-            Conflict Copilot
-          </h1>
-          <p className="text-muted-foreground">
-            Reset interpersonal dynamics with Stoic wisdom.
-          </p>
-        </div>
-
-        {!response ? (
-          <>
-            {/* Inputs */}
-            <div className="space-y-4 animate-fade-up" style={{ animationDelay: "80ms" }}>
-              <MicroInput
-                label="Who is this about?"
-                placeholder="A colleague, friend, family member..."
-                value={person}
-                onChange={(e) => setPerson(e.target.value)}
-              />
-              <MicroInput
-                label="What happened?"
-                placeholder="Describe the situation briefly"
-                value={situation}
-                onChange={(e) => setSituation(e.target.value)}
-              />
-              <MicroInput
-                label="How do you feel?"
-                placeholder="Frustrated, hurt, confused..."
-                value={feeling}
-                onChange={(e) => setFeeling(e.target.value)}
-              />
-            </div>
-
-            {/* Submit */}
-            <div className="animate-fade-up" style={{ animationDelay: "160ms" }}>
-              <Button
-                variant="brand"
-                size="lg"
-                className="w-full"
-                onClick={handleSubmit}
-                disabled={!person.trim() || !situation.trim() || isLoading}
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    Get perspective
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-4 stagger-children">
-            {/* Their Perspective */}
-            <StoicCard>
-              <StoicCardHeader label="Their perspective" icon={<Users className="w-4 h-4" />} />
-              <StoicCardContent>
-                <p className="text-muted-foreground">
-                  {response.control_map || "Consider what pressures, fears, or needs might be driving their behavior. People rarely act from malice."}
-                </p>
-              </StoicCardContent>
-            </StoicCard>
-
-            {/* Your Role */}
-            <StoicCard>
-              <StoicCardHeader label="Your role" icon={<Heart className="w-4 h-4" />} />
-              <StoicCardContent>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                  {response.virtue_focus || "Justice"}
-                </div>
-                <p className="text-muted-foreground mt-3">
-                  {response.summary || "Focus on what you can control: your response, your boundaries, your willingness to understand."}
-                </p>
-              </StoicCardContent>
-            </StoicCard>
-
-            {/* Hidden Pattern */}
-            <StoicCard>
-              <StoicCardHeader label="The deeper pattern" icon={<Eye className="w-4 h-4" />} />
-              <StoicCardContent>
-                <p className="text-muted-foreground">
-                  {response.surprise_or_tension || "This conflict may be revealing something about your own values or boundaries that needs attention."}
-                </p>
-              </StoicCardContent>
-            </StoicCard>
-
-            {/* Path Forward */}
-            <StoicCard variant="bordered">
-              <StoicCardHeader label="Path forward" icon={<Sparkles className="w-4 h-4" />} />
-              <StoicCardContent>
-                <p className="text-lg font-display font-semibold text-foreground leading-relaxed">
-                  "{response.stance || "Seek first to understand, then to be understood. But never at the cost of your integrity."}"
-                </p>
-              </StoicCardContent>
-            </StoicCard>
-
-            {/* Action */}
-            <ActionChip
-              action={response.action || "Before your next interaction: pause and mentally wish them well. Enter from a place of strength, not reactivity."}
-              onComplete={() => console.log("Conflict perspective gained")}
-            />
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="text-center py-2 animate-fade-up shrink-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-coral/10 rounded-full mb-1">
+            <Swords className="w-4 h-4 text-coral" />
+            <span className="text-sm font-medium text-coral">Perspective Gained</span>
           </div>
-        )}
+          {situation && (
+            <p className="text-xs text-muted-foreground mt-1 px-4 line-clamp-1">
+              "{situation.slice(0, 50)}{situation.length > 50 ? '...' : ''}"
+            </p>
+          )}
+        </div>
+        
+        <div className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+          <CardCarousel className="h-full">{cards}</CardCarousel>
+        </div>
+        
+        <div className="py-4 shrink-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
+            <RotateCcw className="w-4 h-4" />
+            New Conflict
+          </Button>
+        </div>
       </div>
     </Layout>
   );

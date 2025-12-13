@@ -32,7 +32,25 @@ interface DebriefRequest {
   profile_context?: ProfileContext;
 }
 
-type AnalysisRequest = PulseRequest | InterveneRequest | DebriefRequest;
+interface UnifiedRequest {
+  type: 'unified';
+  input: string;
+  profile_context?: ProfileContext;
+}
+
+interface DecisionRequest {
+  type: 'decision';
+  dilemma: string;
+  profile_context?: ProfileContext;
+}
+
+interface ConflictRequest {
+  type: 'conflict';
+  situation: string;
+  profile_context?: ProfileContext;
+}
+
+type AnalysisRequest = PulseRequest | InterveneRequest | DebriefRequest | UnifiedRequest | DecisionRequest | ConflictRequest;
 
 // ============================================================================
 // STOICISM TRAINING DATASET - Authentic Stoic Guidance
@@ -492,6 +510,108 @@ Respond with JSON:
   "key_insight": "One non-obvious insight from their reflection"
 }`;
 
+const UNIFIED_PROMPT = (input: string, context?: ProfileContext) => `
+The user is using the unified WellWell input. They shared:
+
+"${input}"
+
+${context ? `
+User Context:
+- Persona: ${context.persona || 'Not set'}
+- Challenges they work on: ${context.challenges.join(', ') || 'None specified'}
+- Goals: ${context.goals.join(', ') || 'None specified'}
+` : ''}
+
+First, identify the nature of their input:
+- If they're anticipating something challenging → Morning Pulse mode
+- If they're triggered/reactive/upset right now → Intervene mode  
+- If they're reflecting on something that happened → Debrief mode
+- If they're asking about a choice/decision → Decision mode
+- If they're dealing with interpersonal friction → Conflict mode
+
+Then apply the appropriate Stoic framework and respond.
+
+Respond with JSON:
+{
+  "detected_mode": "pulse" | "intervene" | "debrief" | "decision" | "conflict",
+  "summary": "One sentence synthesis of their situation",
+  "control_map": {
+    "yours": ["List of things within their control"],
+    "not_yours": ["List of things outside their control"]
+  },
+  "virtue": "courage" | "temperance" | "justice" | "wisdom",
+  "virtue_rationale": "Why this virtue applies",
+  "stance": "A personal stance statement (two sentences max)",
+  "key_actions": ["ONE concrete action for right now"],
+  "surprise_or_tension": "A non-obvious insight or blind spot"
+}`;
+
+const DECISION_PROMPT = (dilemma: string, context?: ProfileContext) => `
+The user is facing a decision:
+
+"${dilemma}"
+
+${context ? `
+User Context:
+- Persona: ${context.persona || 'Not set'}
+- Challenges they work on: ${context.challenges.join(', ') || 'None specified'}
+- Goals: ${context.goals.join(', ') || 'None specified'}
+` : ''}
+
+Apply the Stoic decision framework:
+1. Separate what's in their control vs not
+2. Identify the virtue most relevant to this choice
+3. Look for what they might be missing (hidden assumptions, second-order effects)
+4. Provide a clear stance and next action
+
+Respond with JSON:
+{
+  "summary": "One sentence summary of the decision",
+  "control_map": {
+    "yours": ["What's in their control about this decision"],
+    "not_yours": ["What's outside their control"]
+  },
+  "virtue": "courage" | "temperance" | "justice" | "wisdom",
+  "virtue_rationale": "Why this virtue guides this decision",
+  "stance": "A decisive stance statement (two sentences max)",
+  "key_actions": ["ONE concrete next step"],
+  "surprise_or_tension": "What they might be missing or assuming"
+}`;
+
+const CONFLICT_PROMPT = (situation: string, context?: ProfileContext) => `
+The user is dealing with interpersonal conflict:
+
+"${situation}"
+
+${context ? `
+User Context:
+- Persona: ${context.persona || 'Not set'}
+- Challenges they work on: ${context.challenges.join(', ') || 'None specified'}
+- Goals: ${context.goals.join(', ') || 'None specified'}
+` : ''}
+
+Apply the Stoic conflict framework:
+1. Consider the other person's perspective (what might be driving their behavior)
+2. Identify what's in the user's control
+3. Find the relevant virtue
+4. Look for deeper patterns this conflict reveals
+5. Provide a path forward
+
+Respond with JSON:
+{
+  "summary": "One sentence synthesis of the conflict",
+  "control_map": {
+    "yours": ["What's in their control"],
+    "not_yours": ["What's outside their control - including the other person's reactions"]
+  },
+  "other_perspective": "What might be driving the other person's behavior",
+  "virtue": "courage" | "temperance" | "justice" | "wisdom",
+  "virtue_rationale": "Why this virtue applies",
+  "stance": "A path forward statement (two sentences max)",
+  "key_actions": ["ONE concrete action before next interaction"],
+  "surprise_or_tension": "A deeper pattern this conflict might reveal"
+}`;
+
 // ============================================================================
 // SERVER
 // ============================================================================
@@ -532,6 +652,15 @@ serve(async (req) => {
           isFreeform,
           body.profile_context
         );
+        break;
+      case 'unified':
+        userPrompt = UNIFIED_PROMPT(body.input, body.profile_context);
+        break;
+      case 'decision':
+        userPrompt = DECISION_PROMPT(body.dilemma, body.profile_context);
+        break;
+      case 'conflict':
+        userPrompt = CONFLICT_PROMPT(body.situation, body.profile_context);
         break;
       default:
         throw new Error('Invalid request type');
