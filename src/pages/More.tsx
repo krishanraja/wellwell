@@ -1,6 +1,6 @@
 import { Layout } from "@/components/wellwell/Layout";
-import { FeatureButton } from "@/components/wellwell/FeatureButton";
 import { useNavigate } from "react-router-dom";
+import { LucideIcon } from "lucide-react";
 import { 
   BookOpen, 
   Settings, 
@@ -11,118 +11,86 @@ import {
   Flame,
   Moon,
   Scale,
-  Swords
+  Swords,
+  MoreHorizontal
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface ToolItem {
+  icon: LucideIcon;
+  label: string;
+  path: string;
+  color?: string;
+}
+
+const allTools: ToolItem[] = [
+  { icon: Sunrise, label: "Pulse", path: "/pulse", color: "hsl(45 100% 60%)" },
+  { icon: Flame, label: "Intervene", path: "/intervene", color: "hsl(187 100% 50%)" },
+  { icon: Moon, label: "Debrief", path: "/debrief", color: "hsl(260 80% 65%)" },
+  { icon: Scale, label: "Decision", path: "/decision", color: "hsl(187 100% 50%)" },
+  { icon: Swords, label: "Conflict", path: "/conflict", color: "hsl(8 100% 71%)" },
+  { icon: RotateCcw, label: "Weekly Reset", path: "/weekly-reset" },
+  { icon: FileText, label: "Monthly Story", path: "/monthly-narrative" },
+  { icon: BookOpen, label: "Library", path: "/library" },
+  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: Info, label: "About", path: "/about" },
+];
+
+function ToolCard({ icon: Icon, label, path, color, onClick }: ToolItem & { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="glass-card p-3 flex flex-col items-center justify-center gap-2 transition-all duration-200 hover:shadow-glow active:scale-[0.97] aspect-square"
+    >
+      <div 
+        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+        style={{ 
+          backgroundColor: color ? `${color}20` : 'hsl(var(--primary) / 0.1)',
+        }}
+      >
+        <Icon 
+          className="w-5 h-5"
+          style={{ color: color || 'hsl(var(--primary))' }}
+        />
+      </div>
+      <span className="font-display font-medium text-foreground text-xs text-center leading-tight">
+        {label}
+      </span>
+    </button>
+  );
+}
 
 export default function More() {
   const navigate = useNavigate();
-  
-  const practiceTools = [
-    { icon: Sunrise, label: "Pulse", sublabel: "Morning mindset", path: "/pulse" },
-    { icon: Flame, label: "Intervene", sublabel: "Recalibrate now", path: "/intervene" },
-    { icon: Moon, label: "Debrief", sublabel: "Evening reflection", path: "/debrief" },
-  ];
-
-  const specializedTools = [
-    { icon: Scale, label: "Decision", sublabel: "Navigate choices", path: "/decision" },
-    { icon: Swords, label: "Conflict", sublabel: "Handle friction", path: "/conflict" },
-  ];
-  
-  const extendedFeatures = [
-    { icon: RotateCcw, label: "Weekly Reset", sublabel: "Recalibrate", path: "/weekly-reset" },
-    { icon: FileText, label: "Monthly Story", sublabel: "Your narrative", path: "/monthly-narrative" },
-    { icon: BookOpen, label: "Library", sublabel: "Resources", path: "/library" },
-  ];
-
-  const settingsFeatures = [
-    { icon: Settings, label: "Settings", sublabel: "Preferences", path: "/settings" },
-    { icon: Info, label: "About", sublabel: "WellWell", path: "/about" },
-  ];
 
   return (
     <Layout>
-      <div className="space-y-5">
+      <div className="flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">More</h1>
-          <p className="text-sm text-muted-foreground">All tools and settings</p>
+        <div className="shrink-0 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <MoreHorizontal className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-display text-xl font-bold text-foreground">More</h1>
+              <p className="text-xs text-muted-foreground">All tools & settings</p>
+            </div>
+          </div>
         </div>
 
-        {/* Daily Practice */}
-        <section>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Daily Practice
-          </p>
+        {/* Tools Grid - 2 columns, stable cards */}
+        <div className="flex-1 min-h-0">
           <div className="grid grid-cols-3 gap-2">
-            {practiceTools.map((feature) => (
-              <FeatureButton 
-                key={feature.label} 
-                icon={feature.icon} 
-                label={feature.label} 
-                sublabel={feature.sublabel} 
-                onClick={() => navigate(feature.path)} 
-                compact 
+            {allTools.map((tool) => (
+              <ToolCard 
+                key={tool.path}
+                {...tool}
+                onClick={() => navigate(tool.path)} 
               />
             ))}
           </div>
-        </section>
-
-        {/* Specialized Tools */}
-        <section>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Specialized Tools
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {specializedTools.map((feature) => (
-              <FeatureButton 
-                key={feature.label} 
-                icon={feature.icon} 
-                label={feature.label} 
-                sublabel={feature.sublabel} 
-                onClick={() => navigate(feature.path)} 
-                compact 
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Extended Features */}
-        <section>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Extended Features
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {extendedFeatures.map((feature) => (
-              <FeatureButton 
-                key={feature.label} 
-                icon={feature.icon} 
-                label={feature.label} 
-                sublabel={feature.sublabel} 
-                onClick={() => navigate(feature.path)} 
-                compact 
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Settings */}
-        <section>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            Settings
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {settingsFeatures.map((feature) => (
-              <FeatureButton 
-                key={feature.label} 
-                icon={feature.icon} 
-                label={feature.label} 
-                sublabel={feature.sublabel} 
-                onClick={() => navigate(feature.path)} 
-                compact 
-              />
-            ))}
-          </div>
-        </section>
+        </div>
       </div>
     </Layout>
   );
