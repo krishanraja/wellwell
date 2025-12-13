@@ -73,6 +73,14 @@ All database tables have RLS enabled with proper policies:
 1. **Sign-out confirmation dialog**: Prevents accidental logout
 2. **Error boundary**: Catches React crashes with user-friendly recovery
 3. **Persona consistency**: EditProfile now matches Onboarding personas
+4. **Welcome Back Screen**: Personalized greeting for returning users with streak acknowledgment
+5. **Contextual Home Experience**: Smart nudges based on time of day
+   - Morning: Primary action is Morning Pulse
+   - Evening: Primary action is Evening Debrief
+   - Other times: Freeform "What's on your mind?"
+6. **Daily Progress Indicators**: Visual checkmarks showing completed rituals
+7. **Smart Nav Indicators**: Pulsing dot on Home when daily ritual awaiting
+8. **Secondary Quick Actions**: Intervene, Decision, Conflict always accessible
 
 ### 📋 Future Recommendations
 
@@ -217,6 +225,11 @@ Most lint warnings are from shadcn/ui components (expected). Core application co
 | `src/hooks/useStreak.tsx` | Fixed let → const |
 | `src/lib/formatRawInput.ts` | Fixed case block declarations |
 | `supabase/functions/stoic-analyzer/index.ts` | Fixed case block declarations |
+| `src/hooks/useContextualNudge.tsx` | **New** - Smart time-based context awareness |
+| `src/components/wellwell/WelcomeBackScreen.tsx` | **New** - Personalized welcome for returning users |
+| `src/pages/Home.tsx` | Complete redesign with contextual experience |
+| `src/components/wellwell/BottomNav.tsx` | Added contextual nudge indicators |
+| `docs/FEATURES.md` | Added Contextual Home Experience documentation |
 
 ---
 

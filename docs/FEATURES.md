@@ -2,6 +2,32 @@
 
 ## Core Features
 
+### 0. Contextual Home Experience
+
+**Purpose**: Intelligently surface the right practice at the right time
+
+**Features**:
+- **Welcome Back Screen**: Personalized greeting for returning users with streak acknowledgment
+- **Time-Based Primary Nudge**:
+  - Morning (5am-12pm): Morning Pulse is primary action
+  - Midday (12pm-5pm): Freeform "What's on your mind?" 
+  - Evening (5pm-9pm): Evening Debrief is primary action
+  - Night (9pm-5am): Gentle debrief or rest
+- **Daily Progress Indicators**: Visual checkmarks showing Pulse/Debrief completion
+- **Secondary Quick Actions**: Intervene, Decision, Conflict always accessible
+- **Smart Nav Indicators**: Pulsing dot on Home when daily ritual awaiting
+
+**Context Logic** (in `useContextualNudge`):
+```typescript
+// Morning without Pulse → Pulse is primary
+if (timeContext === 'morning' && !hasCompletedPulseToday) → 'pulse'
+// Evening without Debrief → Debrief is primary  
+if (timeContext === 'evening' && !hasCompletedDebriefToday) → 'debrief'
+// Otherwise → Freeform input
+```
+
+---
+
 ### 1. Morning Pulse
 
 **Purpose**: Pre-load mental stance before daily challenges

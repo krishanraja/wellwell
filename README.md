@@ -1,4 +1,23 @@
-# Welcome to your Lovable project
+# WellWell - Stoicism as Your Operating System
+
+WellWell is a personal Stoic practice app that helps users build mental resilience through daily rituals, AI-powered insights, and virtue tracking.
+
+## Key Features
+
+- **Morning Pulse**: Start your day with a clear mental stance
+- **Intervene**: Real-time emotional recalibration when triggered
+- **Evening Debrief**: Reflect on your day and track virtue growth
+- **Contextual Home**: Smart nudges based on time of day and your activity
+- **Welcome Back Screen**: Personalized greeting for returning users
+- **Virtue Tracking**: Monitor your Stoic growth across 4 cardinal virtues
+
+## Documentation
+
+- [Architecture](./docs/ARCHITECTURE.md) - System design and data flow
+- [Features](./docs/FEATURES.md) - Feature specifications
+- [Design System](./docs/DESIGN_SYSTEM.md) - UI/UX guidelines
+- [Purpose](./docs/PURPOSE.md) - Mission and philosophy
+- [Production Audit](./docs/PRODUCTION_AUDIT.md) - Audit findings and resolutions
 
 ## Project info
 
