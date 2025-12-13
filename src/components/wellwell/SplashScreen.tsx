@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import wellwellIcon from "@/assets/wellwell-icon.png";
 
 interface SplashScreenProps {
@@ -5,10 +6,25 @@ interface SplashScreenProps {
 }
 
 const SplashScreen = ({ onComplete }: SplashScreenProps) => {
+  const [fadeOut, setFadeOut] = useState(false);
+
+  useEffect(() => {
+    // Start fade out after 1.5s
+    const fadeTimer = setTimeout(() => setFadeOut(true), 1500);
+    // Complete and unmount after 2s
+    const completeTimer = setTimeout(onComplete, 2000);
+    
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(completeTimer);
+    };
+  }, [onComplete]);
+
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background"
-      onAnimationEnd={onComplete}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-background transition-opacity duration-500 ${
+        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
     >
       {/* Subtle radial gradient background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--primary)/0.08)_0%,_transparent_70%)]" />
@@ -61,15 +77,6 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
           className="w-20 h-20 relative z-10 drop-shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
         />
       </div>
-      
-      {/* Fade out animation after delay */}
-      <style>{`
-        @keyframes splash-fade-out {
-          0%, 80% { opacity: 1; }
-          100% { opacity: 0; pointer-events: none; }
-        }
-        .fixed { animation: splash-fade-out 2s ease-in-out forwards; }
-      `}</style>
     </div>
   );
 };
