@@ -9,11 +9,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter');
 
   useEffect(() => {
-    // Phase 1: Enter animation complete after 400ms
     const enterTimer = setTimeout(() => setPhase('hold'), 400);
-    // Phase 2: Start exit after 1.8s total
     const exitTimer = setTimeout(() => setPhase('exit'), 1800);
-    // Phase 3: Complete and unmount after exit animation (2.3s total)
     const completeTimer = setTimeout(onComplete, 2300);
     
     return () => {
@@ -23,79 +20,79 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     };
   }, [onComplete]);
 
+  // Ring size: 120px, Icon size: 80px
+  // This gives ~20px padding on each side between icon edge and ring
+  const ringSize = 120;
+  const iconSize = 80;
+  const strokeWidth = 2.5;
+  const radius = (ringSize - strokeWidth) / 2; // 58.75
+
   return (
     <div 
       className={`fixed inset-0 z-50 flex items-center justify-center bg-background transition-all duration-500 ease-out ${
-        phase === 'exit' ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+        phase === 'exit' ? 'opacity-0' : 'opacity-100'
       }`}
     >
       {/* Subtle radial gradient background */}
       <div 
-        className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--primary)/0.12)_0%,_transparent_60%)] transition-opacity duration-700 ${
+        className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(187_100%_60%/0.08)_0%,_transparent_50%)] transition-opacity duration-700 ${
           phase === 'enter' ? 'opacity-0' : 'opacity-100'
         }`} 
       />
       
-      {/* Centered container - fixed size for precise alignment */}
+      {/* Container with explicit pixel sizing for precise control */}
       <div 
-        className={`relative w-24 h-24 flex items-center justify-center transition-all duration-500 ease-out ${
-          phase === 'enter' ? 'opacity-0 scale-90' : 'opacity-100 scale-100'
+        className={`relative flex items-center justify-center transition-all duration-500 ease-out ${
+          phase === 'enter' ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
+        style={{ width: ringSize, height: ringSize }}
       >
-        {/* Soft glow - no animation, just static ambiance */}
-        <div className="absolute inset-0 -m-2 rounded-full bg-primary/8 blur-2xl" />
-        
-        {/* Loading ring - perfectly centered SVG */}
+        {/* Loading ring SVG - absolutely positioned to fill container exactly */}
         <svg 
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 96 96"
+          width={ringSize}
+          height={ringSize}
+          viewBox={`0 0 ${ringSize} ${ringSize}`}
+          className="absolute inset-0"
           style={{ 
-            animation: phase !== 'enter' ? 'spin 2s cubic-bezier(0.4, 0, 0.2, 1) infinite' : 'none',
+            animation: phase !== 'enter' ? 'spin 2s linear infinite' : 'none',
           }}
         >
           {/* Background track */}
           <circle
-            cx="48"
-            cy="48"
-            r="44"
+            cx={ringSize / 2}
+            cy={ringSize / 2}
+            r={radius}
             fill="none"
-            stroke="hsl(var(--muted)/0.5)"
-            strokeWidth="1.5"
+            stroke="hsl(160 15% 90%)"
+            strokeWidth={strokeWidth}
           />
-          {/* Progress arc */}
+          {/* Animated arc */}
           <circle
-            cx="48"
-            cy="48"
-            r="44"
+            cx={ringSize / 2}
+            cy={ringSize / 2}
+            r={radius}
             fill="none"
             stroke="url(#splashGradient)"
-            strokeWidth="2"
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
-            strokeDasharray="69 208"
-            strokeDashoffset="0"
-            style={{
-              filter: 'drop-shadow(0 0 6px hsl(var(--primary)/0.4))',
-              transition: 'stroke-dasharray 0.5s ease-out',
-            }}
+            strokeDasharray={`${radius * 0.8} ${radius * Math.PI * 2}`}
           />
           <defs>
             <linearGradient id="splashGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(var(--primary))" />
-              <stop offset="100%" stopColor="hsl(var(--accent))" />
+              <stop offset="0%" stopColor="hsl(90 100% 79%)" />
+              <stop offset="100%" stopColor="hsl(187 100% 60%)" />
             </linearGradient>
           </defs>
         </svg>
         
-        {/* Icon - centered within the ring */}
+        {/* Icon - centered via flexbox, explicit size */}
         <img 
           src={wellwellIcon} 
           alt="WellWell" 
-          className={`w-14 h-14 relative z-10 transition-all duration-500 ease-out ${
-            phase === 'enter' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+          style={{ width: iconSize, height: iconSize }}
+          className={`relative z-10 transition-all duration-500 ease-out ${
+            phase === 'enter' ? 'opacity-0 scale-90' : 'opacity-100 scale-100'
           }`}
-          style={{
-            filter: 'drop-shadow(0 0 12px hsl(var(--primary)/0.25))',
-          }}
         />
       </div>
     </div>
