@@ -78,7 +78,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
 
   const features = [
     { icon: Zap, title: "60 seconds", desc: "to clarity" },
-    { icon: Brain, title: "AI-powered", desc: "stoic wisdom" },
+    { icon: Brain, title: "Stoicism,", desc: "AI'd for you" },
     { icon: Shield, title: "Track", desc: "4 virtues" },
     { icon: Sparkles, title: "Personalized", desc: "insights" },
   ];
@@ -120,7 +120,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
         {/* Hero Section */}
         <div className="flex flex-col items-center text-center">
           <div className="animate-fade-up">
-            <LogoFull className="h-24 sm:h-28 mx-auto mb-3" />
+            <LogoFull className="h-48 sm:h-56 mx-auto mb-3" />
           </div>
 
           <div className="space-y-2 animate-fade-up" style={{ animationDelay: "100ms" }}>
@@ -129,7 +129,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
               <span className="gradient-text">under pressure</span>
             </h1>
             <p className="text-sm text-[hsl(160_15%_75%)] max-w-xs mx-auto">
-              Stoic philosophy in your pocket. No quotes. No journaling. Just clarity.
+              Stoic philosophy, tailored to your feelings.
             </p>
           </div>
 
@@ -151,8 +151,8 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
               size="lg"
               onClick={() => navigate("/auth")}
             >
-              Get Started Free
-              <ArrowRight className="w-4 h-4" />
+              Give It A Try
+              <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </div>
