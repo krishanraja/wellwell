@@ -63,49 +63,49 @@ export default function Debrief() {
     return (
       <Layout>
         <UsageLimitGate toolName="debrief">
-          <div className="flex-1 flex flex-col">
-            {/* Evening wisdom - value first */}
-            <div className="text-center py-4 animate-fade-up">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-cinder/10 rounded-full mb-4">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            {/* Compact evening header */}
+            <div className="text-center py-2 animate-fade-up shrink-0">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-cinder/10 rounded-full mb-2">
                 <Moon className="w-4 h-4 text-cinder" />
                 <span className="text-sm font-medium text-cinder">Evening Debrief</span>
               </div>
               
-              {/* Evening wisdom */}
-              <div className="mb-6 p-4 bg-muted/30 rounded-2xl border border-border/50">
-                <div className="flex items-center gap-2 justify-center mb-3">
-                  <Sparkles className="w-5 h-5 text-primary" />
+              {/* Evening wisdom - compact */}
+              <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
+                <div className="flex items-center gap-2 justify-center mb-1">
+                  <Sparkles className="w-4 h-4 text-primary" />
                 </div>
-                <p className="text-foreground font-display text-lg leading-relaxed mb-2">
-                  "At day's end, review: Where did you act with virtue? Where did you fall short?"
+                <p className="text-foreground font-display text-base leading-snug mb-1">
+                  "At day's end, review: Where did you act with virtue?"
                 </p>
-                <p className="text-muted-foreground text-sm">
-                  — Marcus Aurelius, Meditations
+                <p className="text-muted-foreground text-xs">
+                  — Marcus Aurelius
                 </p>
               </div>
             </div>
 
-            {/* Morning context if available */}
+            {/* Morning context if available - compact */}
             {todayMorning.challenge && (
-              <div className="px-4 py-3 bg-muted/30 rounded-xl mb-4 animate-fade-up" style={{ animationDelay: "50ms" }}>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+              <div className="px-3 py-2 bg-muted/30 rounded-lg mb-2 animate-fade-up shrink-0" style={{ animationDelay: "50ms" }}>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-0.5">
                   <Sunrise className="w-3 h-3" />
                   <span>This morning you anticipated:</span>
                 </div>
-                <p className="text-sm text-foreground/80">{todayMorning.challenge}</p>
+                <p className="text-sm text-foreground/80 line-clamp-2">{todayMorning.challenge}</p>
                 {todayMorning.stance && (
-                  <p className="text-xs text-primary mt-1">Stance: "{todayMorning.stance}"</p>
+                  <p className="text-xs text-primary mt-0.5 line-clamp-1">Stance: "{todayMorning.stance}"</p>
                 )}
               </div>
             )}
 
-            {/* Voice-first input - single prompt for freeform reflection */}
-            <div className="flex-1 flex flex-col justify-center animate-fade-up" style={{ animationDelay: "100ms" }}>
-              <h2 className="text-center text-xl font-display font-semibold text-foreground mb-2">
+            {/* Voice-first input - centered in remaining space */}
+            <div className="flex-1 flex flex-col justify-center min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <h2 className="text-center text-lg font-display font-semibold text-foreground mb-1">
                 Reflect on your day
               </h2>
-              <p className="text-center text-sm text-muted-foreground mb-6">
-                What did you control? What escaped you? What would you change?
+              <p className="text-center text-sm text-muted-foreground mb-4">
+                What did you control? What escaped you?
               </p>
               
               <VoiceFirstInput
@@ -115,6 +115,9 @@ export default function Debrief() {
                 isProcessing={isLoading}
               />
             </div>
+            
+            {/* Bottom spacer for nav clearance */}
+            <div className="h-4 shrink-0" />
           </div>
         </UsageLimitGate>
       </Layout>
@@ -123,16 +126,16 @@ export default function Debrief() {
 
   const cards = [
     <StoicCard key="summary" icon={Moon} title="Day Summary" className="h-full flex flex-col">
-      <div className="space-y-2 text-sm flex-1">
-        <p className="text-muted-foreground">{response?.summary || "You navigated today's challenges with awareness."}</p>
-      </div>
+      <p className="text-muted-foreground text-sm flex-1">
+        {response?.summary || "You navigated today's challenges with awareness."}
+      </p>
     </StoicCard>,
     <StoicCard key="virtues" icon={Target} title="Virtue Movement" className="h-full flex flex-col">
-      <div className="grid grid-cols-2 gap-2 mb-3">
+      <div className="grid grid-cols-2 gap-1.5 mb-2">
         {Object.entries(virtueDeltas).map(([virtue, delta]) => (
-          <div key={virtue} className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+          <div key={virtue} className="flex items-center gap-1.5 p-1.5 bg-muted/50 rounded-lg">
             {getDeltaIcon(delta)}
-            <span className="text-sm capitalize text-foreground">{virtue}</span>
+            <span className="text-xs capitalize text-foreground">{virtue}</span>
             <span className={`text-xs ml-auto ${delta > 0 ? "text-primary" : delta < 0 ? "text-coral" : "text-muted-foreground"}`}>
               {delta > 0 ? `+${delta}` : delta}
             </span>
@@ -142,26 +145,33 @@ export default function Debrief() {
       <VirtueBar {...currentVirtues} compact />
     </StoicCard>,
     <StoicCard key="tomorrow" icon={Target} title="Tomorrow's Focus" className="h-full flex flex-col">
-      <p className="text-foreground font-medium flex-1">
+      <p className="text-foreground font-medium text-sm flex-1">
         "{response?.stance || "Carry today's lessons into tomorrow."}"
       </p>
       {response?.action && (
-        <p className="text-sm text-primary mt-2">{response.action}</p>
+        <p className="text-xs text-primary mt-2">{response.action}</p>
       )}
     </StoicCard>,
   ];
 
   return (
     <Layout>
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="text-center py-3 animate-fade-up">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full mb-2">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        {/* Compact header */}
+        <div className="text-center py-2 animate-fade-up shrink-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full mb-1">
             <Moon className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-primary">Debrief Complete</span>
           </div>
         </div>
-        <CardCarousel className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>{cards}</CardCarousel>
-        <div className="py-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
+        
+        {/* Card carousel - takes remaining space */}
+        <div className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+          <CardCarousel className="h-full">{cards}</CardCarousel>
+        </div>
+        
+        {/* Reset button with proper bottom spacing */}
+        <div className="py-4 shrink-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
           <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
             <RotateCcw className="w-4 h-4" />
             New Debrief
