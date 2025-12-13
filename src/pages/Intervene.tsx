@@ -34,34 +34,34 @@ export default function Intervene() {
     return (
       <Layout>
         <UsageLimitGate toolName="intervene">
-          <div className="flex-1 flex flex-col">
-            {/* Calming presence first */}
-            <div className="text-center py-4 animate-fade-up">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-coral/10 rounded-full mb-4">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            {/* Compact calming header */}
+            <div className="text-center py-2 animate-fade-up shrink-0">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-coral/10 rounded-full mb-2">
                 <Flame className="w-4 h-4 text-coral" />
                 <span className="text-sm font-medium text-coral">Intervene</span>
               </div>
               
-              {/* Grounding wisdom - value first */}
-              <div className="mb-6 p-4 bg-muted/30 rounded-2xl border border-border/50">
-                <div className="flex items-center gap-2 justify-center mb-3">
-                  <Wind className="w-5 h-5 text-cyan" />
+              {/* Grounding wisdom - compact */}
+              <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
+                <div className="flex items-center gap-2 justify-center mb-1">
+                  <Wind className="w-4 h-4 text-cyan" />
                 </div>
-                <p className="text-foreground font-display text-lg leading-relaxed mb-2">
+                <p className="text-foreground font-display text-base leading-snug mb-1">
                   "Between stimulus and response, there is a space."
                 </p>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-xs">
                   In that space is your power to choose your response.
                 </p>
               </div>
             </div>
 
-            {/* Voice-first input */}
-            <div className="flex-1 flex flex-col justify-center animate-fade-up" style={{ animationDelay: "100ms" }}>
-              <h2 className="text-center text-xl font-display font-semibold text-foreground mb-2">
+            {/* Voice-first input - centered in remaining space */}
+            <div className="flex-1 flex flex-col justify-center min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <h2 className="text-center text-lg font-display font-semibold text-foreground mb-1">
                 What triggered you?
               </h2>
-              <p className="text-center text-sm text-muted-foreground mb-6">
+              <p className="text-center text-sm text-muted-foreground mb-4">
                 Let it out — I'll help you recalibrate
               </p>
               
@@ -72,6 +72,9 @@ export default function Intervene() {
                 isProcessing={isLoading}
               />
             </div>
+            
+            {/* Bottom spacer for nav clearance */}
+            <div className="h-4 shrink-0" />
           </div>
         </UsageLimitGate>
       </Layout>
@@ -94,7 +97,7 @@ export default function Intervene() {
         {response.virtue_focus || "Temperance: respond with measure."}
       </p>
       {response.action && (
-        <div className="mt-3">
+        <div className="mt-2">
           <ActionChip action={response.action} duration="10m" />
         </div>
       )}
@@ -103,20 +106,27 @@ export default function Intervene() {
 
   return (
     <Layout>
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="text-center py-3 animate-fade-up">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-coral/10 rounded-full mb-2">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        {/* Compact header */}
+        <div className="text-center py-2 animate-fade-up shrink-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-coral/10 rounded-full mb-1">
             <Flame className="w-4 h-4 text-coral" />
             <span className="text-sm font-medium text-coral">Recalibrated</span>
           </div>
           {trigger && (
-            <p className="text-sm text-muted-foreground mt-2 px-4">
-              "{trigger.slice(0, 60)}{trigger.length > 60 ? '...' : ''}"
+            <p className="text-xs text-muted-foreground mt-1 px-4 line-clamp-1">
+              "{trigger.slice(0, 50)}{trigger.length > 50 ? '...' : ''}"
             </p>
           )}
         </div>
-        <CardCarousel className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>{cards}</CardCarousel>
-        <div className="py-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
+        
+        {/* Card carousel - takes remaining space */}
+        <div className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+          <CardCarousel className="h-full">{cards}</CardCarousel>
+        </div>
+        
+        {/* Reset button with proper bottom spacing */}
+        <div className="py-4 shrink-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
           <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
             <RotateCcw className="w-4 h-4" />
             New Trigger
