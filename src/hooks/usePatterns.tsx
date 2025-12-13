@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { logger } from '@/lib/logger';
-
+import { extractWordsForAnalysis } from '@/lib/formatRawInput';
 interface PatternInsight {
   type: 'trigger_pattern' | 'time_pattern' | 'virtue_trend' | 'tool_preference';
   title: string;
@@ -80,8 +80,8 @@ export function usePatterns() {
         // Count by tool
         toolCount[event.tool_name] = (toolCount[event.tool_name] || 0) + 1;
         
-        // Extract common words from inputs (simple word frequency)
-        const words = event.raw_input.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+        // Extract common words from inputs (filters out JSON keys and artifacts)
+        const words = extractWordsForAnalysis(event.raw_input);
         words.forEach(word => {
           triggerWords[word] = (triggerWords[word] || 0) + 1;
         });

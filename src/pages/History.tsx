@@ -5,7 +5,7 @@ import { Clock, Sunrise, Flame, Moon, Scale, Swords, ChevronRight, History as Hi
 import { formatDistanceToNow, format } from "date-fns";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
+import { formatRawInputForDisplay } from "@/lib/formatRawInput";
 const toolConfig: Record<string, { label: string; icon: typeof Sunrise; color: string }> = {
   pulse: { label: "Morning Pulse", icon: Sunrise, color: "hsl(45 100% 60%)" },
   intervene: { label: "Intervene", icon: Flame, color: "hsl(187 100% 50%)" },
@@ -128,7 +128,7 @@ export default function History() {
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-3">
-                      {event.raw_input}
+                      {formatRawInputForDisplay(event.raw_input)}
                     </p>
                   </div>
                 </StoicCard>
