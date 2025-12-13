@@ -76,10 +76,6 @@ export default function Auth() {
           });
           return;
         }
-        toast({
-          title: 'Welcome back',
-          description: 'Successfully signed in.',
-        });
         navigate('/');
       } else {
         const { error } = await signUp(email, password, displayName);
@@ -95,10 +91,6 @@ export default function Auth() {
           });
           return;
         }
-        toast({
-          title: 'Account created',
-          description: 'Welcome to WellWell.',
-        });
         navigate('/onboarding');
       }
     } finally {

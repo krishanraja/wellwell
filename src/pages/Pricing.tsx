@@ -34,7 +34,6 @@ export default function Pricing() {
 
   useEffect(() => {
     if (searchParams.get("upgraded") === "true") {
-      toast.success("Welcome to Pro! Refreshing your subscription...");
       refreshSubscription();
       navigate("/pricing", { replace: true });
     }

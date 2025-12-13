@@ -78,7 +78,6 @@ export function VoiceInput({ onTranscript, className, disabled }: VoiceInputProp
       try {
         recognitionRef.current.start();
         setIsListening(true);
-        toast.success("Listening... Speak now");
       } catch (error) {
         console.error("Failed to start recognition:", error);
         toast.error("Failed to start voice input");

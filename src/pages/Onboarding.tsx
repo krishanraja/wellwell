@@ -88,7 +88,6 @@ export default function Onboarding() {
       });
 
       logger.info("Onboarding completed successfully");
-      toast.success("Welcome to WellWell!");
       navigate("/");
     } catch (error) {
       logger.error("Failed to save onboarding data", { error });

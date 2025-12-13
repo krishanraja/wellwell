@@ -20,7 +20,6 @@ export default function Settings() {
 
   useEffect(() => {
     if (searchParams.get("upgraded") === "true") {
-      toast.success("Welcome to Pro!");
       refreshSubscription();
       navigate("/settings", { replace: true });
     }
