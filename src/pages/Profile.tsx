@@ -33,7 +33,6 @@ export default function Profile() {
 
   const isLoading = profileLoading || virtuesLoading || streakLoading || eventsLoading;
 
-  // Get virtue scores from the database
   const virtues = {
     courage: scoresMap.courage?.score || 50,
     temperance: scoresMap.temperance?.score || 50,
@@ -41,10 +40,7 @@ export default function Profile() {
     wisdom: scoresMap.wisdom?.score || 50,
   };
 
-  // Get recent events (last 3)
   const recentEvents = events.slice(0, 3);
-
-  // Get top pattern insight
   const topPattern = patterns[0];
 
   if (isLoading) {
@@ -59,10 +55,10 @@ export default function Profile() {
 
   return (
     <Layout>
-      <div className="flex-1 flex flex-col gap-3 overflow-y-auto">
+      <div className="space-y-3">
         {/* Profile header */}
-        <div className="stoic-card-compact flex items-center gap-4 animate-fade-up">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+        <div className="stoic-card-compact flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <User className="w-7 h-7 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
@@ -74,7 +70,7 @@ export default function Profile() {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 gap-2 animate-fade-up" style={{ animationDelay: "50ms" }}>
+        <div className="grid grid-cols-2 gap-2">
           <div className="stoic-card-compact text-center">
             <p className="text-xs text-muted-foreground mb-1">Persona</p>
             <p className="font-display font-semibold text-foreground capitalize">
@@ -91,13 +87,13 @@ export default function Profile() {
         </div>
 
         {/* Virtue balance */}
-        <div className="stoic-card-compact animate-fade-up" style={{ animationDelay: "100ms" }}>
+        <div className="stoic-card-compact">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Virtue Balance</p>
           <VirtueBar {...virtues} />
         </div>
 
         {/* Virtue Trends Chart */}
-        <div className="stoic-card-compact animate-fade-up" style={{ animationDelay: "125ms" }}>
+        <div className="stoic-card-compact">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-primary" />
             <p className="text-xs text-muted-foreground uppercase tracking-wider">14-Day Trends</p>
@@ -105,14 +101,14 @@ export default function Profile() {
           <VirtueChart days={14} compact />
         </div>
 
-        {/* Pattern Insight (if available) */}
+        {/* Pattern Insight */}
         {topPattern && (
-          <div className="stoic-card-compact bg-primary/5 border-primary/20 animate-fade-up" style={{ animationDelay: "150ms" }}>
+          <div className="stoic-card-compact bg-primary/5 border-primary/20">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
+              <div className="p-2 rounded-lg bg-primary/10 shrink-0">
                 <Lightbulb className="w-4 h-4 text-primary" />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{topPattern.title}</p>
                 <p className="text-xs text-muted-foreground mt-1">{topPattern.description}</p>
               </div>
@@ -121,7 +117,7 @@ export default function Profile() {
         )}
 
         {/* Recent activity */}
-        <div className="stoic-card-compact animate-fade-up" style={{ animationDelay: "175ms" }}>
+        <div className="stoic-card-compact">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Recent Activity</p>
           <div className="space-y-2 text-sm">
             {recentEvents.length > 0 ? (
@@ -148,7 +144,7 @@ export default function Profile() {
 
         {/* Recommended focus */}
         {recommendedFocus && (
-          <div className="text-center py-2 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          <div className="text-center py-1">
             <p className="text-xs text-muted-foreground">
               Recommended focus: <span className="text-primary font-medium capitalize">{recommendedFocus}</span>
             </p>
@@ -156,7 +152,7 @@ export default function Profile() {
         )}
 
         {/* Action buttons */}
-        <div className="grid grid-cols-2 gap-2 animate-fade-up" style={{ animationDelay: "225ms" }}>
+        <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" size="lg" onClick={() => navigate("/settings")} className="w-full">
             <Settings className="w-4 h-4" />
             Settings
