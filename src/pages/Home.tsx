@@ -121,144 +121,143 @@ export default function Home() {
     );
   }
 
+  // Limit to 2 recent insights for compact view
+  const displayInsights = recentInsights.slice(0, 2);
+
   // Default home view with unified input
   return (
-    <Layout showGreeting className="gap-4">
+    <Layout showGreeting>
       <UsageLimitGate toolName="unified">
-        {/* Unified Voice Input */}
-        <OnboardingTooltip
-          title="Speak your mind"
-          description="Tap the microphone and share what's on your mind. I'll find the right Stoic wisdom for you."
-          isActive={currentStep === "voiceInput"}
-          onDismiss={() => markSeen("voiceInput")}
-          onSkipAll={skipAll}
-          position="bottom"
-        >
-          <div className="shrink-0">
-            <div className="text-center mb-2">
-              <h2 className="text-lg font-display font-semibold text-foreground">
-                What's on your mind?
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Speak freely — I'll find the wisdom you need
-              </p>
-            </div>
-            
-            <VoiceFirstInput
-              onTranscript={handleTranscript}
-              placeholder="Tap to speak"
-              processingText="Finding your Stoic truth..."
-              isProcessing={isLoading}
-              className="py-4"
-            />
-          </div>
-        </OnboardingTooltip>
-
-        {/* Recent Insights Feed */}
-        <OnboardingTooltip
-          title="Your wisdom journey"
-          description="Every insight you receive is saved here. Tap to revisit your past reflections."
-          isActive={currentStep === "insights"}
-          onDismiss={() => markSeen("insights")}
-          onSkipAll={skipAll}
-          position="top"
-        >
-          <div className="shrink-0">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Your Recent Insights
-              </p>
-              <button 
-                onClick={() => navigate("/history")} 
-                className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
-              >
-                See all
-                <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-            
-            {eventsLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 bg-muted/50 rounded-xl animate-pulse" />
-                ))}
-              </div>
-            ) : recentInsights.length > 0 ? (
-              <div className="space-y-2">
-                {recentInsights.map((event) => (
-                  <button
-                    key={event.id}
-                    onClick={() => navigate("/history")}
-                    className="w-full text-left p-3 bg-card/50 border border-border/50 rounded-xl hover:bg-card/80 transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="p-1.5 rounded-lg bg-primary/10 shrink-0">
-                        <Sparkles className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground line-clamp-2">
-                          {formatRawInputForDisplay(event.raw_input)}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Clock className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(event.created_at), "MMM d, h:mm a")}
-                          </span>
-                          <span className="text-xs text-primary capitalize">
-                            {event.tool_name}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 bg-muted/30 rounded-xl text-center">
-                <p className="text-sm text-muted-foreground">
-                  Your insights will appear here after your first reflection
+        <div className="flex flex-col h-full overflow-hidden gap-3">
+          {/* Unified Voice Input - compact */}
+          <OnboardingTooltip
+            title="Speak your mind"
+            description="Tap the microphone and share what's on your mind. I'll find the right Stoic wisdom for you."
+            isActive={currentStep === "voiceInput"}
+            onDismiss={() => markSeen("voiceInput")}
+            onSkipAll={skipAll}
+            position="bottom"
+          >
+            <div className="shrink-0">
+              <div className="text-center mb-1">
+                <h2 className="text-base font-display font-semibold text-foreground">
+                  What's on your mind?
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Speak freely — I'll find the wisdom you need
                 </p>
               </div>
-            )}
-          </div>
-        </OnboardingTooltip>
+              
+              <VoiceFirstInput
+                onTranscript={handleTranscript}
+                placeholder="Tap to speak"
+                processingText="Finding your Stoic truth..."
+                isProcessing={isLoading}
+                className="py-3"
+              />
+            </div>
+          </OnboardingTooltip>
 
-        {/* Compact Virtue Balance */}
-        <OnboardingTooltip
-          title="Track your growth"
-          description="See how your virtues evolve with each reflection. Tap 'Journey' to view your full progress."
-          isActive={currentStep === "virtueBalance"}
-          onDismiss={() => markSeen("virtueBalance")}
-          onSkipAll={skipAll}
-          position="top"
-        >
-          <div className="shrink-0 mt-auto">
-            <StoicCard variant="glass" className="p-4">
-              <div className="flex items-center justify-between mb-3">
+          {/* Recent Insights Feed - limited to 2 */}
+          <OnboardingTooltip
+            title="Your wisdom journey"
+            description="Every insight you receive is saved here. Tap to revisit your past reflections."
+            isActive={currentStep === "insights"}
+            onDismiss={() => markSeen("insights")}
+            onSkipAll={skipAll}
+            position="top"
+          >
+            <div className="shrink-0">
+              <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Virtue Balance
+                  Recent Insights
                 </p>
                 <button 
-                  onClick={() => navigate("/profile")} 
+                  onClick={() => navigate("/history")} 
                   className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
                 >
-                  Journey
+                  See all
                   <ChevronRight className="w-3 h-3" />
                 </button>
               </div>
               
-              {virtuesLoading ? (
-                <div className="space-y-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-2 bg-muted rounded-full animate-pulse" />
+              {eventsLoading ? (
+                <div className="space-y-1.5">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="h-12 bg-muted/50 rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : displayInsights.length > 0 ? (
+                <div className="space-y-1.5">
+                  {displayInsights.map((event) => (
+                    <button
+                      key={event.id}
+                      onClick={() => navigate("/history")}
+                      className="w-full text-left p-2.5 bg-card/50 border border-border/50 rounded-lg hover:bg-card/80 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1.5 rounded-md bg-primary/10 shrink-0">
+                          <Sparkles className="w-3 h-3 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground line-clamp-1">
+                            {formatRawInputForDisplay(event.raw_input)}
+                          </p>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(event.created_at), "MMM d, h:mm a")}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
                   ))}
                 </div>
               ) : (
-                <VirtueBar {...virtues} compact />
+                <div className="p-3 bg-muted/30 rounded-lg text-center">
+                  <p className="text-xs text-muted-foreground">
+                    Your insights will appear here after your first reflection
+                  </p>
+                </div>
               )}
-            </StoicCard>
-          </div>
-        </OnboardingTooltip>
+            </div>
+          </OnboardingTooltip>
+
+          {/* Compact Virtue Balance - pushed to bottom */}
+          <OnboardingTooltip
+            title="Track your growth"
+            description="See how your virtues evolve with each reflection. Tap 'Journey' to view your full progress."
+            isActive={currentStep === "virtueBalance"}
+            onDismiss={() => markSeen("virtueBalance")}
+            onSkipAll={skipAll}
+            position="top"
+          >
+            <div className="shrink-0 mt-auto">
+              <StoicCard variant="glass" className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Virtue Balance
+                  </p>
+                  <button 
+                    onClick={() => navigate("/profile")} 
+                    className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+                  >
+                    Journey
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+                
+                {virtuesLoading ? (
+                  <div className="space-y-1.5">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="h-1.5 bg-muted rounded-full animate-pulse" />
+                    ))}
+                  </div>
+                ) : (
+                  <VirtueBar {...virtues} compact />
+                )}
+              </StoicCard>
+            </div>
+          </OnboardingTooltip>
+        </div>
       </UsageLimitGate>
     </Layout>
   );
