@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { logger } from '@/lib/logger';
-
+import { formatForMemoryContext } from '@/lib/formatRawInput';
 interface YesterdayContext {
   challenge: string | null;
   tool: string | null;
@@ -54,22 +54,7 @@ export function useCrossSessionMemory(): CrossSessionMemory {
       }
 
       if (data && data.length > 0) {
-        // Parse JSON if stored as JSON string (from Debrief)
-        let challengeText = data[0].raw_input;
-        try {
-          const parsed = JSON.parse(challengeText);
-          if (typeof parsed === 'object') {
-            // Format object into readable text
-            const parts: string[] = [];
-            if (parsed.controlled) parts.push(`Controlled: ${parsed.controlled}`);
-            if (parsed.escaped) parts.push(`Escaped: ${parsed.escaped}`);
-            if (parsed.tomorrow) parts.push(`Tomorrow: ${parsed.tomorrow}`);
-            if (parsed.trigger) parts.push(`Trigger: ${parsed.trigger}`);
-            challengeText = parts.length > 0 ? parts.join(' • ') : challengeText;
-          }
-        } catch {
-          // Not JSON, use as-is
-        }
+        const challengeText = formatForMemoryContext(data[0].raw_input, data[0].tool_name);
         
         return {
           challenge: challengeText,
