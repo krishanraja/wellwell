@@ -32,7 +32,6 @@ export default function Home() {
   const { scoresMap, isLoading: virtuesLoading } = useVirtueScores();
   const { events, isLoading: eventsLoading } = useEvents();
   
-  // Get the 3 most recent insights
   const recentInsights = events?.slice(0, 3) || [];
   
   const virtues = {
@@ -45,7 +44,6 @@ export default function Home() {
   const handleTranscript = async (text: string) => {
     setInput(text);
     await trackUsage();
-    // Send to unified analyzer - AI routes to appropriate mode
     await analyze({
       tool: "unified",
       input: text,
@@ -89,9 +87,9 @@ export default function Home() {
 
     return (
       <Layout showGreeting={false}>
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Compact header */}
-          <div className="text-center py-2 animate-fade-up shrink-0">
+          <div className="text-center py-2 shrink-0">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full mb-1">
               <Sparkles className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">Your Insight</span>
@@ -104,12 +102,12 @@ export default function Home() {
           </div>
           
           {/* Card carousel */}
-          <div className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+          <div className="flex-1 min-h-0">
             <CardCarousel className="h-full">{cards}</CardCarousel>
           </div>
           
           {/* Reset button */}
-          <div className="py-4 shrink-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
+          <div className="py-3 shrink-0">
             <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
               <RotateCcw className="w-4 h-4" />
               Ask something else
@@ -122,10 +120,10 @@ export default function Home() {
 
   // Default home view with unified input
   return (
-    <Layout showGreeting className="gap-4 pb-4">
+    <Layout showGreeting className="gap-4">
       <UsageLimitGate toolName="unified">
-        {/* Unified Voice Input - The Hero */}
-        <div className="animate-fade-up">
+        {/* Unified Voice Input */}
+        <div className="shrink-0">
           <div className="text-center mb-2">
             <h2 className="text-lg font-display font-semibold text-foreground">
               What's on your mind?
@@ -145,7 +143,7 @@ export default function Home() {
         </div>
 
         {/* Recent Insights Feed */}
-        <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
+        <div className="shrink-0">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Your Recent Insights
@@ -205,7 +203,7 @@ export default function Home() {
         </div>
 
         {/* Compact Virtue Balance */}
-        <div className="mt-auto animate-fade-up" style={{ animationDelay: "200ms" }}>
+        <div className="shrink-0 mt-auto">
           <StoicCard variant="glass" className="p-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
