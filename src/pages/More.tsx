@@ -2,7 +2,6 @@ import { Layout } from "@/components/wellwell/Layout";
 import { FeatureButton } from "@/components/wellwell/FeatureButton";
 import { useNavigate } from "react-router-dom";
 import { 
-  Calendar, 
   BookOpen, 
   Settings, 
   Info, 
@@ -18,27 +17,23 @@ import {
 export default function More() {
   const navigate = useNavigate();
   
-  // Daily practice tools - still accessible for power users
   const practiceTools = [
     { icon: Sunrise, label: "Pulse", sublabel: "Morning mindset", path: "/pulse" },
     { icon: Flame, label: "Intervene", sublabel: "Recalibrate now", path: "/intervene" },
     { icon: Moon, label: "Debrief", sublabel: "Evening reflection", path: "/debrief" },
   ];
 
-  // Specialized tools
   const specializedTools = [
     { icon: Scale, label: "Decision", sublabel: "Navigate choices", path: "/decision" },
     { icon: Swords, label: "Conflict", sublabel: "Handle friction", path: "/conflict" },
   ];
   
-  // Extended features
   const extendedFeatures = [
     { icon: RotateCcw, label: "Weekly Reset", sublabel: "Recalibrate", path: "/weekly-reset" },
     { icon: FileText, label: "Monthly Story", sublabel: "Your narrative", path: "/monthly-narrative" },
     { icon: BookOpen, label: "Library", sublabel: "Resources", path: "/library" },
   ];
 
-  // Settings and info
   const settingsFeatures = [
     { icon: Settings, label: "Settings", sublabel: "Preferences", path: "/settings" },
     { icon: Info, label: "About", sublabel: "WellWell", path: "/about" },
@@ -46,14 +41,15 @@ export default function More() {
 
   return (
     <Layout>
-      <div className="flex-1 flex flex-col gap-6">
-        <div className="py-2 animate-fade-up">
+      <div className="space-y-5">
+        {/* Header */}
+        <div>
           <h1 className="font-display text-2xl font-bold text-foreground">More</h1>
           <p className="text-sm text-muted-foreground">All tools and settings</p>
         </div>
 
         {/* Daily Practice */}
-        <div className="animate-fade-up" style={{ animationDelay: "50ms" }}>
+        <section>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Daily Practice
           </p>
@@ -69,10 +65,10 @@ export default function More() {
               />
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Specialized Tools */}
-        <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
+        <section>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Specialized Tools
           </p>
@@ -88,10 +84,10 @@ export default function More() {
               />
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Extended Features */}
-        <div className="animate-fade-up" style={{ animationDelay: "150ms" }}>
+        <section>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Extended Features
           </p>
@@ -107,10 +103,10 @@ export default function More() {
               />
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Settings */}
-        <div className="animate-fade-up" style={{ animationDelay: "200ms" }}>
+        <section>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Settings
           </p>
@@ -126,7 +122,7 @@ export default function More() {
               />
             ))}
           </div>
-        </div>
+        </section>
       </div>
     </Layout>
   );
