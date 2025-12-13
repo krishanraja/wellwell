@@ -7,12 +7,13 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { User, Save, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Persona } from "@/types/database";
 
 const personas = [
-  { value: "strategist", label: "Strategist", description: "Analytical and planning-focused" },
-  { value: "warrior", label: "Warrior", description: "Action-oriented and courageous" },
-  { value: "sage", label: "Sage", description: "Reflective and wisdom-seeking" },
-  { value: "guardian", label: "Guardian", description: "Protective and justice-driven" },
+  { value: "strategist", label: "Strategist", description: "Keep me sharp" },
+  { value: "monk", label: "Monk", description: "Keep me steady" },
+  { value: "commander", label: "Commander", description: "Keep me decisive" },
+  { value: "friend", label: "Friend", description: "Keep me grounded" },
 ];
 
 const challenges = [
@@ -42,7 +43,7 @@ export default function EditProfile() {
     try {
       await updateProfile({
         display_name: displayName || null,
-        persona: (selectedPersona || null) as any,
+        persona: (selectedPersona || null) as Persona | null,
         challenges: selectedChallenges,
       });
       navigate("/profile");

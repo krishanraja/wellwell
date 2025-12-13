@@ -37,10 +37,16 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
 
   useEffect(() => {
     async function fetchStats() {
-      const { count } = await supabase
-        .from('events')
-        .select('*', { count: 'exact', head: true });
-      setInsightsCount(count || 0);
+      try {
+        const { count, error } = await supabase
+          .from('events')
+          .select('*', { count: 'exact', head: true });
+        if (!error && count) {
+          setInsightsCount(count);
+        }
+      } catch {
+        // Silently fail - this is non-critical marketing data
+      }
     }
     fetchStats();
   }, []);
@@ -192,10 +198,25 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
             </p>
             <button
               onClick={() => navigate("/auth")}
-              className="text-xs text-primary font-medium hover:underline"
+              className="text-xs text-primary font-medium hover:underline mb-3"
             >
               Already have an account? Sign in
             </button>
+            
+            {/* SEO Footer Links */}
+            <div className="flex items-center justify-center gap-4 text-[10px] text-[hsl(160_15%_60%)]">
+              <button onClick={() => navigate("/blog")} className="hover:text-primary transition-colors">
+                Blog
+              </button>
+              <span>•</span>
+              <button onClick={() => navigate("/faq")} className="hover:text-primary transition-colors">
+                FAQ
+              </button>
+              <span>•</span>
+              <button onClick={() => navigate("/about")} className="hover:text-primary transition-colors">
+                About
+              </button>
+            </div>
           </div>
         </div>
       </div>

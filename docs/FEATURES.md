@@ -2,6 +2,32 @@
 
 ## Core Features
 
+### 0. Contextual Home Experience
+
+**Purpose**: Intelligently surface the right practice at the right time
+
+**Features**:
+- **Welcome Back Screen**: Personalized greeting for returning users with streak acknowledgment
+- **Time-Based Primary Nudge**:
+  - Morning (5am-12pm): Morning Pulse is primary action
+  - Midday (12pm-5pm): Freeform "What's on your mind?" 
+  - Evening (5pm-9pm): Evening Debrief is primary action
+  - Night (9pm-5am): Gentle debrief or rest
+- **Daily Progress Indicators**: Visual checkmarks showing Pulse/Debrief completion
+- **Secondary Quick Actions**: Intervene, Decision, Conflict always accessible
+- **Smart Nav Indicators**: Pulsing dot on Home when daily ritual awaiting
+
+**Context Logic** (in `useContextualNudge`):
+```typescript
+// Morning without Pulse → Pulse is primary
+if (timeContext === 'morning' && !hasCompletedPulseToday) → 'pulse'
+// Evening without Debrief → Debrief is primary  
+if (timeContext === 'evening' && !hasCompletedDebriefToday) → 'debrief'
+// Otherwise → Freeform input
+```
+
+---
+
 ### 1. Morning Pulse
 
 **Purpose**: Pre-load mental stance before daily challenges
@@ -155,6 +181,36 @@
 - Alerts when virtue scores decline
 - Re-engagement prompts
 - Habit reminders
+
+---
+
+## SEO Infrastructure
+
+### FAQ Page (`/faq`)
+- 20+ SEO-optimized FAQs targeting high-volume searches
+- Categories: Stoicism, App, Mental Health, Practices, Pricing
+- Full-text search functionality
+- FAQ schema markup for rich snippets in Google
+- Accessible from Settings > Support & Resources
+
+### Blog (`/blog`, `/blog/:slug`)
+- 5 initial SEO-optimized articles targeting:
+  - "how to stay calm under pressure"
+  - "stoic morning routine"
+  - "dealing with difficult people"
+  - "stoic journaling prompts"
+  - "stoicism for beginners"
+- Article schema markup for rich snippets
+- Previous/Next navigation
+- Share functionality
+- CTA to sign up on every article
+
+### Technical SEO
+- **Structured Data**: WebApplication, Organization, SoftwareApplication, Article, FAQPage schemas
+- **Sitemap**: All public pages included with lastmod dates
+- **Robots.txt**: Proper directives for public/private routes
+- **Meta Tags**: Open Graph, Twitter Cards, canonical URLs
+- **HelmetProvider**: Dynamic meta tags per page
 
 ---
 

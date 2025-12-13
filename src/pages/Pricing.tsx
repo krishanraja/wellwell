@@ -9,9 +9,9 @@ import { Check, Sparkles, Loader2 } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 const freeFeatures = [
-  "1x Morning Pulse / day",
-  "1x Intervene / day",
-  "1x Debrief / day",
+  "3x Morning Pulse / day",
+  "3x Intervene / day",
+  "3x Debrief / day",
   "Basic virtue tracking",
   "Single persona",
 ];

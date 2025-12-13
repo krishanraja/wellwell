@@ -1,16 +1,17 @@
 import { Layout } from "@/components/wellwell/Layout";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { SignOutDialog } from "@/components/wellwell/SignOutDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { User, Bell, Moon, Shield, LogOut, Sparkles, CreditCard, Loader2 } from "lucide-react";
+import { User, Bell, Moon, Shield, LogOut, Sparkles, CreditCard, Loader2, HelpCircle, BookOpen, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function Settings() {
-  const { signOut, user } = useAuth();
+  const { user } = useAuth();
   const { isPro, subscription, isLoading, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -23,12 +24,8 @@ export default function Settings() {
       refreshSubscription();
       navigate("/settings", { replace: true });
     }
-  }, [searchParams]);
+  }, [searchParams, refreshSubscription, navigate]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/landing");
-  };
 
   const handleManageSubscription = async () => {
     setPortalLoading(true);
@@ -129,8 +126,41 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Privacy Section */}
+        {/* Support & Resources */}
         <div className="space-y-3 animate-fade-up" style={{ animationDelay: "240ms" }}>
+          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">Support & Resources</h2>
+          <div className="stoic-card space-y-0 divide-y divide-border">
+            <button
+              onClick={() => navigate("/faq")}
+              className="w-full flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:bg-muted/30 -mx-4 px-4 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <HelpCircle className="w-5 h-5 text-muted-foreground" />
+                <div className="text-left">
+                  <p className="font-medium text-foreground">FAQ</p>
+                  <p className="text-sm text-muted-foreground">Common questions answered</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => navigate("/blog")}
+              className="w-full flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:bg-muted/30 -mx-4 px-4 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <BookOpen className="w-5 h-5 text-muted-foreground" />
+                <div className="text-left">
+                  <p className="font-medium text-foreground">Blog</p>
+                  <p className="text-sm text-muted-foreground">Stoic wisdom & guides</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+
+        {/* Privacy Section */}
+        <div className="space-y-3 animate-fade-up" style={{ animationDelay: "300ms" }}>
           <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">Privacy</h2>
           <div className="stoic-card">
             <div className="flex items-center gap-3">
@@ -141,10 +171,12 @@ export default function Settings() {
         </div>
 
         {/* Sign Out */}
-        <div className="animate-fade-up" style={{ animationDelay: "300ms" }}>
-          <Button variant="outline" size="lg" className="w-full text-destructive hover:text-destructive" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />Sign out
-          </Button>
+        <div className="animate-fade-up" style={{ animationDelay: "360ms" }}>
+          <SignOutDialog variant="outline" size="lg" className="w-full">
+            <Button variant="outline" size="lg" className="w-full text-destructive hover:text-destructive">
+              <LogOut className="w-4 h-4 mr-2" />Sign out
+            </Button>
+          </SignOutDialog>
         </div>
       </div>
     </Layout>

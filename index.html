@@ -61,24 +61,84 @@
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
-    <!-- Structured Data (JSON-LD) -->
+    <!-- Structured Data (JSON-LD) - WebApplication -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "WellWell",
-        "description": "Defuse yourself with WellWell. Stoic philosophy, tailored to your feelings.",
+        "alternateName": "WellWell Stoic App",
+        "description": "AI-powered Stoic philosophy app that helps you stay calm under pressure. Daily practices for mental clarity, emotional resilience, and virtue-based living.",
         "url": "https://wellwell.app",
         "applicationCategory": "HealthApplication",
+        "applicationSubCategory": "Mental Health",
+        "operatingSystem": "Web, iOS, Android",
+        "browserRequirements": "Requires JavaScript",
+        "softwareVersion": "1.0.0",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Free tier with 3 daily practices"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "WellWell",
+          "url": "https://wellwell.app"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "ratingCount": "150",
+          "bestRating": "5",
+          "worstRating": "1"
+        },
+        "featureList": [
+          "Morning Pulse - daily mental preparation",
+          "Intervene - real-time stress relief",
+          "Evening Debrief - daily reflection",
+          "AI-powered Stoic coaching",
+          "Virtue tracking",
+          "Voice-first input"
+        ]
+      }
+    </script>
+
+    <!-- Structured Data (JSON-LD) - Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "WellWell",
+        "url": "https://wellwell.app",
+        "logo": "https://wellwell.app/favicon.png",
+        "description": "WellWell makes Stoic philosophy practical and personal through AI-powered daily practices.",
+        "foundingDate": "2024",
+        "sameAs": [
+          "https://twitter.com/WellWellApp",
+          "https://instagram.com/wellwell.app"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "email": "support@wellwell.app"
+        }
+      }
+    </script>
+
+    <!-- Structured Data (JSON-LD) - SoftwareApplication for App Stores -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "WellWell - Stoic Mental Clarity",
         "operatingSystem": "Web",
+        "applicationCategory": "HealthApplication",
+        "description": "Build mental resilience with AI-powered Stoic philosophy. Daily practices for staying calm under pressure.",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD"
-        },
-        "author": {
-          "@type": "Organization",
-          "name": "WellWell"
         },
         "aggregateRating": {
           "@type": "AggregateRating",

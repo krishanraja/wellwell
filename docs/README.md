@@ -68,6 +68,9 @@ docs/                 # Project documentation
 - [Features](./FEATURES.md) - Feature specifications
 - [Design System](./DESIGN_SYSTEM.md) - UI components and tokens
 - [Branding](./BRANDING.md) - Visual identity guidelines
+- [Production Audit](./PRODUCTION_AUDIT.md) - Security, UX, and code quality audit
+- [Common Issues](./COMMON_ISSUES.md) - Troubleshooting guide
+- [Decisions Log](./DECISIONS_LOG.md) - Architectural decisions
 
 ## Contributing
 

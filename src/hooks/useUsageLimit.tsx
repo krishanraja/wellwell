@@ -4,7 +4,6 @@ import { useAuth } from './useAuth';
 import { useSubscription } from './useSubscription';
 import { logger } from '@/lib/logger';
 
-// Daily limits for free tier
 // Daily limits for free tier - give users real value before asking to upgrade
 const FREE_TIER_LIMITS: Record<string, number> = {
   pulse: 3,
@@ -12,6 +11,7 @@ const FREE_TIER_LIMITS: Record<string, number> = {
   debrief: 3,
   decision: 3,
   conflict: 3,
+  unified: 3, // Unified input on Home page
 };
 
 // Pro tier has unlimited usage
