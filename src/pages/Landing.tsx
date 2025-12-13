@@ -5,6 +5,7 @@ import { ArrowRight, Shield, Zap, Brain, Sparkles, Quote, Users } from "lucide-r
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import SplashScreen from "@/components/wellwell/SplashScreen";
 
 // Sample AI responses to showcase
 const sampleInsights = [
@@ -42,6 +43,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
   const { user, loading } = useAuth();
   const [insightsCount, setInsightsCount] = useState<number>(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     if (!loading && user) {
@@ -97,6 +99,9 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
         fetchPriority="high"
       />
       
+      {/* Splash Screen */}
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+
       {/* Video Background - fades in over poster */}
       <video
         autoPlay
