@@ -6,55 +6,93 @@ interface SplashScreenProps {
 }
 
 const SplashScreen = ({ onComplete }: SplashScreenProps) => {
-  const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter');
+  const [phase, setPhase] = useState<'loading' | 'enter' | 'hold' | 'exit'>('loading');
 
   useEffect(() => {
-    const enterTimer = setTimeout(() => setPhase('hold'), 400);
-    const exitTimer = setTimeout(() => setPhase('exit'), 1800);
-    const completeTimer = setTimeout(onComplete, 2300);
+    // Preload the icon image
+    const img = new Image();
+    img.src = wellwellIcon;
     
-    return () => {
-      clearTimeout(enterTimer);
-      clearTimeout(exitTimer);
-      clearTimeout(completeTimer);
+    img.onload = () => {
+      // Image loaded, start the animation sequence
+      setPhase('enter');
     };
-  }, [onComplete]);
 
-  // Ring size: 120px, Icon size: 80px
-  // This gives ~20px padding on each side between icon edge and ring
+    img.onerror = () => {
+      // If image fails, start anyway
+      setPhase('enter');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (phase === 'loading') return;
+    
+    if (phase === 'enter') {
+      const holdTimer = setTimeout(() => setPhase('hold'), 400);
+      return () => clearTimeout(holdTimer);
+    }
+    
+    if (phase === 'hold') {
+      const exitTimer = setTimeout(() => setPhase('exit'), 1400);
+      return () => clearTimeout(exitTimer);
+    }
+    
+    if (phase === 'exit') {
+      const completeTimer = setTimeout(onComplete, 500);
+      return () => clearTimeout(completeTimer);
+    }
+  }, [phase, onComplete]);
+
   const ringSize = 120;
-  const iconSize = 80;
-  const strokeWidth = 2.5;
-  const radius = (ringSize - strokeWidth) / 2; // 58.75
+  const iconSize = 72;
+  const strokeWidth = 2;
+  const radius = (ringSize - strokeWidth * 2) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const arcLength = circumference * 0.25;
+
+  const isVisible = phase !== 'loading';
+  const isAnimating = phase === 'hold' || phase === 'exit';
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-background transition-all duration-500 ease-out ${
-        phase === 'exit' ? 'opacity-0' : 'opacity-100'
-      }`}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        backgroundColor: 'hsl(160 20% 98%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: phase === 'exit' ? 0 : 1,
+        transition: 'opacity 500ms ease-out',
+      }}
     >
-      {/* Subtle radial gradient background */}
+      {/* Centered container */}
       <div 
-        className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(187_100%_60%/0.08)_0%,_transparent_50%)] transition-opacity duration-700 ${
-          phase === 'enter' ? 'opacity-0' : 'opacity-100'
-        }`} 
-      />
-      
-      {/* Container with explicit pixel sizing for precise control */}
-      <div 
-        className={`relative flex items-center justify-center transition-all duration-500 ease-out ${
-          phase === 'enter' ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        }`}
-        style={{ width: ringSize, height: ringSize }}
+        style={{
+          position: 'relative',
+          width: ringSize,
+          height: ringSize,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(0.95)',
+          transition: 'opacity 400ms ease-out, transform 400ms ease-out',
+        }}
       >
-        {/* Loading ring SVG - absolutely positioned to fill container exactly */}
+        {/* Spinning ring */}
         <svg 
           width={ringSize}
           height={ringSize}
-          viewBox={`0 0 ${ringSize} ${ringSize}`}
-          className="absolute inset-0"
-          style={{ 
-            animation: phase !== 'enter' ? 'spin 2s linear infinite' : 'none',
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            animation: isAnimating ? 'spin 1.5s linear infinite' : 'none',
           }}
         >
           {/* Background track */}
@@ -66,7 +104,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             stroke="hsl(160 15% 90%)"
             strokeWidth={strokeWidth}
           />
-          {/* Animated arc */}
+          {/* Gradient arc */}
           <circle
             cx={ringSize / 2}
             cy={ringSize / 2}
@@ -75,7 +113,11 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             stroke="url(#splashGradient)"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
-            strokeDasharray={`${radius * 0.8} ${radius * Math.PI * 2}`}
+            strokeDasharray={`${arcLength} ${circumference}`}
+            style={{
+              transformOrigin: 'center',
+              transform: 'rotate(-90deg)',
+            }}
           />
           <defs>
             <linearGradient id="splashGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -85,14 +127,19 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
           </defs>
         </svg>
         
-        {/* Icon - centered via flexbox, explicit size */}
+        {/* Icon */}
         <img 
           src={wellwellIcon} 
           alt="WellWell" 
-          style={{ width: iconSize, height: iconSize }}
-          className={`relative z-10 transition-all duration-500 ease-out ${
-            phase === 'enter' ? 'opacity-0 scale-90' : 'opacity-100 scale-100'
-          }`}
+          style={{
+            width: iconSize,
+            height: iconSize,
+            position: 'relative',
+            zIndex: 10,
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'scale(1)' : 'scale(0.9)',
+            transition: 'opacity 400ms ease-out, transform 400ms ease-out',
+          }}
         />
       </div>
     </div>
