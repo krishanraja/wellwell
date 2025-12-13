@@ -45,7 +45,6 @@ export default function EditProfile() {
         persona: (selectedPersona || null) as any,
         challenges: selectedChallenges,
       });
-      toast.success("Profile updated!");
       navigate("/profile");
     } catch (error) {
       toast.error("Failed to save profile");
