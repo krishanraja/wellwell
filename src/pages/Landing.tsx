@@ -7,22 +7,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import SplashScreen from "@/components/wellwell/SplashScreen";
 
-// Sample AI responses to showcase
-const sampleInsights = [
-  {
-    trigger: "Boss criticized my presentation",
-    response: "Their feedback reflects their standards, not your worth. Focus on what you can improve.",
-  },
-  {
-    trigger: "Deadline feels impossible",
-    response: "Break it down. What's the one thing you can control in the next hour?",
-  },
-  {
-    trigger: "Conflict with a coworker",
-    response: "Seek to understand their perspective first. Your composure is your power.",
-  },
-];
-
 const testimonials = [
   {
     quote: "Finally, philosophy that actually works in the moment.",
@@ -51,7 +35,6 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
     }
   }, [user, loading, navigate]);
 
-  // Fetch total insights count (public stat)
   useEffect(() => {
     async function fetchStats() {
       const { count } = await supabase
@@ -62,7 +45,6 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
     fetchStats();
   }, []);
 
-  // Rotate testimonials
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
@@ -87,14 +69,12 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
 
   return (
     <>
-      {/* Splash Screen - rendered outside main container to avoid backdrop-filter breaking fixed positioning */}
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       
-      <div ref={ref} className="viewport-container overflow-hidden">
-        {/* Instant background fallback */}
+      <div ref={ref} className="h-[100dvh] flex flex-col overflow-hidden">
+        {/* Background layers */}
         <div className="fixed inset-0 -z-20 bg-[hsl(165_20%_13%)]" />
         
-        {/* Poster image - loads instantly via preload */}
         <img
           src="/video-poster.jpg"
           alt=""
@@ -103,7 +83,6 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
           fetchPriority="high"
         />
 
-        {/* Video Background - fades in over poster */}
         <video
           autoPlay
           muted
@@ -112,25 +91,23 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
           preload="metadata"
           className="fixed inset-0 w-full h-full object-cover -z-10 opacity-0 transition-opacity duration-700"
           onLoadedData={(e) => {
-            console.log('[Landing] Video loaded successfully');
             (e.target as HTMLVideoElement).classList.remove('opacity-0');
             (e.target as HTMLVideoElement).classList.add('opacity-60');
           }}
-          onError={(e) => console.error('[Landing] Video failed to load:', e)}
         >
           <source src="/videos/Wellwell_video.mp4" type="video/mp4" />
         </video>
 
-        {/* Single-screen content */}
-        <div className="flex-1 flex flex-col px-6 py-8 safe-area-top safe-area-bottom bg-[hsl(165_20%_13%/0.75)] backdrop-blur-md overflow-y-auto">
+        {/* Content - fixed height, no scroll */}
+        <div className="flex-1 flex flex-col px-6 py-6 safe-area-top safe-area-bottom bg-[hsl(165_20%_13%/0.75)] backdrop-blur-md overflow-hidden">
           {/* Hero Section */}
           <div className="flex flex-col items-center text-center">
             <div className="animate-fade-up">
-              <LogoFull className="h-48 sm:h-56 mx-auto mb-3" />
+              <LogoFull className="h-40 sm:h-48 mx-auto mb-2" />
             </div>
 
-            <div className="space-y-2 animate-fade-up" style={{ animationDelay: "100ms" }}>
-              <h1 className="font-display text-2xl sm:text-3xl font-bold text-[hsl(160_20%_95%)] leading-tight">
+            <div className="space-y-1 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <h1 className="font-display text-xl sm:text-2xl font-bold text-[hsl(160_20%_95%)] leading-tight">
                 Think clearly<br />
                 <span className="gradient-text">under pressure</span>
               </h1>
@@ -139,9 +116,8 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
               </p>
             </div>
 
-            {/* Live counter */}
             {insightsCount > 0 && (
-              <div className="mt-4 animate-fade-up" style={{ animationDelay: "150ms" }}>
+              <div className="mt-3 animate-fade-up" style={{ animationDelay: "150ms" }}>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
                   <Users className="w-3 h-3 text-primary" />
                   <span className="text-xs text-primary font-medium">
@@ -151,7 +127,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
               </div>
             )}
 
-            <div className="mt-4 animate-fade-up" style={{ animationDelay: "200ms" }}>
+            <div className="mt-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
               <Button
                 variant="brand"
                 size="lg"
@@ -163,9 +139,8 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
             </div>
           </div>
 
-
           {/* Features Grid */}
-          <div className="mt-6">
+          <div className="mt-4">
             <div className="grid grid-cols-4 gap-2 animate-fade-up" style={{ animationDelay: "300ms" }}>
               {features.map((feature, index) => (
                 <div
@@ -173,13 +148,13 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
                   className="flex flex-col items-center text-center p-2"
                   style={{ animationDelay: `${350 + index * 50}ms` }}
                 >
-                  <div className="p-2 rounded-xl bg-primary/10 mb-2">
-                    <feature.icon className="w-5 h-5 text-primary" />
+                  <div className="p-2 rounded-xl bg-primary/10 mb-1">
+                    <feature.icon className="w-4 h-4 text-primary" />
                   </div>
-                  <span className="text-xs font-medium text-[hsl(160_20%_95%)] leading-tight">
+                  <span className="text-[10px] font-medium text-[hsl(160_20%_95%)] leading-tight">
                     {feature.title}
                   </span>
-                  <span className="text-xs text-[hsl(160_15%_70%)]">
+                  <span className="text-[10px] text-[hsl(160_15%_70%)]">
                     {feature.desc}
                   </span>
                 </div>
@@ -188,17 +163,17 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
           </div>
 
           {/* Testimonial Carousel */}
-          <div className="mt-6 animate-fade-up" style={{ animationDelay: "400ms" }}>
+          <div className="mt-4 animate-fade-up" style={{ animationDelay: "400ms" }}>
             <div className="text-center">
-              <Quote className="w-5 h-5 text-primary/50 mx-auto mb-2" />
-              <p className="text-sm text-[hsl(160_20%_95%)] italic transition-all duration-500">
+              <Quote className="w-4 h-4 text-primary/50 mx-auto mb-1" />
+              <p className="text-sm text-[hsl(160_20%_95%)] italic">
                 "{testimonials[currentTestimonial].quote}"
               </p>
-              <p className="text-xs text-primary mt-2">
+              <p className="text-xs text-primary mt-1">
                 — {testimonials[currentTestimonial].author}
               </p>
             </div>
-            <div className="flex justify-center gap-1.5 mt-3">
+            <div className="flex justify-center gap-1.5 mt-2">
               {testimonials.map((_, i) => (
                 <div 
                   key={i} 
@@ -210,14 +185,14 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-auto pt-6 text-center animate-fade-up" style={{ animationDelay: "500ms" }}>
-            <p className="text-sm text-[hsl(160_15%_75%)] mb-3">
+          {/* Footer - pushed to bottom */}
+          <div className="mt-auto pt-4 text-center animate-fade-up" style={{ animationDelay: "500ms" }}>
+            <p className="text-xs text-[hsl(160_15%_75%)] mb-2">
               Free to start. No credit card required.
             </p>
             <button
               onClick={() => navigate("/auth")}
-              className="text-sm text-primary font-medium hover:underline [text-shadow:0_1px_3px_hsl(187_100%_50%/0.3)]"
+              className="text-xs text-primary font-medium hover:underline"
             >
               Already have an account? Sign in
             </button>
