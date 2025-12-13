@@ -2,13 +2,14 @@ import { Layout } from "@/components/wellwell/Layout";
 import { VirtueBar } from "@/components/wellwell/VirtueBar";
 import { VirtueChart } from "@/components/wellwell/VirtueChart";
 import { Button } from "@/components/ui/button";
+import { SignOutDialog } from "@/components/wellwell/SignOutDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
 import { useStreak } from "@/hooks/useStreak";
 import { useEvents } from "@/hooks/useEvents";
 import { usePatterns } from "@/hooks/usePatterns";
-import { User, Flame, LogOut, Settings, Loader2, TrendingUp, Lightbulb } from "lucide-react";
+import { User, Flame, Settings, Loader2, TrendingUp, Lightbulb } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
@@ -24,7 +25,7 @@ const toolLabels: Record<string, string> = {
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { scoresMap, isLoading: virtuesLoading } = useVirtueScores();
   const { streak, isLoading: streakLoading } = useStreak();
@@ -147,18 +148,7 @@ export default function Profile() {
             <Settings className="w-4 h-4" />
             Settings
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={async () => { 
-              await signOut(); 
-              navigate("/landing"); 
-            }} 
-            className="w-full text-coral hover:text-coral"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </Button>
+          <SignOutDialog size="sm" className="w-full" />
         </div>
       </div>
     </Layout>

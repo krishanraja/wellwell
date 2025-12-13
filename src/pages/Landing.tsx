@@ -37,10 +37,16 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
 
   useEffect(() => {
     async function fetchStats() {
-      const { count } = await supabase
-        .from('events')
-        .select('*', { count: 'exact', head: true });
-      setInsightsCount(count || 0);
+      try {
+        const { count, error } = await supabase
+          .from('events')
+          .select('*', { count: 'exact', head: true });
+        if (!error && count) {
+          setInsightsCount(count);
+        }
+      } catch {
+        // Silently fail - this is non-critical marketing data
+      }
     }
     fetchStats();
   }, []);

@@ -41,18 +41,6 @@ export function useStoicAnalyzer() {
     try {
       logger.info("Calling stoic-analyzer", { tool, userId: user.id });
 
-      // Save the event first
-      const { error: eventError } = await supabase.from("events").insert({
-        profile_id: user.id,
-        tool_name: tool,
-        raw_input: input,
-        question_key: tool,
-      });
-
-      if (eventError) {
-        logger.warn("Failed to save event", { error: eventError });
-      }
-
       // Build profile context for personalization
       const profileContext = profile ? {
         persona: profile.persona,
@@ -152,6 +140,19 @@ export function useStoicAnalyzer() {
       
       // Extract the analysis from the response
       const analysis = data?.analysis || data;
+      
+      // Save the event only after successful AI response
+      const { error: eventError } = await supabase.from("events").insert({
+        profile_id: user.id,
+        tool_name: tool,
+        raw_input: input,
+        question_key: tool,
+        structured_values: analysis ? { ai_response: true } : null,
+      });
+
+      if (eventError) {
+        logger.warn("Failed to save event", { error: eventError });
+      }
       
       // Transform the response to match our expected format
       const transformedResponse: StoicResponse = {

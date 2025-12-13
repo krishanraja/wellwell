@@ -1,6 +1,7 @@
 import { Layout } from "@/components/wellwell/Layout";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { SignOutDialog } from "@/components/wellwell/SignOutDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -10,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function Settings() {
-  const { signOut, user } = useAuth();
+  const { user } = useAuth();
   const { isPro, subscription, isLoading, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -23,12 +24,8 @@ export default function Settings() {
       refreshSubscription();
       navigate("/settings", { replace: true });
     }
-  }, [searchParams]);
+  }, [searchParams, refreshSubscription, navigate]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/landing");
-  };
 
   const handleManageSubscription = async () => {
     setPortalLoading(true);
@@ -142,9 +139,11 @@ export default function Settings() {
 
         {/* Sign Out */}
         <div className="animate-fade-up" style={{ animationDelay: "300ms" }}>
-          <Button variant="outline" size="lg" className="w-full text-destructive hover:text-destructive" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />Sign out
-          </Button>
+          <SignOutDialog variant="outline" size="lg" className="w-full">
+            <Button variant="outline" size="lg" className="w-full text-destructive hover:text-destructive">
+              <LogOut className="w-4 h-4 mr-2" />Sign out
+            </Button>
+          </SignOutDialog>
         </div>
       </div>
     </Layout>

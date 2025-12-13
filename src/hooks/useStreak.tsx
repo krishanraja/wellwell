@@ -49,7 +49,7 @@ export function useStreak() {
 
       // Count consecutive days
       let streak = 0;
-      let checkDate = new Date(sortedDays[0]);
+      const checkDate = new Date(sortedDays[0]);
       
       for (const day of sortedDays) {
         const dayDate = new Date(day);

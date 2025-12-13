@@ -641,18 +641,19 @@ serve(async (req) => {
       case 'intervene':
         userPrompt = INTERVENE_PROMPT(body.trigger, body.intensity, body.profile_context);
         break;
-      case 'debrief':
+      case 'debrief': {
         // Handle both freeform and structured debrief
         const debriefData = typeof body.challenge_faced === 'string' 
           ? body.challenge_faced 
           : JSON.stringify(body);
-        const isFreeform: boolean = Boolean((body as any).freeform) || Boolean(body.challenge_faced && !body.response_given);
+        const isFreeform: boolean = Boolean((body as unknown as { freeform?: boolean }).freeform) || Boolean(body.challenge_faced && !body.response_given);
         userPrompt = DEBRIEF_PROMPT(
           debriefData,
           isFreeform,
           body.profile_context
         );
         break;
+      }
       case 'unified':
         userPrompt = UNIFIED_PROMPT(body.input, body.profile_context);
         break;

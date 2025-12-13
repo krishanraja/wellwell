@@ -133,13 +133,14 @@ export function formatForMemoryContext(rawInput: string, toolName: string): stri
         return fields.trigger;
       }
       break;
-    case 'debrief':
+    case 'debrief': {
       const parts: string[] = [];
       if (fields.controlled) parts.push(`Controlled: ${fields.controlled}`);
       if (fields.escaped) parts.push(`Escaped: ${fields.escaped}`);
       if (fields.tomorrow) parts.push(`Tomorrow: ${fields.tomorrow}`);
       if (parts.length > 0) return parts.join(' • ');
       break;
+    }
     case 'pulse':
       return displayText;
     case 'decision':
