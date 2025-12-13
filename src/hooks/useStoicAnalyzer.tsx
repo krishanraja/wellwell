@@ -107,6 +107,27 @@ export function useStoicAnalyzer() {
             profile_context: profileContext,
           };
         }
+      } else if (tool === 'unified') {
+        // New unified input mode - AI routes intelligently
+        payload = {
+          type: 'unified',
+          input: input,
+          profile_context: profileContext,
+        };
+      } else if (tool === 'decision') {
+        // Single-input decision mode
+        payload = {
+          type: 'decision',
+          dilemma: input,
+          profile_context: profileContext,
+        };
+      } else if (tool === 'conflict') {
+        // Single-input conflict mode
+        payload = {
+          type: 'conflict',
+          situation: input,
+          profile_context: profileContext,
+        };
       } else {
         // Generic fallback
         payload = {

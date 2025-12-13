@@ -1,12 +1,11 @@
 import { cn } from "@/lib/utils";
-import { Home, Sun, Zap, Moon, LayoutGrid } from "lucide-react";
+import { Home, User, Clock, LayoutGrid } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: Sun, label: "Pulse", path: "/pulse" },
-  { icon: Zap, label: "Intervene", path: "/intervene" },
-  { icon: Moon, label: "Debrief", path: "/debrief" },
+  { icon: Clock, label: "History", path: "/history" },
+  { icon: User, label: "Journey", path: "/profile" },
   { icon: LayoutGrid, label: "More", path: "/more" },
 ];
 
