@@ -38,14 +38,14 @@ export function FeatureButton({
       className={cn(
         "flex items-center gap-3 w-full text-left transition-all duration-300 active:scale-[0.98]",
         variantStyles[variant],
-        compact ? "p-3" : "p-4",
+        compact ? "p-3 min-h-[72px]" : "p-4",
         className
       )}
     >
       <div 
         className={cn(
-          "rounded-xl flex items-center justify-center transition-all duration-300",
-          compact ? "p-2.5" : "p-3"
+          "rounded-xl flex items-center justify-center shrink-0 transition-all duration-300",
+          compact ? "w-10 h-10" : "w-12 h-12"
         )}
         style={{ 
           backgroundColor: accentColor ? `${accentColor}20` : 'hsl(var(--primary) / 0.1)',
@@ -56,16 +56,16 @@ export function FeatureButton({
           style={{ color: accentColor || 'hsl(var(--primary))' }}
         />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col justify-center">
         <span className={cn(
-          "font-display font-semibold text-foreground block",
+          "font-display font-semibold text-foreground leading-tight",
           compact ? "text-sm" : "text-base"
         )}>
           {label}
         </span>
         {sublabel && (
           <span className={cn(
-            "text-muted-foreground block",
+            "text-muted-foreground leading-tight mt-0.5",
             compact ? "text-xs" : "text-sm"
           )}>
             {sublabel}
@@ -96,12 +96,12 @@ export function FeatureCard({
     <button
       onClick={onClick}
       className={cn(
-        "glass-card p-4 flex flex-col items-center text-center gap-3 transition-all duration-300 hover:shadow-glow active:scale-[0.98]",
+        "glass-card p-4 flex flex-col items-center text-center gap-3 transition-all duration-300 hover:shadow-glow active:scale-[0.98] min-h-[100px]",
         className
       )}
     >
       <div 
-        className="p-3 rounded-2xl transition-all duration-300"
+        className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300"
         style={{ 
           backgroundColor: accentColor ? `${accentColor}20` : 'hsl(var(--primary) / 0.1)',
         }}
@@ -111,12 +111,12 @@ export function FeatureCard({
           style={{ color: accentColor || 'hsl(var(--primary))' }}
         />
       </div>
-      <div>
-        <span className="font-display font-semibold text-foreground block text-sm">
+      <div className="flex flex-col justify-center">
+        <span className="font-display font-semibold text-foreground text-sm leading-tight">
           {label}
         </span>
         {sublabel && (
-          <span className="text-xs text-muted-foreground mt-0.5 block">
+          <span className="text-xs text-muted-foreground mt-0.5 leading-tight">
             {sublabel}
           </span>
         )}
