@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Loader2 } from "lucide-react";
+import { Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -98,18 +98,14 @@ export function VoiceInput({ onTranscript, className, disabled }: VoiceInputProp
       className={cn(
         "p-3 rounded-xl transition-all duration-200",
         isListening
-          ? "bg-primary text-primary-foreground animate-pulse shadow-lg shadow-primary/30"
-          : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+          : "bg-primary/20 text-primary hover:bg-primary/30",
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}
       aria-label={isListening ? "Stop listening" : "Start voice input"}
     >
-      {isListening ? (
-        <Mic className="w-5 h-5" />
-      ) : (
-        <MicOff className="w-5 h-5" />
-      )}
+      <Mic className={cn("w-5 h-5", isListening && "animate-pulse")} />
     </button>
   );
 }

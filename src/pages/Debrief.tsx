@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Layout } from "@/components/wellwell/Layout";
-import { MicroInput } from "@/components/wellwell/MicroInput";
+import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
 import { Button } from "@/components/ui/button";
 import { StoicCard } from "@/components/wellwell/StoicCard";
 import { VirtueBar } from "@/components/wellwell/VirtueBar";
@@ -10,51 +10,35 @@ import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
 import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
-import { Moon, ArrowRight, TrendingUp, TrendingDown, Minus, Target, RotateCcw, Loader2, Sunrise } from "lucide-react";
-
-const questions = [
-  { key: "controlled", label: "What did you control well today?" },
-  { key: "escaped", label: "What escaped your control?" },
-  { key: "tomorrow", label: "One thing to do differently tomorrow?" },
-];
+import { Moon, TrendingUp, TrendingDown, Minus, Target, RotateCcw, Sunrise, Sparkles } from "lucide-react";
 
 export default function Debrief() {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [currentAnswer, setCurrentAnswer] = useState("");
+  const [reflection, setReflection] = useState("");
   const { trackUsage } = useUsageLimit("debrief");
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
   const { scoresMap } = useVirtueScores();
   const { todayMorning } = useCrossSessionMemory();
 
-  const handleContinue = async () => {
-    if (currentAnswer.trim()) {
-      const newAnswers = { ...answers, [questions[step].key]: currentAnswer };
-      setAnswers(newAnswers);
-      setCurrentAnswer("");
-      
-      // On last question, call AI
-      if (step === questions.length - 1) {
-        await trackUsage();
-        await analyze({
-          tool: "debrief",
-          input: JSON.stringify(newAnswers),
-        });
-      }
-      
-      setStep(step + 1);
-    }
+  const handleTranscript = async (text: string) => {
+    setReflection(text);
+    await trackUsage();
+    // AI extracts structured insights from freeform reflection
+    await analyze({
+      tool: "debrief",
+      input: JSON.stringify({
+        controlled: text, // AI will parse and extract
+        escaped: "",
+        tomorrow: "",
+        freeform: true, // Flag for AI to process as freeform
+      }),
+    });
   };
 
   const handleReset = () => {
-    setStep(0);
-    setAnswers({});
-    setCurrentAnswer("");
+    setReflection("");
     reset();
   };
 
-  const isComplete = step >= questions.length;
-  
   // Get real virtue deltas from AI response or fallback to empty
   const virtueDeltas = response?.virtue_updates?.reduce((acc, update) => {
     acc[update.virtue as keyof typeof acc] = update.delta;
@@ -75,84 +59,64 @@ export default function Debrief() {
     return <Minus className="w-3 h-3 text-muted-foreground" />;
   };
 
-  if (!isComplete) {
+  if (!response) {
     return (
       <Layout>
         <UsageLimitGate toolName="debrief">
           <div className="flex-1 flex flex-col">
+            {/* Evening wisdom - value first */}
             <div className="text-center py-4 animate-fade-up">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-cinder/10 rounded-full mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-cinder/10 rounded-full mb-4">
                 <Moon className="w-4 h-4 text-cinder" />
                 <span className="text-sm font-medium text-cinder">Evening Debrief</span>
               </div>
-              <h1 className="font-display text-xl font-bold text-foreground">{questions[step].label}</h1>
+              
+              {/* Evening wisdom */}
+              <div className="mb-6 p-4 bg-muted/30 rounded-2xl border border-border/50">
+                <div className="flex items-center gap-2 justify-center mb-3">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <p className="text-foreground font-display text-lg leading-relaxed mb-2">
+                  "At day's end, review: Where did you act with virtue? Where did you fall short?"
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  — Marcus Aurelius, Meditations
+                </p>
+              </div>
             </div>
 
-            {/* Morning context - Cross-session memory */}
-            {step === 0 && todayMorning.challenge && (
-              <div className="px-4 py-3 bg-muted/50 rounded-xl mb-4 animate-fade-up" style={{ animationDelay: "50ms" }}>
+            {/* Morning context if available */}
+            {todayMorning.challenge && (
+              <div className="px-4 py-3 bg-muted/30 rounded-xl mb-4 animate-fade-up" style={{ animationDelay: "50ms" }}>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                   <Sunrise className="w-3 h-3" />
                   <span>This morning you anticipated:</span>
                 </div>
-                <p className="text-sm text-foreground line-clamp-2">{todayMorning.challenge}</p>
+                <p className="text-sm text-foreground/80">{todayMorning.challenge}</p>
                 {todayMorning.stance && (
                   <p className="text-xs text-primary mt-1">Stance: "{todayMorning.stance}"</p>
                 )}
               </div>
             )}
 
-            <div className="flex gap-2 py-2 animate-fade-up" style={{ animationDelay: "50ms" }}>
-              {questions.map((_, i) => (
-                <div 
-                  key={i} 
-                  className={`flex-1 h-1 rounded-full transition-all duration-300 ${i <= step ? "bg-brand-gradient" : "bg-muted"}`} 
-                />
-              ))}
-            </div>
-            <div className="flex-1 flex flex-col justify-center py-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
-              <MicroInput 
-                placeholder="Reflect honestly..." 
-                value={currentAnswer} 
-                onChange={(e) => setCurrentAnswer(e.target.value)} 
-                onKeyDown={(e) => e.key === "Enter" && !isLoading && handleContinue()} 
+            {/* Voice-first input - single prompt for freeform reflection */}
+            <div className="flex-1 flex flex-col justify-center animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <h2 className="text-center text-xl font-display font-semibold text-foreground mb-2">
+                Reflect on your day
+              </h2>
+              <p className="text-center text-sm text-muted-foreground mb-6">
+                What did you control? What escaped you? What would you change?
+              </p>
+              
+              <VoiceFirstInput
+                onTranscript={handleTranscript}
+                placeholder="Tap to reflect on your day"
+                processingText="Synthesizing your day..."
+                isProcessing={isLoading}
               />
-            </div>
-            <div className="py-4 animate-fade-up" style={{ animationDelay: "150ms" }}>
-              <Button 
-                variant="brand" 
-                size="lg" 
-                className="w-full" 
-                onClick={handleContinue} 
-                disabled={!currentAnswer.trim() || isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Reflecting...
-                  </>
-                ) : (
-                  <>
-                    {step < questions.length - 1 ? "Continue" : "Complete"}
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </UsageLimitGate>
-      </Layout>
-    );
-  }
-
-  // Show loading state while waiting for AI response
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground">Synthesizing your day...</p>
-        </div>
       </Layout>
     );
   }
@@ -161,7 +125,6 @@ export default function Debrief() {
     <StoicCard key="summary" icon={Moon} title="Day Summary" className="h-full flex flex-col">
       <div className="space-y-2 text-sm flex-1">
         <p className="text-muted-foreground">{response?.summary || "You navigated today's challenges with awareness."}</p>
-        <p className="text-foreground font-medium mt-3">Controlled well: {answers.controlled}</p>
       </div>
     </StoicCard>,
     <StoicCard key="virtues" icon={Target} title="Virtue Movement" className="h-full flex flex-col">
@@ -180,7 +143,7 @@ export default function Debrief() {
     </StoicCard>,
     <StoicCard key="tomorrow" icon={Target} title="Tomorrow's Focus" className="h-full flex flex-col">
       <p className="text-foreground font-medium flex-1">
-        "{response?.stance || answers.tomorrow}"
+        "{response?.stance || "Carry today's lessons into tomorrow."}"
       </p>
       {response?.action && (
         <p className="text-sm text-primary mt-2">{response.action}</p>

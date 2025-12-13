@@ -104,17 +104,21 @@ Respond with JSON:
   "intensity_assessment": "Brief assessment of the intensity level"
 }`;
 
-const DEBRIEF_PROMPT = (challengeFaced: string, responseGiven: string, wouldDoDifferently: string, context?: ProfileContext) => `
-The user is doing their Evening Debrief:
+const DEBRIEF_PROMPT = (reflection: string, freeform: boolean, context?: ProfileContext) => `
+The user is doing their Evening Debrief.
 
-1. What challenged your composure today?
-"${challengeFaced}"
+${freeform ? `
+They provided a freeform reflection:
+"${reflection}"
 
-2. How did you respond?
-"${responseGiven}"
-
-3. What would you do differently?
-"${wouldDoDifferently}"
+Extract from their words:
+- What they controlled well today
+- What escaped their control
+- What they would do differently tomorrow
+` : `
+Structured input:
+"${reflection}"
+`}
 
 ${context ? `
 User Context:
@@ -125,12 +129,19 @@ User Context:
 
 Respond with JSON:
 {
-  "day_summary": "2-3 sentence synthesis of their day",
+  "day_summary": "2-3 sentence synthesis of their day, grounded in what they shared",
+  "extracted_themes": {
+    "controlled_well": ["things they controlled"],
+    "escaped_control": ["things that escaped their control"],
+    "improvement": "what they'd do differently"
+  },
   "virtue_movements": [
-    {"virtue": "courage" | "temperance" | "justice" | "wisdom", "delta": -10 to +10, "reason": "why this changed"}
+    {"virtue": "courage" | "temperance" | "justice" | "wisdom", "delta": -10 to +10, "reason": "why this changed based on their reflection"}
   ],
   "tomorrow_focus": "Specific focus for tomorrow based on today's learning",
-  "pattern_detected": "Any pattern you notice (or null if none)"
+  "tomorrow_stance": "A personal stance statement for tomorrow",
+  "pattern_detected": "Any pattern you notice (or null if none)",
+  "key_insight": "One non-obvious insight from their reflection"
 }`;
 
 serve(async (req) => {
@@ -159,10 +170,14 @@ serve(async (req) => {
         userPrompt = INTERVENE_PROMPT(body.trigger, body.intensity, body.profile_context);
         break;
       case 'debrief':
+        // Handle both freeform and structured debrief
+        const debriefData = typeof body.challenge_faced === 'string' 
+          ? body.challenge_faced 
+          : JSON.stringify(body);
+        const isFreeform: boolean = Boolean((body as any).freeform) || Boolean(body.challenge_faced && !body.response_given);
         userPrompt = DEBRIEF_PROMPT(
-          body.challenge_faced,
-          body.response_given,
-          body.would_do_differently,
+          debriefData,
+          isFreeform,
           body.profile_context
         );
         break;

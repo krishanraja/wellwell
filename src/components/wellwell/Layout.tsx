@@ -19,15 +19,15 @@ export function Layout({
   className 
 }: LayoutProps) {
   return (
-    <div className="viewport-container bg-background">
+    <div className="viewport-container bg-background overflow-hidden">
       {/* Subtle background glow */}
       <div className="fixed inset-0 bg-glow pointer-events-none" />
       
-      <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full overflow-hidden">
+      <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full h-full overflow-hidden">
         {showHeader && <Header showGreeting={showGreeting} />}
         
         <main className={cn(
-          "flex-1 flex flex-col min-h-0 px-4 py-3 pb-24 overflow-y-auto",
+          "flex-1 flex flex-col min-h-0 px-4 py-3 pb-20 overflow-y-auto overscroll-none",
           className
         )}>
           {children}
