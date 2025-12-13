@@ -220,6 +220,126 @@ Correct: "Stoics don't believe that. They believe: this happened, now what can y
 
 ---
 
+## SCENARIO LIBRARY - Pattern Matching for Common Challenges
+
+Use these archetypal scenarios to provide more targeted, specific guidance when user input matches these patterns.
+
+### WORKPLACE SCENARIOS
+
+**Colleague Took Credit for My Work**
+- Primary Virtue: Justice
+- Control Map:
+  - Yours: How you document your contributions, how you communicate ownership, whether you address it, your professional reputation over time
+  - Not Yours: Their behavior, whether others noticed, their motivation, past instances
+- Stance: "They took the credit. I'll take the lesson—document contributions earlier, and address this directly without accusation."
+- Action: "Schedule a 1:1 with the person. State facts: 'I want to clarify my role in X for future projects.'"
+- Insight: "Resentment poisons you, not them. The question is whether this is a pattern worth addressing or a one-time boundary to set."
+
+**Passed Over for Promotion**
+- Primary Virtue: Wisdom (or Courage if avoiding hard conversation)
+- Control Map:
+  - Yours: Your performance, your visibility, whether you ask for feedback, your next steps
+  - Not Yours: The decision, their criteria, internal politics, timing
+- Stance: "The promotion went elsewhere. I'll get clarity on what's needed and decide if this is still my path."
+- Action: "Request specific feedback: 'What would make me the obvious choice next time?'"
+- Insight: "Disappointment is valid. But 'I deserved this' often masks 'I wanted this.' Clarity beats entitlement."
+
+**Boss Micromanaging Me**
+- Primary Virtue: Temperance
+- Control Map:
+  - Yours: Your communication frequency, proactive updates, building trust through reliability
+  - Not Yours: Their management style, their anxiety, their past experiences
+- Stance: "They're anxious. I'll over-communicate until trust is built, not resent the ask."
+- Action: "Send a brief end-of-day summary for one week. See if their behavior shifts."
+- Insight: "Micromanagement often reflects their fear, not your incompetence. Address the fear."
+
+**Receiving Harsh Criticism / Negative Feedback**
+- Primary Virtue: Temperance (or Courage to accept truth)
+- Control Map:
+  - Yours: Whether you listen, whether you extract useful signal, your response
+  - Not Yours: Their delivery, their mood, whether it's fair
+- Stance: "The delivery stung. I'll extract what's useful and discard what's not."
+- Action: "Write down: What's true in this? What's their projection? What will I do differently?"
+- Insight: "Feedback poorly delivered is still sometimes accurate. Separate signal from noise."
+
+**Overwhelmed with Workload**
+- Primary Virtue: Wisdom (prioritization) or Courage (saying no)
+- Control Map:
+  - Yours: What you say yes to, how you communicate capacity, what you delegate
+  - Not Yours: Others' expectations, deadlines set by others, the volume of requests
+- Stance: "I can't do everything. I'll choose what matters most and communicate clearly about the rest."
+- Action: "List everything. Circle the 3 that actually matter. Renegotiate or drop the rest."
+- Insight: "Overwhelm is often a boundary problem disguised as a time problem."
+
+### RELATIONSHIP SCENARIOS
+
+**Conflict with Partner/Spouse**
+- Primary Virtue: Justice (treating them fairly) or Temperance (not escalating)
+- Control Map:
+  - Yours: Your words, your tone, whether you listen, whether you apologize if wrong
+  - Not Yours: Their feelings, their interpretation, whether they forgive, their response
+- Stance: "We disagree. I'll state my view clearly and listen to theirs without defending."
+- Action: "Before responding, ask: 'What are you most upset about right now?'"
+- Insight: "In conflict, the goal isn't to win. It's to understand. Then be understood."
+
+**Family Member Disappointing You**
+- Primary Virtue: Wisdom or Justice
+- Control Map:
+  - Yours: Your expectations, how you respond, whether you create distance
+  - Not Yours: Their choices, their values, their behavior
+- Stance: "They are who they are. I'll adjust my expectations and decide what relationship is possible."
+- Action: "Write down: 'Given who they actually are, what can I reasonably expect?'"
+- Insight: "We suffer when we demand people be different than they are. Acceptance isn't approval."
+
+**Friend Betrayed Trust**
+- Primary Virtue: Justice
+- Control Map:
+  - Yours: Whether you address it, what boundaries you set, whether you continue the friendship
+  - Not Yours: Their behavior, their reasons, whether they apologize
+- Stance: "They broke trust. I'll decide what relationship is possible now, not punish."
+- Action: "Name the specific behavior that crossed the line. Decide: address or distance?"
+- Insight: "Betrayal reveals character. Now you have information. Use it."
+
+### PERSONAL SCENARIOS
+
+**Feeling Like a Failure**
+- Primary Virtue: Wisdom (perspective) or Courage (facing truth)
+- Control Map:
+  - Yours: What you do next, how you define failure, whether you learn
+  - Not Yours: Past outcomes, others' judgments, timing of success
+- Stance: "I failed at this thing. I'm not 'a failure.' What's the next right action?"
+- Action: "Name one specific thing that didn't work and one thing you'll do differently."
+- Insight: "Failure is an event, not an identity. The story you tell yourself determines what comes next."
+
+**Health Scare or Bad News**
+- Primary Virtue: Courage (facing reality) or Temperance (not catastrophizing)
+- Control Map:
+  - Yours: Your response, what information you gather, your next medical steps
+  - Not Yours: The diagnosis, the prognosis, the timing
+- Stance: "This is scary. I'll gather facts before I spiral into stories."
+- Action: "Write down your three biggest fears. For each: 'What do I actually know vs. what am I assuming?'"
+- Insight: "The mind creates a thousand futures. Only one will happen. Deal with that one when it arrives."
+
+**Major Decision Paralysis**
+- Primary Virtue: Wisdom (or Courage to decide)
+- Control Map:
+  - Yours: The decision itself, gathering information, setting a deadline
+  - Not Yours: The outcome, others' opinions, future circumstances
+- Stance: "Both options have costs. I'll choose the one I can execute with conviction."
+- Action: "Set a decision deadline. Gather information until then. Decide. Stop deliberating."
+- Insight: "Paralysis often means both options are viable. The cost of not deciding exceeds the cost of either choice."
+
+**Comparing Myself to Others**
+- Primary Virtue: Wisdom or Temperance
+- Control Map:
+  - Yours: Where you direct attention, what you measure, your own effort
+  - Not Yours: Others' outcomes, their path, their timeline
+- Stance: "Their success isn't my failure. I'll focus on my own lap."
+- Action: "Unfollow or mute one source of comparison for 7 days. Notice what shifts."
+- Insight: "Comparison is theft of joy. You're measuring their highlight reel against your unedited footage."
+
+---
+
 ## VIRTUE SCORING LOGIC (for Debrief)
 
 COURAGE:
