@@ -6,75 +6,96 @@ interface SplashScreenProps {
 }
 
 const SplashScreen = ({ onComplete }: SplashScreenProps) => {
-  const [fadeOut, setFadeOut] = useState(false);
+  const [phase, setPhase] = useState<'enter' | 'hold' | 'exit'>('enter');
 
   useEffect(() => {
-    // Start fade out after 1.5s
-    const fadeTimer = setTimeout(() => setFadeOut(true), 1500);
-    // Complete and unmount after 2s
-    const completeTimer = setTimeout(onComplete, 2000);
+    // Phase 1: Enter animation complete after 400ms
+    const enterTimer = setTimeout(() => setPhase('hold'), 400);
+    // Phase 2: Start exit after 1.8s total
+    const exitTimer = setTimeout(() => setPhase('exit'), 1800);
+    // Phase 3: Complete and unmount after exit animation (2.3s total)
+    const completeTimer = setTimeout(onComplete, 2300);
     
     return () => {
-      clearTimeout(fadeTimer);
+      clearTimeout(enterTimer);
+      clearTimeout(exitTimer);
       clearTimeout(completeTimer);
     };
   }, [onComplete]);
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-background transition-opacity duration-500 ${
-        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-background transition-all duration-500 ease-out ${
+        phase === 'exit' ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
       }`}
     >
       {/* Subtle radial gradient background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--primary)/0.08)_0%,_transparent_70%)]" />
+      <div 
+        className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--primary)/0.12)_0%,_transparent_60%)] transition-opacity duration-700 ${
+          phase === 'enter' ? 'opacity-0' : 'opacity-100'
+        }`} 
+      />
       
-      {/* Icon container with loading ring */}
-      <div className="relative animate-fade-in">
-        {/* Outer glow */}
-        <div className="absolute inset-0 -m-4 rounded-full bg-primary/10 blur-xl animate-pulse" />
+      {/* Centered container - fixed size for precise alignment */}
+      <div 
+        className={`relative w-24 h-24 flex items-center justify-center transition-all duration-500 ease-out ${
+          phase === 'enter' ? 'opacity-0 scale-90' : 'opacity-100 scale-100'
+        }`}
+      >
+        {/* Soft glow - no animation, just static ambiance */}
+        <div className="absolute inset-0 -m-2 rounded-full bg-primary/8 blur-2xl" />
         
-        {/* Loading ring */}
-        <div className="absolute inset-0 -m-4">
-          <svg 
-            className="w-[calc(100%+2rem)] h-[calc(100%+2rem)] animate-spin" 
-            style={{ animationDuration: '2s' }}
-            viewBox="0 0 100 100"
-          >
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="hsl(var(--muted))"
-              strokeWidth="2"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeDasharray="70 212"
-              className="drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
-            />
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" />
-                <stop offset="50%" stopColor="hsl(var(--accent))" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
+        {/* Loading ring - perfectly centered SVG */}
+        <svg 
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 96 96"
+          style={{ 
+            animation: phase !== 'enter' ? 'spin 2s cubic-bezier(0.4, 0, 0.2, 1) infinite' : 'none',
+          }}
+        >
+          {/* Background track */}
+          <circle
+            cx="48"
+            cy="48"
+            r="44"
+            fill="none"
+            stroke="hsl(var(--muted)/0.5)"
+            strokeWidth="1.5"
+          />
+          {/* Progress arc */}
+          <circle
+            cx="48"
+            cy="48"
+            r="44"
+            fill="none"
+            stroke="url(#splashGradient)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="69 208"
+            strokeDashoffset="0"
+            style={{
+              filter: 'drop-shadow(0 0 6px hsl(var(--primary)/0.4))',
+              transition: 'stroke-dasharray 0.5s ease-out',
+            }}
+          />
+          <defs>
+            <linearGradient id="splashGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(var(--primary))" />
+              <stop offset="100%" stopColor="hsl(var(--accent))" />
+            </linearGradient>
+          </defs>
+        </svg>
         
-        {/* Icon */}
+        {/* Icon - centered within the ring */}
         <img 
           src={wellwellIcon} 
           alt="WellWell" 
-          className="w-20 h-20 relative z-10 drop-shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+          className={`w-14 h-14 relative z-10 transition-all duration-500 ease-out ${
+            phase === 'enter' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+          }`}
+          style={{
+            filter: 'drop-shadow(0 0 12px hsl(var(--primary)/0.25))',
+          }}
         />
       </div>
     </div>
