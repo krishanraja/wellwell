@@ -77,7 +77,7 @@ export default function Profile() {
         </div>
 
         {/* Scrollable content - more compact */}
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pb-2">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 scrollbar-hide">
           {/* Virtue balance - compact */}
           <div className="p-2.5 glass-card">
             <div className="flex items-center justify-between mb-1.5">

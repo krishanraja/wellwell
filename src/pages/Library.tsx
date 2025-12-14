@@ -34,7 +34,7 @@ export default function Library() {
   ];
 
   return (
-    <Layout>
+    <Layout scrollable>
       <div className="space-y-4">
         <div className="text-center animate-fade-up">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full mb-3">

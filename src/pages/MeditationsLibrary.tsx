@@ -67,7 +67,7 @@ const meditations = [
 
 export default function MeditationsLibrary() {
   return (
-    <Layout>
+    <Layout scrollable>
       <div className="space-y-4">
         {/* Header */}
         <div className="text-center animate-fade-up">

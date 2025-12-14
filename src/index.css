@@ -6,6 +6,10 @@
 
 @layer base {
   :root {
+    /* Navigation safe area system */
+    --nav-height: 4rem;
+    --safe-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 0.75rem);
+    
     --background: 160 20% 98%;
     --foreground: 165 20% 5%;
     --card: 160 15% 97%;
@@ -251,6 +255,9 @@
 }
 
 @layer utilities {
+  /* Safe area utilities */
+  .safe-bottom { padding-bottom: var(--safe-bottom); }
+  
   .animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
   .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
   .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }

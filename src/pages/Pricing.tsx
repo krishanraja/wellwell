@@ -13,7 +13,6 @@ const freeFeatures = [
   "3x Intervene / day",
   "3x Debrief / day",
   "Basic virtue tracking",
-  "Single persona",
 ];
 
 const proFeatures = [
@@ -22,8 +21,6 @@ const proFeatures = [
   "Monthly Narrative",
   "Virtue history & trends",
   "Multiple personas",
-  "Export your data",
-  "Priority support",
 ];
 
 export default function Pricing() {
@@ -96,68 +93,68 @@ export default function Pricing() {
 
   return (
     <Layout>
-      <div className="flex-1 flex flex-col py-4">
-        <div className="text-center mb-6 animate-fade-up">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">Choose Your Path</h1>
-          <p className="text-muted-foreground text-sm">Build Stoic habits at your own pace</p>
+      <div className="flex-1 flex flex-col py-2">
+        <div className="text-center mb-3 animate-fade-up">
+          <h1 className="font-display text-xl font-bold text-foreground mb-1">Choose Your Path</h1>
+          <p className="text-muted-foreground text-xs">Build Stoic habits at your own pace</p>
         </div>
 
-        <div className="space-y-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
+        <div className="space-y-2 animate-fade-up flex-1" style={{ animationDelay: "100ms" }}>
           {/* Free Plan */}
-          <div className={`p-5 rounded-2xl border ${!isPro ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
-            <div className="flex items-center justify-between mb-4">
+          <div className={`p-3 rounded-xl border ${!isPro ? 'border-primary bg-primary/5' : 'border-border bg-card'}`}>
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <h3 className="font-display text-lg font-bold text-foreground">Free</h3>
-                <p className="text-2xl font-bold text-foreground">$0<span className="text-sm font-normal text-muted-foreground">/month</span></p>
+                <h3 className="font-display text-base font-bold text-foreground">Free</h3>
+                <p className="text-xl font-bold text-foreground">$0<span className="text-xs font-normal text-muted-foreground">/month</span></p>
               </div>
               {!isPro && (
-                <span className="px-3 py-1 text-xs font-medium bg-primary/20 text-primary rounded-full">
+                <span className="px-2 py-0.5 text-[10px] font-medium bg-primary/20 text-primary rounded-full">
                   Current
                 </span>
               )}
             </div>
-            <ul className="space-y-2">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1">
               {freeFeatures.map((feature) => (
-                <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                  {feature}
-                </li>
+                <div key={feature} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Check className="w-3 h-3 text-primary flex-shrink-0" />
+                  <span className="truncate">{feature}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
 
           {/* Pro Plan */}
-          <div className={`p-5 rounded-2xl border ${isPro ? 'border-primary bg-primary/5' : 'border-border bg-card'} relative overflow-hidden`}>
+          <div className={`p-3 rounded-xl border ${isPro ? 'border-primary bg-primary/5' : 'border-border bg-card'} relative overflow-hidden`}>
             {!isPro && (
-              <div className="absolute top-0 right-0 bg-brand-gradient text-background text-xs font-medium px-3 py-1 rounded-bl-lg">
+              <div className="absolute top-0 right-0 bg-brand-gradient text-background text-[10px] font-medium px-2 py-0.5 rounded-bl-lg">
                 Recommended
               </div>
             )}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-                  Pro <Sparkles className="w-4 h-4 text-primary" />
+                <h3 className="font-display text-base font-bold text-foreground flex items-center gap-1.5">
+                  Pro <Sparkles className="w-3.5 h-3.5 text-primary" />
                 </h3>
-                <p className="text-2xl font-bold text-foreground">$2<span className="text-sm font-normal text-muted-foreground">/month</span></p>
+                <p className="text-xl font-bold text-foreground">$2<span className="text-xs font-normal text-muted-foreground">/month</span></p>
               </div>
               {isPro && (
-                <span className="px-3 py-1 text-xs font-medium bg-primary/20 text-primary rounded-full">
+                <span className="px-2 py-0.5 text-[10px] font-medium bg-primary/20 text-primary rounded-full">
                   Current
                 </span>
               )}
             </div>
-            <ul className="space-y-2 mb-4">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 mb-3">
               {proFeatures.map((feature) => (
-                <li key={feature} className="flex items-center gap-2 text-sm text-foreground">
-                  <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                  {feature}
-                </li>
+                <div key={feature} className="flex items-center gap-1.5 text-xs text-foreground">
+                  <Check className="w-3 h-3 text-primary flex-shrink-0" />
+                  <span className="truncate">{feature}</span>
+                </div>
               ))}
-            </ul>
+            </div>
             {isPro ? (
               <Button 
                 variant="outline" 
-                className="w-full" 
+                className="w-full h-9 text-sm" 
                 onClick={handleManage}
                 disabled={checkoutLoading}
               >
@@ -166,7 +163,7 @@ export default function Pricing() {
             ) : (
               <Button 
                 variant="brand" 
-                className="w-full" 
+                className="w-full h-9 text-sm" 
                 onClick={handleUpgrade}
                 disabled={checkoutLoading}
               >
@@ -174,7 +171,7 @@ export default function Pricing() {
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-3.5 h-3.5" />
                     Upgrade to Pro
                   </>
                 )}
@@ -183,7 +180,7 @@ export default function Pricing() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-6 animate-fade-up" style={{ animationDelay: "200ms" }}>
+        <p className="text-center text-[10px] text-muted-foreground mt-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
           Cancel anytime. Powered by Stripe.
         </p>
       </div>

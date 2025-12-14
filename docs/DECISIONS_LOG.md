@@ -201,6 +201,43 @@ This document tracks key architectural and design decisions with rationale.
 
 ---
 
+## 2024-12 | Sacred Navigation Zone & Viewport Consistency
+
+### Decision: Global safe area system for bottom navigation
+**Context**: User feedback identified multiple UX issues:
+1. Pricing page content overflowed but couldn't scroll
+2. Home "Your Virtues" card touched/overlapped bottom nav
+3. Journey page chart was clipped on left, content touched nav
+4. Library and Meditations pages couldn't scroll despite having content
+
+**Options Considered**:
+1. Fix padding on each page individually (rejected - inconsistent, error-prone)
+2. Increase global padding values (rejected - doesn't account for safe areas)
+3. Create CSS variable-based safe area system (chosen)
+
+**Decision**: 
+- Created `--nav-height` and `--safe-bottom` CSS variables that account for nav height, device safe area insets, and breathing room
+- Added `.safe-bottom` utility class used by Layout component
+- Layout now applies consistent safe padding regardless of scrollable state
+- Condensed Pricing page content to fit in viewport without scrolling (smaller padding, 2-column grid for features, reduced font sizes)
+- Fixed VirtueChart left margin clipping (changed `left: -20` to `left: 0`)
+- Enabled scrolling on Library and Meditations pages via `scrollable` prop
+
+**Rationale**:
+- The bottom nav should be "sacred" - content should never intersect with it
+- CSS calc with env(safe-area-inset-bottom) handles notched devices and gesture bars
+- Single source of truth for safe area spacing reduces bugs
+- Pricing page redesign follows Google Material Design principles for compact cards
+- Library pages are content-heavy and require scrolling; Pricing/Home should fit in viewport
+
+**Impact**:
+- Consistent 12px breathing room above nav across all pages
+- Professional appearance matching Google/Apple app standards
+- No content clipping or overlap on any screen size
+- Improved mobile UX across all tested viewports
+
+---
+
 ## Future Decisions Pending
 
 - [ ] Push notification strategy

@@ -302,7 +302,7 @@ export default function Home() {
           )}
 
           {/* Virtue Balance - pushed to bottom with breathing space */}
-          <div className="mt-auto shrink-0 pb-2">
+          <div className="mt-auto shrink-0">
             <StoicCard variant="glass" className="p-3">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

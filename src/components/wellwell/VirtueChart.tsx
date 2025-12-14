@@ -45,7 +45,7 @@ export function VirtueChart({ days = 14, compact = false }: VirtueChartProps) {
   return (
     <div className={compact ? 'h-32' : 'h-48'}>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={formattedData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+        <LineChart data={formattedData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
           <XAxis 
             dataKey="displayDate" 
             tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
@@ -55,10 +55,10 @@ export function VirtueChart({ days = 14, compact = false }: VirtueChartProps) {
           />
           <YAxis 
             domain={[0, 100]} 
-            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+            tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
             tickLine={false}
             axisLine={false}
-            width={30}
+            width={24}
           />
           <Tooltip 
             contentStyle={{ 
