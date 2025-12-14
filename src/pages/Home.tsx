@@ -55,7 +55,7 @@ export default function Home() {
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
   const { events, isLoading: eventsLoading } = useEvents();
   const { streak } = useStreak();
-  const { profile } = useProfile();
+  const { profile, isLoading: profileLoading } = useProfile();
   
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [hasPromptedForTimes, setHasPromptedForTimes] = useState(false);
@@ -80,9 +80,9 @@ export default function Home() {
     setShowWelcome(false);
   };
 
-  // Prompt for check-in times if not set (after welcome screen)
+  // Prompt for check-in times if not set (after welcome screen and profile loaded)
   useEffect(() => {
-    if (!showWelcome && !hasCheckInTimes && !hasPromptedForTimes && isReturningUser) {
+    if (!profileLoading && !showWelcome && !hasCheckInTimes && !hasPromptedForTimes && isReturningUser) {
       // Wait a moment before prompting
       const timer = setTimeout(() => {
         setShowTimeModal(true);
@@ -90,7 +90,7 @@ export default function Home() {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [showWelcome, hasCheckInTimes, hasPromptedForTimes, isReturningUser]);
+  }, [profileLoading, showWelcome, hasCheckInTimes, hasPromptedForTimes, isReturningUser]);
 
   const handleTranscript = async (text: string) => {
     setInput(text);
