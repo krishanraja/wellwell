@@ -35,12 +35,21 @@ function formatTimeForDisplay(timeString: string | null): string {
 }
 
 // Check if current time is within range of target time (within 30 min before or after)
+// Handles circular time wrapping around midnight (e.g., 23:45 to 00:15 is 30 minutes, not 23.5 hours)
 function isTimeActive(targetMinutes: number | null): boolean {
   if (targetMinutes === null) return false;
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  
+  // Calculate the absolute difference
   const diff = Math.abs(currentMinutes - targetMinutes);
-  return diff <= 30; // Within 30 minutes
+  
+  // If difference is more than 12 hours (720 minutes), we need to wrap around midnight
+  // The actual difference is the shorter path: either diff or (1440 - diff)
+  const minutesInDay = 24 * 60; // 1440 minutes
+  const wrappedDiff = diff > minutesInDay / 2 ? minutesInDay - diff : diff;
+  
+  return wrappedDiff <= 30; // Within 30 minutes
 }
 
 export function RitualTimeIndicator({ 
