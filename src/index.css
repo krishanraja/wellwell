@@ -264,6 +264,25 @@
   .stagger-children > *:nth-child(3) { animation-delay: 160ms; }
   .stagger-children > *:nth-child(4) { animation-delay: 240ms; }
   .stagger-children > *:nth-child(5) { animation-delay: 320ms; }
+  
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Horizontal scroll with elegant fade edges */
+  .scroll-fade-x {
+    position: relative;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scroll-fade-x::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

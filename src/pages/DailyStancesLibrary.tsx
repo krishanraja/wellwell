@@ -1,5 +1,6 @@
 import { Layout } from "@/components/wellwell/Layout";
 import { StoicCard } from "@/components/wellwell/StoicCard";
+import { HorizontalScroll } from "@/components/wellwell/HorizontalScroll";
 import { dailyStances, DailyStance } from "@/data/dailyStances";
 import { ScrollText, Flame, Droplets, Scale, Lightbulb } from "lucide-react";
 import { useState } from "react";
@@ -41,21 +42,23 @@ export default function DailyStancesLibrary() {
         </div>
 
         {/* Filter chips */}
-        <div className="flex gap-2 overflow-x-auto pb-2 animate-fade-up" style={{ animationDelay: "50ms" }}>
-          {filterOptions.map((option) => (
-            <button
-              key={option.key ?? "all"}
-              onClick={() => setFilter(option.key)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                filter === option.key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              {option.label}
-            </button>
-          ))}
+        <div className="animate-fade-up" style={{ animationDelay: "50ms" }}>
+          <HorizontalScroll className="pb-2">
+            {filterOptions.map((option) => (
+              <button
+                key={option.key ?? "all"}
+                onClick={() => setFilter(option.key)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all shrink-0",
+                  filter === option.key
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </HorizontalScroll>
         </div>
 
         {/* Stances list */}

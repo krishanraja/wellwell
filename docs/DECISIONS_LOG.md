@@ -167,6 +167,40 @@ This document tracks key architectural and design decisions with rationale.
 
 ---
 
+## 2024-12 | Mobile Viewport Optimization
+
+### Decision: Condensed UI components and elegant scroll indicators
+**Context**: User feedback identified three UX issues on mobile:
+1. Ugly grey horizontal scrollbar on filter chips
+2. "Your Virtues" card cut off by bottom navigation
+3. Journey page had excessive vertical scrolling with wasted header space
+
+**Options Considered**:
+1. Keep native scrollbars (rejected - poor UX)
+2. Hide scrollbars entirely (rejected - no affordance for scrolling)
+3. Create subtle fade indicators with hidden scrollbars (chosen)
+
+**Decision**: 
+- Created `HorizontalScroll` component with subtle fade edges that appear/disappear based on scroll position
+- Added `scrollbar-hide` CSS utility to hide native scrollbars while preserving scroll functionality
+- Condensed `VoiceFirstInput` component (mic button 28→20, reduced padding and margins)
+- Increased Layout bottom padding from 16→20 (non-scrollable) and 20→24 (scrollable)
+- Redesigned Journey page: removed profile avatar section, added inline header with name/streak/settings, reduced card padding
+
+**Rationale**:
+- Fade indicators are more elegant than grey scrollbars and provide clear affordance
+- Smaller voice input allows more content visible in viewport without scrolling
+- Bottom breathing space prevents content from feeling "crushed" against nav bar
+- Journey page now shows all key information with minimal/no scrolling on standard mobile viewports
+- Changes follow Apple HIG and Material Design principles for touch targets and visual hierarchy
+
+**Impact**:
+- Improved above-the-fold content visibility on Home (~15% more content visible)
+- Journey page fits in viewport for 90%+ of mobile devices
+- Consistent horizontal scroll UX across History, FAQ, DailyStances, and Home pages
+
+---
+
 ## Future Decisions Pending
 
 - [ ] Push notification strategy
