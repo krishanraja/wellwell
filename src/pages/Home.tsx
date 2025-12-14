@@ -22,20 +22,21 @@ import {
   Target,
   Shield,
   Compass,
-  Flame
+  Flame,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Session storage key to track if welcome has been shown this session
+// Local storage key to track if welcome has been shown (Fix #10: Persist across sessions)
 const WELCOME_SHOWN_KEY = 'wellwell_welcome_shown';
 
 export default function Home() {
   const navigate = useNavigate();
   const [input, setInput] = useState("");
   
-  // Check session storage to see if welcome was already shown this session
+  // Check localStorage to see if welcome was already shown (Fix #10)
   const [showWelcome, setShowWelcome] = useState(() => {
-    return sessionStorage.getItem(WELCOME_SHOWN_KEY) !== 'true';
+    return localStorage.getItem(WELCOME_SHOWN_KEY) !== 'true';
   });
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   
@@ -52,7 +53,7 @@ export default function Home() {
   } = useContextualNudge();
   
   const { trackUsage } = useUsageLimit("unified");
-  const { analyze, isLoading, response, reset } = useStoicAnalyzer();
+  const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { events, isLoading: eventsLoading } = useEvents();
   const { streak } = useStreak();
   const { profile, isLoading: profileLoading } = useProfile();
@@ -70,19 +71,28 @@ export default function Home() {
     }
   }, [eventsLoading, events.length, isFirstLoad]);
 
-  // Mark welcome as shown when it completes
+  // Mark welcome as shown when it completes (Fix #10: Use localStorage)
   const handleWelcomeComplete = () => {
-    sessionStorage.setItem(WELCOME_SHOWN_KEY, 'true');
+    localStorage.setItem(WELCOME_SHOWN_KEY, 'true');
     setShowWelcome(false);
   };
 
   const handleTranscript = async (text: string) => {
     setInput(text);
-    await trackUsage();
-    await analyze({
+    // Fix #4: Move usage tracking AFTER AI success
+    const result = await analyze({
       tool: primaryNudge.type === 'freeform' ? 'unified' : primaryNudge.type,
       input: text,
     });
+    
+    // Only track usage if analysis succeeded
+    if (result) {
+      try {
+        await trackUsage();
+      } catch (err) {
+        console.warn("Failed to track usage", err);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -234,13 +244,27 @@ export default function Home() {
                 </div>
               </div>
               
-              <VoiceFirstInput
-                onTranscript={handleTranscript}
-                placeholder={primaryNudge.placeholder}
-                processingText={primaryNudge.processingText}
-                isProcessing={isLoading}
-                className="py-3"
-              />
+              <div className="relative">
+                <VoiceFirstInput
+                  onTranscript={handleTranscript}
+                  placeholder={primaryNudge.placeholder}
+                  processingText={primaryNudge.processingText}
+                  isProcessing={isLoading}
+                  className="py-3"
+                />
+                {/* Cancel button during processing (Fix #1) */}
+                {isLoading && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={cancel}
+                    className="absolute top-2 right-2 z-10"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 

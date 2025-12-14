@@ -8,21 +8,29 @@ import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
-import { Flame, RefreshCw, Target, Shield, RotateCcw, Wind } from "lucide-react";
+import { Flame, RefreshCw, Target, Shield, RotateCcw, Wind, X } from "lucide-react";
 
 export default function Intervene() {
   const [trigger, setTrigger] = useState("");
   const { trackUsage } = useUsageLimit("intervene");
-  const { analyze, isLoading, response, reset } = useStoicAnalyzer();
+  const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
 
   const handleTranscript = async (text: string) => {
     setTrigger(text);
-    await trackUsage();
-    // Infer intensity from language (AI will assess)
-    await analyze({
+    // Fix #4: Move usage tracking AFTER AI success
+    const result = await analyze({
       tool: "intervene",
       input: JSON.stringify({ trigger: text, intensity: 7 }), // Default intensity, AI refines
     });
+    
+    // Only track usage if analysis succeeded
+    if (result) {
+      try {
+        await trackUsage();
+      } catch (err) {
+        console.warn("Failed to track usage", err);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -65,12 +73,26 @@ export default function Intervene() {
                 Let it out — I'll help you recalibrate
               </p>
               
-              <VoiceFirstInput
-                onTranscript={handleTranscript}
-                placeholder="Tap to speak what happened"
-                processingText="Recalibrating..."
-                isProcessing={isLoading}
-              />
+              <div className="relative">
+                <VoiceFirstInput
+                  onTranscript={handleTranscript}
+                  placeholder="Tap to speak what happened"
+                  processingText="Recalibrating..."
+                  isProcessing={isLoading}
+                />
+                {/* Cancel button during processing (Fix #1) */}
+                {isLoading && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={cancel}
+                    className="absolute top-2 right-2 z-10"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
             </div>
             
             {/* Bottom spacer for nav clearance */}

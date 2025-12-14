@@ -12,13 +12,13 @@ import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
 import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
 import { useProfile } from "@/hooks/useProfile";
-import { Moon, TrendingUp, TrendingDown, Minus, Target, RotateCcw, Sunrise, Sparkles } from "lucide-react";
+import { Moon, TrendingUp, TrendingDown, Minus, Target, RotateCcw, Sunrise, Sparkles, X } from "lucide-react";
 
 export default function Debrief() {
   const [reflection, setReflection] = useState("");
   const [showTimeModal, setShowTimeModal] = useState(false);
   const { trackUsage } = useUsageLimit("debrief");
-  const { analyze, isLoading, response, reset } = useStoicAnalyzer();
+  const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { scoresMap } = useVirtueScores();
   const { todayMorning } = useCrossSessionMemory();
   const { profile } = useProfile();
@@ -36,9 +36,8 @@ export default function Debrief() {
 
   const handleTranscript = async (text: string) => {
     setReflection(text);
-    await trackUsage();
-    // AI extracts structured insights from freeform reflection
-    await analyze({
+    // Fix #4: Move usage tracking AFTER AI success
+    const result = await analyze({
       tool: "debrief",
       input: JSON.stringify({
         controlled: text, // AI will parse and extract
@@ -47,6 +46,15 @@ export default function Debrief() {
         freeform: true, // Flag for AI to process as freeform
       }),
     });
+    
+    // Only track usage if analysis succeeded
+    if (result) {
+      try {
+        await trackUsage();
+      } catch (err) {
+        console.warn("Failed to track usage", err);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -127,12 +135,26 @@ export default function Debrief() {
                 What did you control? What escaped you?
               </p>
               
-              <VoiceFirstInput
-                onTranscript={handleTranscript}
-                placeholder="Tap to reflect on your day"
-                processingText="Synthesizing your day..."
-                isProcessing={isLoading}
-              />
+              <div className="relative">
+                <VoiceFirstInput
+                  onTranscript={handleTranscript}
+                  placeholder="Tap to reflect on your day"
+                  processingText="Synthesizing your day..."
+                  isProcessing={isLoading}
+                />
+                {/* Cancel button during processing (Fix #1) */}
+                {isLoading && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={cancel}
+                    className="absolute top-2 right-2 z-10"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
             </div>
             
             {/* Bottom spacer for nav clearance */}

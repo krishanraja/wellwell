@@ -13,13 +13,13 @@ import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
 import { useProfile } from "@/hooks/useProfile";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
 import { getPersonalizedStance } from "@/data/dailyStances";
-import { Sunrise, Target, Shield, Compass, RotateCcw, Quote } from "lucide-react";
+import { Sunrise, Target, Shield, Compass, RotateCcw, Quote, X } from "lucide-react";
 
 export default function Pulse() {
   const [challenge, setChallenge] = useState("");
   const [showTimeModal, setShowTimeModal] = useState(false);
   const { trackUsage } = useUsageLimit("pulse");
-  const { analyze, isLoading, response, reset } = useStoicAnalyzer();
+  const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { yesterday } = useCrossSessionMemory();
   const { profile } = useProfile();
   const { scoresMap } = useVirtueScores();
@@ -48,11 +48,21 @@ export default function Pulse() {
 
   const handleTranscript = async (text: string) => {
     setChallenge(text);
-    await trackUsage();
-    await analyze({
+    // Fix #4: Move usage tracking AFTER AI success
+    const result = await analyze({
       tool: "pulse",
       input: text,
     });
+    
+    // Only track usage if analysis succeeded
+    if (result) {
+      try {
+        await trackUsage();
+      } catch (err) {
+        // Usage tracking failure shouldn't block the user
+        console.warn("Failed to track usage", err);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -108,12 +118,26 @@ export default function Pulse() {
                 Speak freely — I'll find the Stoic wisdom within
               </p>
               
-              <VoiceFirstInput
-                onTranscript={handleTranscript}
-                placeholder="Tap to speak your challenge"
-                processingText="Finding your Stoic stance..."
-                isProcessing={isLoading}
-              />
+              <div className="relative">
+                <VoiceFirstInput
+                  onTranscript={handleTranscript}
+                  placeholder="Tap to speak your challenge"
+                  processingText="Finding your Stoic stance..."
+                  isProcessing={isLoading}
+                />
+                {/* Cancel button during processing (Fix #1) */}
+                {isLoading && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={cancel}
+                    className="absolute top-2 right-2 z-10"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
             </div>
             
             {/* Bottom spacer for nav clearance */}
