@@ -37,6 +37,8 @@ export function useProfile() {
           persona: data.persona as Persona | null,
           challenges: data.challenges || [],
           goals: data.goals || [],
+          morning_pulse_time: data.morning_pulse_time || null,
+          evening_debrief_time: data.evening_debrief_time || null,
         } as Profile;
       }
       

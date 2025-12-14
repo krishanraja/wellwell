@@ -2,36 +2,41 @@ import { useState, useEffect } from "react";
 import { Layout } from "@/components/wellwell/Layout";
 import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
 import { StoicCard, StoicCardContent } from "@/components/wellwell/StoicCard";
-import { VirtueBar } from "@/components/wellwell/VirtueBar";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
-import { HorizontalScroll } from "@/components/wellwell/HorizontalScroll";
 import WelcomeBackScreen from "@/components/wellwell/WelcomeBackScreen";
+import { RitualTimeIndicator } from "@/components/wellwell/RitualTimeIndicator";
+import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
 import { useNavigate } from "react-router-dom";
 import { useContextualNudge } from "@/hooks/useContextualNudge";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
-import { useVirtueScores } from "@/hooks/useVirtueScores";
 import { useEvents } from "@/hooks/useEvents";
 import { useStreak } from "@/hooks/useStreak";
+import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 import { 
   Sparkles, 
-  ChevronRight, 
   RotateCcw,
   Target,
   Shield,
   Compass,
-  Flame,
-  Check
+  Flame
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// Session storage key to track if welcome has been shown this session
+const WELCOME_SHOWN_KEY = 'wellwell_welcome_shown';
 
 export default function Home() {
   const navigate = useNavigate();
   const [input, setInput] = useState("");
-  const [showWelcome, setShowWelcome] = useState(true);
+  
+  // Check session storage to see if welcome was already shown this session
+  const [showWelcome, setShowWelcome] = useState(() => {
+    return sessionStorage.getItem(WELCOME_SHOWN_KEY) !== 'true';
+  });
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   
   const { 
@@ -48,18 +53,17 @@ export default function Home() {
   
   const { trackUsage } = useUsageLimit("unified");
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
-  const { scoresMap, isLoading: virtuesLoading } = useVirtueScores();
   const { events, isLoading: eventsLoading } = useEvents();
   const { streak } = useStreak();
+  const { profile } = useProfile();
   
-  const virtues = {
-    courage: scoresMap?.courage?.score ?? 50,
-    temperance: scoresMap?.temperance?.score ?? 50,
-    justice: scoresMap?.justice?.score ?? 50,
-    wisdom: scoresMap?.wisdom?.score ?? 50,
-  };
+  const [showTimeModal, setShowTimeModal] = useState(false);
+  const [hasPromptedForTimes, setHasPromptedForTimes] = useState(false);
 
-  // Only show welcome for returning users on first load
+  // Check if user has set check-in times
+  const hasCheckInTimes = profile?.morning_pulse_time || profile?.evening_debrief_time;
+
+  // Only show welcome for returning users on first load of the session
   useEffect(() => {
     if (!eventsLoading && isFirstLoad) {
       if (events.length === 0) {
@@ -69,6 +73,24 @@ export default function Home() {
       setIsFirstLoad(false);
     }
   }, [eventsLoading, events.length, isFirstLoad]);
+
+  // Mark welcome as shown when it completes
+  const handleWelcomeComplete = () => {
+    sessionStorage.setItem(WELCOME_SHOWN_KEY, 'true');
+    setShowWelcome(false);
+  };
+
+  // Prompt for check-in times if not set (after welcome screen)
+  useEffect(() => {
+    if (!showWelcome && !hasCheckInTimes && !hasPromptedForTimes && isReturningUser) {
+      // Wait a moment before prompting
+      const timer = setTimeout(() => {
+        setShowTimeModal(true);
+        setHasPromptedForTimes(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [showWelcome, hasCheckInTimes, hasPromptedForTimes, isReturningUser]);
 
   const handleTranscript = async (text: string) => {
     setInput(text);
@@ -88,9 +110,9 @@ export default function Home() {
     navigate(route);
   };
 
-  // Welcome screen for returning users
+  // Welcome screen for returning users - only on first session load
   if (showWelcome && isReturningUser) {
-    return <WelcomeBackScreen onComplete={() => setShowWelcome(false)} />;
+    return <WelcomeBackScreen onComplete={handleWelcomeComplete} />;
   }
 
   // Response view after AI analysis
@@ -187,70 +209,39 @@ export default function Home() {
             <p className="text-sm text-muted-foreground">{contextMessage}</p>
           </div>
 
-          {/* Daily Progress Indicators */}
-          {(timeContext === 'evening' || timeContext === 'night' || hasCompletedPulseToday) && (
-            <div className="shrink-0 flex gap-2 mb-4">
-              <div 
-                className={cn(
-                  "flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border transition-all",
-                  hasCompletedPulseToday 
-                    ? "bg-primary/5 border-primary/30" 
-                    : "bg-muted/30 border-border/50"
-                )}
-              >
-                {hasCompletedPulseToday ? (
-                  <Check className="w-4 h-4 text-primary" />
-                ) : (
-                  <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30" />
-                )}
-                <span className={cn(
-                  "text-xs font-medium",
-                  hasCompletedPulseToday ? "text-primary" : "text-muted-foreground"
-                )}>
-                  Morning Pulse
-                </span>
-              </div>
-              <div 
-                className={cn(
-                  "flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border transition-all",
-                  hasCompletedDebriefToday 
-                    ? "bg-primary/5 border-primary/30" 
-                    : "bg-muted/30 border-border/50"
-                )}
-              >
-                {hasCompletedDebriefToday ? (
-                  <Check className="w-4 h-4 text-primary" />
-                ) : (
-                  <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30" />
-                )}
-                <span className={cn(
-                  "text-xs font-medium",
-                  hasCompletedDebriefToday ? "text-primary" : "text-muted-foreground"
-                )}>
-                  Evening Debrief
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Daily Ritual Indicators with time display */}
+          <div className="shrink-0">
+            <RitualTimeIndicator
+              hasCompletedPulseToday={hasCompletedPulseToday}
+              hasCompletedDebriefToday={hasCompletedDebriefToday}
+              onSetTimeClick={() => setShowTimeModal(true)}
+            />
+          </div>
+          
+          {/* Check-in Time Modal */}
+          <CheckInTimeModal 
+            open={showTimeModal} 
+            onOpenChange={setShowTimeModal}
+          />
 
-          {/* PRIMARY ACTION - The main contextual nudge */}
-          <div className="shrink-0 mb-4">
+          {/* PRIMARY ACTION - The main contextual nudge (30-40% of viewport) */}
+          <div className="shrink-0 mb-6" style={{ minHeight: '35vh' }}>
             <div 
-              className="p-4 rounded-2xl border-2 transition-all"
+              className="h-full p-6 rounded-3xl border-2 transition-all flex flex-col"
               style={{ 
                 borderColor: `${primaryNudge.accentColor}40`,
-                background: `linear-gradient(135deg, ${primaryNudge.accentColor}08 0%, transparent 100%)`
+                background: `linear-gradient(135deg, ${primaryNudge.accentColor}10 0%, ${primaryNudge.accentColor}05 50%, transparent 100%)`
               }}
             >
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-4 mb-4">
                 <div 
-                  className="p-2.5 rounded-xl"
+                  className="p-3 rounded-2xl"
                   style={{ backgroundColor: `${primaryNudge.accentColor}20` }}
                 >
-                  <PrimaryIcon className="w-5 h-5" style={{ color: primaryNudge.accentColor }} />
+                  <PrimaryIcon className="w-6 h-6" style={{ color: primaryNudge.accentColor }} />
                 </div>
                 <div>
-                  <h2 className="font-display text-lg font-semibold text-foreground">
+                  <h2 className="font-display text-xl font-bold text-foreground">
                     {primaryNudge.headline}
                   </h2>
                   <p className="text-sm text-muted-foreground">
@@ -259,23 +250,25 @@ export default function Home() {
                 </div>
               </div>
               
-              <VoiceFirstInput
-                onTranscript={handleTranscript}
-                placeholder={primaryNudge.placeholder}
-                processingText={primaryNudge.processingText}
-                isProcessing={isLoading}
-                className="py-2"
-              />
+              <div className="flex-1 flex items-center justify-center">
+                <VoiceFirstInput
+                  onTranscript={handleTranscript}
+                  placeholder={primaryNudge.placeholder}
+                  processingText={primaryNudge.processingText}
+                  isProcessing={isLoading}
+                  className="py-4"
+                />
+              </div>
             </div>
           </div>
 
-          {/* SECONDARY OPTIONS - Quick access to other tools */}
+          {/* SECONDARY OPTIONS - 2x2 Grid for situational tools */}
           {secondaryNudges.length > 0 && (
-            <div className="shrink-0 mb-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+            <div className="flex-1 min-h-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                 Or choose a specific situation
               </p>
-              <HorizontalScroll className="pb-1 -mx-4 px-4">
+              <div className="grid grid-cols-2 gap-3">
                 {secondaryNudges.map((nudge) => {
                   const NudgeIcon = nudge.icon;
                   return (
@@ -283,51 +276,28 @@ export default function Home() {
                       key={nudge.type}
                       onClick={() => handleSecondaryNudge(nudge.route)}
                       className={cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 bg-card/50",
-                        "hover:bg-card hover:border-border transition-all whitespace-nowrap shrink-0"
+                        "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 border-border/50 bg-card/50",
+                        "hover:bg-card hover:border-border hover:shadow-glow transition-all active:scale-[0.98]"
                       )}
                     >
-                      <NudgeIcon 
-                        className="w-4 h-4" 
-                        style={{ color: nudge.accentColor }} 
-                      />
-                      <span className="text-sm font-medium text-foreground">
+                      <div 
+                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        style={{ backgroundColor: `${nudge.accentColor}20` }}
+                      >
+                        <NudgeIcon 
+                          className="w-5 h-5" 
+                          style={{ color: nudge.accentColor }} 
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-foreground text-center">
                         {nudge.headline}
                       </span>
                     </button>
                   );
                 })}
-              </HorizontalScroll>
+              </div>
             </div>
           )}
-
-          {/* Virtue Balance - pushed to bottom with breathing space */}
-          <div className="mt-auto shrink-0">
-            <StoicCard variant="glass" className="p-3">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Your Virtues
-                </p>
-                <button 
-                  onClick={() => navigate("/profile")} 
-                  className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
-                >
-                  Journey
-                  <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-              
-              {virtuesLoading ? (
-                <div className="space-y-1.5">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-1.5 bg-muted rounded-full animate-pulse" />
-                  ))}
-                </div>
-              ) : (
-                <VirtueBar {...virtues} compact />
-              )}
-            </StoicCard>
-          </div>
         </div>
       </UsageLimitGate>
     </Layout>

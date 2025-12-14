@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import wellwellLogo from "@/assets/wellwell-logo.png";
 import wellwellIcon from "@/assets/wellwell-icon.png";
-import { Menu, User, Flame, Sunrise, Sun, Moon, LogOut } from "lucide-react";
+import { User, Flame, Sunrise, Sun, Moon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTimeOfDay } from "@/hooks/useTimeOfDay";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,14 +43,8 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
       "flex items-center justify-between py-3 px-1",
       className
     )}>
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-xl" 
-        onClick={() => navigate('/more')}
-      >
-        <Menu className="w-5 h-5" />
-      </Button>
+      {/* Left side - empty spacer for layout balance */}
+      <div className="w-10" />
       
       {showGreeting ? (
         <div className="flex items-center gap-2">

@@ -3,13 +3,30 @@ import { LogoFull } from "@/components/wellwell/Header";
 import { Button } from "@/components/ui/button";
 import { MicroInput } from "@/components/wellwell/MicroInput";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Brain, Heart, Compass, Users, Loader2 } from "lucide-react";
+import { ArrowRight, Brain, Heart, Compass, Users, Loader2, Sunrise, Moon, SkipForward } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useEvents } from "@/hooks/useEvents";
 import { toast } from "sonner";
 import type { Persona } from "@/types/database";
 import { logger } from "@/lib/logger";
+
+// Time presets for check-in times
+const morningPresets = [
+  { label: "6:00 AM", value: "06:00:00" },
+  { label: "7:00 AM", value: "07:00:00" },
+  { label: "7:30 AM", value: "07:30:00" },
+  { label: "8:00 AM", value: "08:00:00" },
+  { label: "9:00 AM", value: "09:00:00" },
+];
+
+const eveningPresets = [
+  { label: "6:00 PM", value: "18:00:00" },
+  { label: "7:00 PM", value: "19:00:00" },
+  { label: "8:00 PM", value: "20:00:00" },
+  { label: "9:00 PM", value: "21:00:00" },
+  { label: "10:00 PM", value: "22:00:00" },
+];
 
 const challenges = [
   { id: "conflict", label: "Conflict", icon: Users },
@@ -41,6 +58,8 @@ export default function Onboarding() {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [selectedPersona, setSelectedPersona] = useState("");
   const [baselineMoment, setBaselineMoment] = useState("");
+  const [morningTime, setMorningTime] = useState<string | null>(null);
+  const [eveningTime, setEveningTime] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const toggleChallenge = (id: string) => {
@@ -73,6 +92,8 @@ export default function Onboarding() {
         goals: selectedGoals,
         persona: selectedPersona as Persona,
         baseline_moment: baselineMoment,
+        morning_pulse_time: morningTime,
+        evening_debrief_time: eveningTime,
       });
 
       // Create an initial event with the baseline moment
@@ -243,6 +264,95 @@ export default function Onboarding() {
           <div className="flex-1 flex flex-col min-h-0 animate-fade-up">
             <div className="mb-4">
               <h2 className="font-display text-xl font-bold text-foreground mb-1">
+                When can you check in?
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Set your daily ritual times (optional)
+              </p>
+            </div>
+
+            <div className="flex-1 space-y-6 overflow-y-auto">
+              {/* Morning Pulse */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-2 rounded-lg bg-amber-500/10">
+                    <Sunrise className="w-4 h-4 text-amber-500" />
+                  </div>
+                  <span className="font-medium text-foreground">Morning Pulse</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {morningPresets.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => setMorningTime(morningTime === preset.value ? null : preset.value)}
+                      className={cn(
+                        "px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all",
+                        morningTime === preset.value
+                          ? "border-amber-500 bg-amber-500/10 text-amber-600"
+                          : "border-border bg-card/50 text-muted-foreground hover:border-amber-500/50"
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Evening Debrief */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-2 rounded-lg bg-purple-500/10">
+                    <Moon className="w-4 h-4 text-purple-500" />
+                  </div>
+                  <span className="font-medium text-foreground">Evening Debrief</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {eveningPresets.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => setEveningTime(eveningTime === preset.value ? null : preset.value)}
+                      className={cn(
+                        "px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all",
+                        eveningTime === preset.value
+                          ? "border-purple-500 bg-purple-500/10 text-purple-600"
+                          : "border-border bg-card/50 text-muted-foreground hover:border-purple-500/50"
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-auto pt-4 shrink-0">
+              <Button
+                variant="ghost"
+                size="lg"
+                className="flex-1"
+                onClick={() => setStep(5)}
+              >
+                <SkipForward className="w-4 h-4" />
+                Skip
+              </Button>
+              <Button
+                variant="brand"
+                size="lg"
+                className="flex-1"
+                onClick={() => setStep(5)}
+              >
+                Continue
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="flex-1 flex flex-col min-h-0 animate-fade-up">
+            <div className="mb-4">
+              <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 One thing on your mind
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -292,9 +402,9 @@ export default function Onboarding() {
 
       <div className="relative flex-1 flex flex-col min-h-0 max-w-lg mx-auto w-full px-6 py-4 safe-area-top safe-area-bottom overflow-hidden">
         {/* Progress */}
-        {step > 0 && step < 5 && (
+        {step > 0 && step < 6 && (
           <div className="flex gap-2 mb-4">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
                 className={cn(

@@ -20,6 +20,8 @@ export interface Profile {
   challenges: string[];
   goals: string[];
   baseline_moment: string | null;
+  morning_pulse_time: string | null; // TIME stored as HH:MM:SS string
+  evening_debrief_time: string | null; // TIME stored as HH:MM:SS string
   created_at: string;
   updated_at: string;
 }
@@ -32,6 +34,8 @@ export interface ProfileInsert {
   challenges?: string[];
   goals?: string[];
   baseline_moment?: string | null;
+  morning_pulse_time?: string | null;
+  evening_debrief_time?: string | null;
 }
 
 export interface ProfileUpdate {
@@ -41,6 +45,8 @@ export interface ProfileUpdate {
   challenges?: string[];
   goals?: string[];
   baseline_moment?: string | null;
+  morning_pulse_time?: string | null;
+  evening_debrief_time?: string | null;
 }
 
 // Session table
