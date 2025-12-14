@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/wellwell/Layout";
+import { HorizontalScroll } from "@/components/wellwell/HorizontalScroll";
 import { faqData, getFAQSchemaData, FAQItem } from "@/data/faqData";
 import { ChevronDown, Search, HelpCircle, BookOpen, Brain, Sparkles, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -115,37 +116,39 @@ export default function FAQ() {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4 scrollbar-hide">
-            <button
-              onClick={() => setActiveCategory('all')}
-              className={cn(
-                "shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all",
-                activeCategory === 'all' 
-                  ? "bg-primary text-primary-foreground" 
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
-              )}
-            >
-              All Topics
-            </button>
-            {(Object.keys(categoryConfig) as Array<keyof typeof categoryConfig>).map(category => {
-              const config = categoryConfig[category];
-              const Icon = config.icon;
-              return (
-                <button
-                  key={category}
-                  onClick={() => setActiveCategory(category)}
-                  className={cn(
-                    "shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all",
-                    activeCategory === category 
-                      ? "bg-primary text-primary-foreground" 
-                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                  )}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {config.label}
-                </button>
-              );
-            })}
+          <div className="mb-6 -mx-4 px-4">
+            <HorizontalScroll className="pb-2">
+              <button
+                onClick={() => setActiveCategory('all')}
+                className={cn(
+                  "shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all",
+                  activeCategory === 'all' 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                )}
+              >
+                All Topics
+              </button>
+              {(Object.keys(categoryConfig) as Array<keyof typeof categoryConfig>).map(category => {
+                const config = categoryConfig[category];
+                const Icon = config.icon;
+                return (
+                  <button
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    className={cn(
+                      "shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      activeCategory === category 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {config.label}
+                  </button>
+                );
+              })}
+            </HorizontalScroll>
           </div>
 
           {/* FAQ List */}

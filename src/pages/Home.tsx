@@ -6,6 +6,7 @@ import { VirtueBar } from "@/components/wellwell/VirtueBar";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { HorizontalScroll } from "@/components/wellwell/HorizontalScroll";
 import WelcomeBackScreen from "@/components/wellwell/WelcomeBackScreen";
 import { useNavigate } from "react-router-dom";
 import { useContextualNudge } from "@/hooks/useContextualNudge";
@@ -270,11 +271,11 @@ export default function Home() {
 
           {/* SECONDARY OPTIONS - Quick access to other tools */}
           {secondaryNudges.length > 0 && (
-            <div className="shrink-0 mb-4">
+            <div className="shrink-0 mb-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                 Or choose a specific situation
               </p>
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+              <HorizontalScroll className="pb-1 -mx-4 px-4">
                 {secondaryNudges.map((nudge) => {
                   const NudgeIcon = nudge.icon;
                   return (
@@ -296,12 +297,12 @@ export default function Home() {
                     </button>
                   );
                 })}
-              </div>
+              </HorizontalScroll>
             </div>
           )}
 
-          {/* Virtue Balance - pushed to bottom */}
-          <div className="mt-auto shrink-0">
+          {/* Virtue Balance - pushed to bottom with breathing space */}
+          <div className="mt-auto shrink-0 pb-2">
             <StoicCard variant="glass" className="p-3">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

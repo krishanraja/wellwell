@@ -1,5 +1,6 @@
 import { Layout } from "@/components/wellwell/Layout";
 import { StoicCard } from "@/components/wellwell/StoicCard";
+import { HorizontalScroll } from "@/components/wellwell/HorizontalScroll";
 import { useEvents } from "@/hooks/useEvents";
 import { Clock, Sunrise, Flame, Moon, Scale, Swords, History as HistoryIcon } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
@@ -47,21 +48,23 @@ export default function History() {
         </div>
 
         {/* Filter chips - fixed */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 shrink-0 -mx-4 px-4">
-          {filterOptions.map((option) => (
-            <button
-              key={option.key ?? "all"}
-              onClick={() => setFilter(option.key)}
-              className={cn(
-                "px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0",
-                filter === option.key
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              {option.label}
-            </button>
-          ))}
+        <div className="shrink-0 -mx-4 px-4">
+          <HorizontalScroll className="pb-1 gap-1.5">
+            {filterOptions.map((option) => (
+              <button
+                key={option.key ?? "all"}
+                onClick={() => setFilter(option.key)}
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0",
+                  filter === option.key
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </HorizontalScroll>
         </div>
 
         {/* Events list - scrollable */}

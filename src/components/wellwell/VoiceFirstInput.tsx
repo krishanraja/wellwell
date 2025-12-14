@@ -117,50 +117,50 @@ export function VoiceFirstInput({
     }
   };
 
-  // Processing state
+  // Processing state - compact
   if (isProcessing) {
     return (
-      <div className={cn("flex flex-col items-center justify-center py-8", className)}>
-        <div className="relative mb-6">
-          <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center">
-            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+      <div className={cn("flex flex-col items-center justify-center py-4", className)}>
+        <div className="relative mb-4">
+          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+            <Loader2 className="w-7 h-7 text-primary animate-spin" />
           </div>
           {/* Ripple effect */}
           <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: "1.5s" }} />
         </div>
-        <p className="text-lg font-medium text-foreground animate-pulse">{processingText}</p>
+        <p className="text-sm font-medium text-foreground animate-pulse">{processingText}</p>
       </div>
     );
   }
 
-  // Text input fallback or preference
+  // Text input fallback or preference - compact
   if (showTextInput) {
     return (
-      <div className={cn("flex flex-col gap-4", className)}>
+      <div className={cn("flex flex-col gap-3", className)}>
         <textarea
           ref={textareaRef}
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
           placeholder="Share what's on your mind..."
-          className="w-full bg-muted/50 rounded-2xl p-4 min-h-[120px] text-foreground placeholder:text-muted-foreground resize-none border border-border focus:border-primary focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+          className="w-full bg-muted/50 rounded-xl p-3 min-h-[80px] text-sm text-foreground placeholder:text-muted-foreground resize-none border border-border focus:border-primary focus:ring-1 focus:ring-primary/50 outline-none transition-all"
           disabled={disabled}
         />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {isSupported && (
             <button
               type="button"
               onClick={() => setShowTextInput(false)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Mic className="w-4 h-4" />
-              Use voice instead
+              <Mic className="w-3.5 h-3.5" />
+              Voice
             </button>
           )}
           <button
             type="button"
             onClick={handleTextSubmit}
             disabled={!transcript.trim() || disabled}
-            className="ml-auto px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="ml-auto px-5 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue
           </button>
@@ -169,16 +169,16 @@ export function VoiceFirstInput({
     );
   }
 
-  // Voice-first interface
+  // Voice-first interface - compact layout
   return (
-    <div className={cn("flex flex-col items-center justify-center py-4", className)}>
-      {/* Main voice button */}
+    <div className={cn("flex flex-col items-center justify-center py-2", className)}>
+      {/* Main voice button - more compact */}
       <button
         type="button"
         onClick={toggleListening}
         disabled={disabled}
         className={cn(
-          "relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-300 mb-6",
+          "relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 mb-4",
           isListening
             ? "bg-primary shadow-2xl shadow-primary/40 scale-110"
             : "bg-muted hover:bg-muted/80 hover:scale-105"
@@ -189,48 +189,48 @@ export function VoiceFirstInput({
         {isListening && (
           <>
             <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping" style={{ animationDuration: "1.5s" }} />
-            <div className="absolute -inset-4 rounded-full border-2 border-primary/30 animate-pulse" />
-            <div className="absolute -inset-8 rounded-full border border-primary/20 animate-pulse" style={{ animationDelay: "0.2s" }} />
+            <div className="absolute -inset-3 rounded-full border-2 border-primary/30 animate-pulse" />
+            <div className="absolute -inset-6 rounded-full border border-primary/20 animate-pulse" style={{ animationDelay: "0.2s" }} />
           </>
         )}
         
         <Mic 
           className={cn(
-            "w-10 h-10 transition-all",
+            "w-8 h-8 transition-all",
             isListening ? "text-primary-foreground" : "text-muted-foreground"
           )} 
         />
       </button>
 
-      {/* Status text */}
+      {/* Status text - compact */}
       <p className={cn(
-        "text-lg font-medium mb-2 transition-colors",
+        "text-base font-medium mb-1 transition-colors",
         isListening ? "text-primary" : "text-foreground"
       )}>
         {isListening ? "I'm listening..." : placeholder}
       </p>
 
-      {/* Live transcript */}
+      {/* Live transcript - compact */}
       {transcript && (
-        <div className="w-full max-w-md mt-4 p-4 bg-muted/50 rounded-2xl animate-fade-up">
-          <p className="text-sm text-muted-foreground mb-1">What I heard:</p>
-          <p className="text-foreground">{transcript}</p>
+        <div className="w-full max-w-md mt-3 p-3 bg-muted/50 rounded-xl animate-fade-up">
+          <p className="text-xs text-muted-foreground mb-0.5">What I heard:</p>
+          <p className="text-sm text-foreground">{transcript}</p>
         </div>
       )}
 
       {/* Tap to stop hint when listening */}
       {isListening && (
-        <p className="text-sm text-muted-foreground mt-4 animate-fade-up">
+        <p className="text-xs text-muted-foreground mt-3 animate-fade-up">
           Tap again when finished
         </p>
       )}
 
-      {/* Type instead option */}
+      {/* Type instead option - compact */}
       {!isListening && !transcript && (
         <button
           type="button"
           onClick={() => setShowTextInput(true)}
-          className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
+          className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
         >
           Or type instead
         </button>
