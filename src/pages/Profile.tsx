@@ -1,13 +1,14 @@
 import { Layout } from "@/components/wellwell/Layout";
 import { VirtueBar } from "@/components/wellwell/VirtueBar";
 import { VirtueChart } from "@/components/wellwell/VirtueChart";
+import { LoadingScreen } from "@/components/wellwell/LoadingScreen";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
 import { useStreak } from "@/hooks/useStreak";
 import { useEvents } from "@/hooks/useEvents";
 import { usePatterns } from "@/hooks/usePatterns";
-import { Flame, Loader2, TrendingUp, Lightbulb, ChevronRight } from "lucide-react";
+import { Flame, TrendingUp, Lightbulb, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
@@ -44,13 +45,7 @@ export default function Profile() {
   const displayName = profile?.display_name || user?.email?.split("@")[0] || "Stoic";
 
   if (isLoading) {
-    return (
-      <Layout>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        </div>
-      </Layout>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -77,7 +72,7 @@ export default function Profile() {
         </div>
 
         {/* Scrollable content - more compact */}
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 scrollbar-hide">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 scrollbar-hide pb-20">
           {/* Virtue balance - compact */}
           <div className="p-2.5 glass-card">
             <div className="flex items-center justify-between mb-1.5">
@@ -116,7 +111,7 @@ export default function Profile() {
           )}
 
           {/* Recent activity - compact inline list */}
-          <div className="p-2.5 glass-card">
+          <div className="p-2.5 glass-card mb-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5">Recent Activity</p>
             <div className="space-y-1">
               {recentEvents.length > 0 ? (

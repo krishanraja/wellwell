@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/wellwell/Layout";
 import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
@@ -16,11 +17,23 @@ import { Sunrise, Target, Shield, Compass, RotateCcw, Quote } from "lucide-react
 
 export default function Pulse() {
   const [challenge, setChallenge] = useState("");
+  const [showTimeModal, setShowTimeModal] = useState(false);
   const { trackUsage } = useUsageLimit("pulse");
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
   const { yesterday } = useCrossSessionMemory();
   const { profile } = useProfile();
   const { scoresMap } = useVirtueScores();
+
+  // Show time modal if user doesn't have morning pulse time set
+  useEffect(() => {
+    if (profile && !profile.morning_pulse_time && !showTimeModal) {
+      // Small delay to avoid showing immediately on page load
+      const timer = setTimeout(() => {
+        setShowTimeModal(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [profile, showTimeModal]);
 
   // Get personalized stance based on user context
   const lowestVirtue = Object.entries(scoresMap).length > 0
@@ -51,6 +64,10 @@ export default function Pulse() {
     return (
       <Layout>
         <UsageLimitGate toolName="pulse">
+          <CheckInTimeModal 
+            open={showTimeModal} 
+            onOpenChange={setShowTimeModal}
+          />
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Compact header with wisdom */}
             <div className="text-center py-2 animate-fade-up shrink-0">

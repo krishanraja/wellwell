@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/wellwell/Layout";
 import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
 import { Button } from "@/components/ui/button";
@@ -6,18 +6,33 @@ import { StoicCard } from "@/components/wellwell/StoicCard";
 import { VirtueBar } from "@/components/wellwell/VirtueBar";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
 import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
+import { useProfile } from "@/hooks/useProfile";
 import { Moon, TrendingUp, TrendingDown, Minus, Target, RotateCcw, Sunrise, Sparkles } from "lucide-react";
 
 export default function Debrief() {
   const [reflection, setReflection] = useState("");
+  const [showTimeModal, setShowTimeModal] = useState(false);
   const { trackUsage } = useUsageLimit("debrief");
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
   const { scoresMap } = useVirtueScores();
   const { todayMorning } = useCrossSessionMemory();
+  const { profile } = useProfile();
+
+  // Show time modal if user doesn't have evening debrief time set
+  useEffect(() => {
+    if (profile && !profile.evening_debrief_time && !showTimeModal) {
+      // Small delay to avoid showing immediately on page load
+      const timer = setTimeout(() => {
+        setShowTimeModal(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [profile, showTimeModal]);
 
   const handleTranscript = async (text: string) => {
     setReflection(text);
@@ -63,6 +78,10 @@ export default function Debrief() {
     return (
       <Layout>
         <UsageLimitGate toolName="debrief">
+          <CheckInTimeModal 
+            open={showTimeModal} 
+            onOpenChange={setShowTimeModal}
+          />
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Compact evening header */}
             <div className="text-center py-2 animate-fade-up shrink-0">

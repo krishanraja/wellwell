@@ -199,10 +199,11 @@ export function useContextualNudge(): ContextualState {
     
     // =========================================
     // DETERMINE SECONDARY NUDGES
+    // Always show Intervene, Decision, Conflict as the three specific situations
     // =========================================
     const secondaryNudges: ContextualNudge[] = [];
     
-    // Intervene is always available as secondary (for urgent moments)
+    // Always include the three specific situations (unless one is primary)
     if (primaryType !== 'intervene') {
       secondaryNudges.push({
         ...NUDGE_CONFIG.intervene,
@@ -210,39 +211,23 @@ export function useContextualNudge(): ContextualState {
       });
     }
     
-    // Add situation-based options
     if (primaryType !== 'decision') {
       secondaryNudges.push({
         ...NUDGE_CONFIG.decision,
-        priority: 'tertiary',
+        priority: 'secondary',
       });
     }
     
     if (primaryType !== 'conflict') {
       secondaryNudges.push({
         ...NUDGE_CONFIG.conflict,
-        priority: 'tertiary',
-      });
-    }
-    
-    // Add uncompleted daily rituals as secondary
-    if (primaryType !== 'pulse' && !hasCompletedPulseToday && timeContext !== 'night') {
-      secondaryNudges.unshift({
-        ...NUDGE_CONFIG.pulse,
-        priority: 'secondary',
-      });
-    }
-    
-    if (primaryType !== 'debrief' && !hasCompletedDebriefToday && (timeContext === 'evening' || timeContext === 'night')) {
-      secondaryNudges.unshift({
-        ...NUDGE_CONFIG.debrief,
         priority: 'secondary',
       });
     }
     
     return {
       primaryNudge,
-      secondaryNudges: secondaryNudges.slice(0, 3), // Max 3 secondary options
+      secondaryNudges: secondaryNudges.slice(0, 3), // Always exactly 3: Intervene, Decision, Conflict
       greeting,
       contextMessage,
       isReturningUser,

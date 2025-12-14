@@ -58,10 +58,6 @@ export default function Home() {
   const { profile, isLoading: profileLoading } = useProfile();
   
   const [showTimeModal, setShowTimeModal] = useState(false);
-  const [hasPromptedForTimes, setHasPromptedForTimes] = useState(false);
-
-  // Check if user has set check-in times
-  const hasCheckInTimes = profile?.morning_pulse_time || profile?.evening_debrief_time;
 
   // Only show welcome for returning users on first load of the session
   useEffect(() => {
@@ -79,18 +75,6 @@ export default function Home() {
     sessionStorage.setItem(WELCOME_SHOWN_KEY, 'true');
     setShowWelcome(false);
   };
-
-  // Prompt for check-in times if not set (after welcome screen and profile loaded)
-  useEffect(() => {
-    if (!profileLoading && !showWelcome && !hasCheckInTimes && !hasPromptedForTimes && isReturningUser) {
-      // Wait a moment before prompting
-      const timer = setTimeout(() => {
-        setShowTimeModal(true);
-        setHasPromptedForTimes(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [profileLoading, showWelcome, hasCheckInTimes, hasPromptedForTimes, isReturningUser]);
 
   const handleTranscript = async (text: string) => {
     setInput(text);
@@ -210,7 +194,7 @@ export default function Home() {
           </div>
 
           {/* Daily Ritual Indicators with time display */}
-          <div className="shrink-0">
+          <div className="shrink-0 mb-3">
             <RitualTimeIndicator
               hasCompletedPulseToday={hasCompletedPulseToday}
               hasCompletedDebriefToday={hasCompletedDebriefToday}
@@ -224,51 +208,49 @@ export default function Home() {
             onOpenChange={setShowTimeModal}
           />
 
-          {/* PRIMARY ACTION - The main contextual nudge (30-40% of viewport) */}
-          <div className="shrink-0 mb-6" style={{ minHeight: '35vh' }}>
+          {/* PRIMARY ACTION - The main contextual nudge (compact) */}
+          <div className="shrink-0 mb-4">
             <div 
-              className="h-full p-6 rounded-3xl border-2 transition-all flex flex-col"
+              className="p-5 rounded-3xl border-2 transition-all flex flex-col"
               style={{ 
                 borderColor: `${primaryNudge.accentColor}40`,
                 background: `linear-gradient(135deg, ${primaryNudge.accentColor}10 0%, ${primaryNudge.accentColor}05 50%, transparent 100%)`
               }}
             >
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-3 mb-3">
                 <div 
-                  className="p-3 rounded-2xl"
+                  className="p-2.5 rounded-2xl"
                   style={{ backgroundColor: `${primaryNudge.accentColor}20` }}
                 >
-                  <PrimaryIcon className="w-6 h-6" style={{ color: primaryNudge.accentColor }} />
+                  <PrimaryIcon className="w-5 h-5" style={{ color: primaryNudge.accentColor }} />
                 </div>
-                <div>
-                  <h2 className="font-display text-xl font-bold text-foreground">
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-display text-lg font-bold text-foreground">
                     {primaryNudge.headline}
                   </h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {primaryNudge.subtext}
                   </p>
                 </div>
               </div>
               
-              <div className="flex-1 flex items-center justify-center">
-                <VoiceFirstInput
-                  onTranscript={handleTranscript}
-                  placeholder={primaryNudge.placeholder}
-                  processingText={primaryNudge.processingText}
-                  isProcessing={isLoading}
-                  className="py-4"
-                />
-              </div>
+              <VoiceFirstInput
+                onTranscript={handleTranscript}
+                placeholder={primaryNudge.placeholder}
+                processingText={primaryNudge.processingText}
+                isProcessing={isLoading}
+                className="py-3"
+              />
             </div>
           </div>
 
-          {/* SECONDARY OPTIONS - 2x2 Grid for situational tools */}
+          {/* SECONDARY OPTIONS - Compact grid for situational tools */}
           {secondaryNudges.length > 0 && (
-            <div className="flex-1 min-h-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            <div className="shrink-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                 Or choose a specific situation
               </p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {secondaryNudges.map((nudge) => {
                   const NudgeIcon = nudge.icon;
                   return (
@@ -276,20 +258,20 @@ export default function Home() {
                       key={nudge.type}
                       onClick={() => handleSecondaryNudge(nudge.route)}
                       className={cn(
-                        "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border-2 border-border/50 bg-card/50",
+                        "flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border-2 border-border/50 bg-card/50",
                         "hover:bg-card hover:border-border hover:shadow-glow transition-all active:scale-[0.98]"
                       )}
                     >
                       <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center"
                         style={{ backgroundColor: `${nudge.accentColor}20` }}
                       >
                         <NudgeIcon 
-                          className="w-5 h-5" 
+                          className="w-4 h-4" 
                           style={{ color: nudge.accentColor }} 
                         />
                       </div>
-                      <span className="text-sm font-medium text-foreground text-center">
+                      <span className="text-xs font-medium text-foreground text-center leading-tight">
                         {nudge.headline}
                       </span>
                     </button>
