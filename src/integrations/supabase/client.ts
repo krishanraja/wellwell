@@ -32,6 +32,18 @@ if (SUPABASE_PROJECT_ID && projectIdFromUrl && SUPABASE_PROJECT_ID !== projectId
   );
 }
 
+// Diagnostic: Validate publishable key format (Supabase anon keys are JWTs starting with 'eyJ')
+if (SUPABASE_PUBLISHABLE_KEY && !SUPABASE_PUBLISHABLE_KEY.startsWith('eyJ')) {
+  console.error(
+    '❌ AUTHENTICATION ERROR: Invalid Supabase publishable key format detected.\n' +
+    `   Current key starts with: "${SUPABASE_PUBLISHABLE_KEY.substring(0, 20)}..."\n` +
+    '   Expected format: JWT token starting with "eyJ..."\n' +
+    '   This will cause all authentication to fail.\n' +
+    '   Get your correct anon key from: https://supabase.com/dashboard/project/zioacippbtcbctexywgc/settings/api\n' +
+    '   Look for the "anon" or "public" key (it should be a long JWT token).'
+  );
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 

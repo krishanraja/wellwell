@@ -5,7 +5,7 @@
 **Project**: WellWell  
 **Project ID**: `zioacippbtcbctexywgc`  
 **Supabase URL**: `https://zioacippbtcbctexywgc.supabase.co`  
-**Publishable Key**: `sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO`
+**Publishable Key**: JWT format (starts with `eyJ...`) - Get from API settings
 
 ## Local Development Setup
 
@@ -15,8 +15,10 @@ Ensure your `.env` file contains:
 
 ```env
 VITE_SUPABASE_URL=https://zioacippbtcbctexywgc.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJ...your-jwt-key-here
 ```
+
+**Note**: The publishable key must be a JWT token (starts with `eyJ...`). Get it from your Supabase dashboard API settings.
 
 ### 2. Verify Configuration
 

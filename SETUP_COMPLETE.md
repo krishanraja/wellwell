@@ -4,7 +4,7 @@
 
 1. **`.env` file created** with correct Supabase credentials
    - `VITE_SUPABASE_URL=https://zioacippbtcbctexywgc.supabase.co`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` - JWT format (starts with `eyJ...`)
 
 2. **`supabase/config.toml` updated** with correct project ID
    - `project_id = "zioacippbtcbctexywgc"`
