@@ -8,7 +8,9 @@
   :root {
     /* Navigation safe area system */
     --nav-height: 4rem;
+    --header-height: 3.5rem; /* Approximate header height */
     --safe-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 0.75rem);
+    --viewport-height: calc(100dvh - var(--nav-height) - var(--header-height) - env(safe-area-inset-bottom, 0px));
     
     --background: 160 20% 98%;
     --foreground: 165 20% 5%;
@@ -258,6 +260,8 @@
   /* Safe area utilities */
   .safe-bottom { padding-bottom: var(--safe-bottom); }
   .pb-safe { padding-bottom: var(--safe-bottom); }
+  .min-h-safe { min-height: var(--viewport-height); }
+  .max-h-safe { max-height: var(--viewport-height); }
   
   .animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
   .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }

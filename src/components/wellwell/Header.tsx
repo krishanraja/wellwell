@@ -86,7 +86,12 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
             <User className="w-5 h-5" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuContent 
+          align="end" 
+          alignOffset={-8}
+          sideOffset={8}
+          className="w-48"
+        >
           <DropdownMenuItem onClick={() => navigate('/profile')}>
             <User className="w-4 h-4 mr-2" />
             Profile

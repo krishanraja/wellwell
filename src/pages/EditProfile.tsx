@@ -1,13 +1,26 @@
 import { Layout } from "@/components/wellwell/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { User, Save, ArrowLeft, Loader2 } from "lucide-react";
+import { User, Save, ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Persona } from "@/types/database";
+import { supabase } from "@/integrations/supabase/client";
 
 const personas = [
   { value: "strategist", label: "Strategist", description: "Keep me sharp" },
@@ -26,10 +39,12 @@ const challenges = [
 export default function EditProfile() {
   const navigate = useNavigate();
   const { profile, isLoading, updateProfile, isUpdating } = useProfile();
+  const { user, signOut } = useAuth();
   
   const [displayName, setDisplayName] = useState("");
   const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -60,6 +75,35 @@ export default function EditProfile() {
     );
   };
 
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+    
+    setIsDeleting(true);
+    try {
+      // Call edge function to delete account
+      // This will cascade delete all user data due to ON DELETE CASCADE
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { userId: user.id }
+      });
+
+      if (error) {
+        // If edge function doesn't exist yet, show helpful message
+        console.error("Delete account error:", error);
+        toast.error("Account deletion is not yet available. Please contact support to delete your account.");
+        return;
+      }
+
+      toast.success("Account deleted successfully");
+      await signOut();
+      navigate("/landing");
+    } catch (error) {
+      console.error("Delete account error:", error);
+      toast.error("Failed to delete account. Please contact support.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Layout>
@@ -71,8 +115,8 @@ export default function EditProfile() {
   }
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <Layout scrollable={true}>
+      <div className="space-y-6 pb-4">
         {/* Header */}
         <div className="flex items-center gap-3 animate-fade-up">
           <button
@@ -168,6 +212,48 @@ export default function EditProfile() {
               </>
             )}
           </Button>
+        </div>
+
+        {/* Delete Account Section */}
+        <div className="animate-fade-up pt-6 border-t border-border" style={{ animationDelay: "250ms" }}>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                size="lg"
+              >
+                <Trash2 className="w-5 h-5 mr-2" />
+                Delete Account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete your account? This action cannot be undone. 
+                  All your data, including your profile, events, and insights, will be permanently deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete Account"
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </Layout>
