@@ -217,3 +217,4 @@ If issues occur:
    - Verify project ID is correct
    - Contact Supabase support if needed
 
+
