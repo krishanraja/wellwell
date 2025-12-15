@@ -34,16 +34,18 @@ WellWell is a personal Stoic practice app that helps users build mental resilien
    cp .env.example .env
    ```
 
-2. The `.env` file should contain:
-   ```env
-   VITE_SUPABASE_URL=https://zioacippbtcbctexywgc.supabase.co
-   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO
-   ```
+2. Edit `.env` and add your Supabase credentials:
+   - Get your **Project URL** and **Publishable Key** from your Supabase project dashboard:
+     https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api
+   - Update `.env` with your actual values:
+     ```env
+     VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+     VITE_SUPABASE_PUBLISHABLE_KEY=your_publishable_key_here
+     ```
 
 3. **Database Configuration**: 
-   - Project: WellWell
-   - Project ID: `zioacippbtcbctexywgc`
-   - All database operations connect to this Supabase project
+   - All database operations connect to the Supabase project specified in your `.env` file
+   - The project ID is automatically extracted from the URL for validation
 
 ## How can I edit this code?
 
@@ -74,7 +76,9 @@ cd <YOUR_PROJECT_NAME>
 npm i
 
 # Step 4: Set up environment variables (see Environment Setup above)
+# Copy the example file and edit it with your Supabase credentials
 cp .env.example .env
+# Then edit .env with your actual Supabase project URL and publishable key
 
 # Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
