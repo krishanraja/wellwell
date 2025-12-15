@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "setup:supabase": "node scripts/setup-supabase-env.js",
+    "setup:supabase:ps1": "powershell -ExecutionPolicy Bypass -File scripts/auto-setup-supabase.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -25,6 +25,26 @@ WellWell is a personal Stoic practice app that helps users build mental resilien
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
+## Environment Setup
+
+**Important**: This app uses Supabase as its database. You must configure environment variables before running the app.
+
+1. Copy the example environment file:
+   ```sh
+   cp .env.example .env
+   ```
+
+2. The `.env` file should contain:
+   ```env
+   VITE_SUPABASE_URL=https://zioacippbtcbctexywgc.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO
+   ```
+
+3. **Database Configuration**: 
+   - Project: WellWell
+   - Project ID: `zioacippbtcbctexywgc`
+   - All database operations connect to this Supabase project
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
@@ -53,7 +73,10 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Set up environment variables (see Environment Setup above)
+cp .env.example .env
+
+# Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
