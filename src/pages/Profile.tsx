@@ -11,6 +11,7 @@ import { usePatterns } from "@/hooks/usePatterns";
 import { Flame, TrendingUp, Lightbulb, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { useEffect, useState } from "react";
 
 const toolLabels: Record<string, string> = {
   pulse: "Morning Pulse",
@@ -22,6 +23,9 @@ const toolLabels: Record<string, string> = {
   weekly_reset: "Weekly Reset",
 };
 
+// Maximum loading time before showing page anyway (5 seconds)
+const MAX_LOADING_TIME = 5000;
+
 export default function Profile() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -30,8 +34,23 @@ export default function Profile() {
   const { streak, isLoading: streakLoading } = useStreak();
   const { events, isLoading: eventsLoading } = useEvents();
   const { patterns, recommendedFocus } = usePatterns();
+  const [forceShow, setForceShow] = useState(false);
 
-  const isLoading = profileLoading || virtuesLoading || streakLoading || eventsLoading;
+  // Only require profile to be loaded - other data can load in background
+  // Add timeout to prevent infinite loading
+  useEffect(() => {
+    if (profileLoading) {
+      const timer = setTimeout(() => {
+        setForceShow(true);
+      }, MAX_LOADING_TIME);
+      return () => clearTimeout(timer);
+    } else {
+      setForceShow(false);
+    }
+  }, [profileLoading]);
+
+  // Show loading only if profile is still loading and we haven't hit the timeout
+  const isLoading = profileLoading && !forceShow;
 
   const virtues = {
     courage: scoresMap.courage?.score || 50,
@@ -44,8 +63,15 @@ export default function Profile() {
   const topPattern = patterns[0];
   const displayName = profile?.display_name || user?.email?.split("@")[0] || "Stoic";
 
+  // Show loading screen only if profile is critical and still loading
+  // Allow page to render even if other data is still loading
   if (isLoading) {
     return <LoadingScreen />;
+  }
+
+  // If we don't have a user, something is wrong - but ProtectedRoute should handle this
+  if (!user) {
+    return null;
   }
 
   return (

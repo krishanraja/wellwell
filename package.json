@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "setup:supabase": "node scripts/setup-supabase-env.js",
-    "setup:supabase:ps1": "powershell -ExecutionPolicy Bypass -File scripts/auto-setup-supabase.ps1"
+    "setup:supabase:ps1": "powershell -ExecutionPolicy Bypass -File scripts/auto-setup-supabase.ps1",
+    "migrate": "powershell -ExecutionPolicy Bypass -File scripts/run-migrations.ps1",
+    "migrate:unix": "bash scripts/run-migrations.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

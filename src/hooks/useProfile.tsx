@@ -32,11 +32,33 @@ export function useProfile() {
         logger.warn('Profile missing for user, attempting recovery', { userId: user.id });
         
         try {
-          // Call RPC function to ensure profile exists
-          const { error: recoveryError } = await supabase.rpc('ensure_profile_exists');
+          // Add timeout to recovery to prevent hanging (5 seconds)
+          // Use Promise.race to timeout if recovery takes too long
+          const recoveryWithTimeout = Promise.race([
+            supabase.rpc('ensure_profile_exists'),
+            new Promise<{ error: { message: string } }>((resolve) => {
+              setTimeout(() => {
+                resolve({ error: { message: 'Recovery timeout after 5 seconds' } });
+              }, 5000);
+            }),
+          ]);
           
-          if (recoveryError) {
-            logger.error('Profile recovery failed', { error: recoveryError.message });
+          const recoveryResult = await recoveryWithTimeout;
+          
+          // Check for errors (either from RPC call or timeout)
+          if (recoveryResult.error) {
+            const errorMsg = recoveryResult.error.message || 'Unknown error';
+            // Check if function doesn't exist (common after project migration)
+            if (errorMsg.includes('function') && (errorMsg.includes('does not exist') || errorMsg.includes('not found'))) {
+              logger.error('Profile recovery function missing - migrations may not be run', { 
+                error: errorMsg,
+                hint: 'Run migration: 20251216131409_add_profile_recovery.sql in Supabase SQL Editor'
+              });
+            } else if (errorMsg.includes('timeout')) {
+              logger.warn('Profile recovery timed out - continuing without recovery');
+            } else {
+              logger.error('Profile recovery failed', { error: errorMsg });
+            }
             // Don't throw - allow user to continue, they can retry later
             endTimer();
             return null;
