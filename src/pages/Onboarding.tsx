@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { LogoFull } from "@/components/wellwell/Header";
 import { Button } from "@/components/ui/button";
-import { MicroInput } from "@/components/wellwell/MicroInput";
+import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { ArrowRight, Brain, Heart, Compass, Users, Loader2, Sunrise, Moon, SkipForward, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useEvents } from "@/hooks/useEvents";
-import { toast } from "sonner";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import type { Persona } from "@/types/database";
 import { logger } from "@/lib/logger";
 
@@ -53,6 +53,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const { profile, isLoading: isProfileLoading, error: profileError, updateProfile, isUpdating } = useProfile();
   const { createEvent } = useEvents();
+  const { showError, ErrorModal } = useErrorModal();
   const [step, setStep] = useState(0);
   const [selectedSituations, setSelectedSituations] = useState<string[]>([]);
   const [selectedHelpful, setSelectedHelpful] = useState<string[]>([]);
@@ -114,7 +115,7 @@ export default function Onboarding() {
       // Ensure profile exists before updating
       if (!profile) {
         logger.warn("Profile missing during onboarding completion, this should not happen");
-        toast.error("Profile not found. Please refresh the page and try again.");
+        showError("Profile not found. Please refresh the page and try again.", "Setup Error");
         setIsSaving(false);
         return;
       }
@@ -157,11 +158,10 @@ export default function Onboarding() {
       }
 
       logger.info("Onboarding completed successfully");
-      toast.success("Welcome to WellWell!");
       navigate("/");
     } catch (error) {
       logger.error("Failed to save onboarding data", { error });
-      toast.error("Something went wrong. Please try again.");
+      showError("Something went wrong. Please try again.", "Error Saving");
     } finally {
       setIsSaving(false);
     }
@@ -202,7 +202,7 @@ export default function Onboarding() {
         // Softer question: When do you need support?
         return (
           <div className="flex-1 flex flex-col min-h-0 pb-safe">
-            <div className="mb-6 animate-fade-up">
+            <div className="mb-8 animate-fade-up text-center">
               <h2 className="font-display text-2xl font-bold text-foreground mb-2">
                 When do you need support?
               </h2>
@@ -211,14 +211,14 @@ export default function Onboarding() {
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto -mx-4 px-4">
-              <div className="grid grid-cols-2 gap-3 content-start">
+            <div className="flex-1 overflow-y-auto flex items-center justify-center">
+              <div className="w-full max-w-md grid grid-cols-2 gap-4">
                 {situations.map(({ id, label, icon: Icon, description }) => (
                   <button
                     key={id}
                     onClick={() => toggleSituation(id)}
                     className={cn(
-                      "p-4 rounded-xl border-2 transition-all duration-300 text-left",
+                      "p-5 rounded-xl border-2 transition-all duration-300 text-left h-full",
                       "hover:scale-[1.02] active:scale-[0.98]",
                       selectedSituations.includes(id)
                         ? "border-primary bg-primary/10 shadow-lg"
@@ -226,17 +226,17 @@ export default function Onboarding() {
                     )}
                   >
                     <Icon className={cn(
-                      "w-5 h-5 mb-2",
+                      "w-6 h-6 mb-3",
                       selectedSituations.includes(id) ? "text-primary" : "text-muted-foreground"
                     )} />
-                    <span className="font-medium text-sm text-foreground block mb-1">{label}</span>
-                    <span className="text-xs text-muted-foreground">{description}</span>
+                    <span className="font-semibold text-base text-foreground block mb-1.5">{label}</span>
+                    <span className="text-xs text-muted-foreground leading-relaxed">{description}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-border">
+            <div className="mt-8 pt-6 border-t border-border">
               <Button
                 variant="brand"
                 size="lg"
@@ -254,7 +254,7 @@ export default function Onboarding() {
         // Better question: What would help you most?
         return (
           <div className="flex-1 flex flex-col min-h-0 pb-safe">
-            <div className="mb-6 animate-fade-up">
+            <div className="mb-8 animate-fade-up text-center">
               <h2 className="font-display text-2xl font-bold text-foreground mb-2">
                 What would help you most?
               </h2>
@@ -263,30 +263,28 @@ export default function Onboarding() {
               </p>
             </div>
 
-            <div className="flex-1 overflow-y-auto -mx-4 px-4">
-              <div className="flex flex-wrap gap-3 content-start">
+            <div className="flex-1 overflow-y-auto flex items-center justify-center">
+              <div className="w-full max-w-md grid grid-cols-2 gap-4">
                 {helpfulThings.map(({ id, label, description }) => (
                   <button
                     key={id}
                     onClick={() => toggleHelpful(id)}
                     className={cn(
-                      "px-5 py-3 rounded-full border-2 transition-all duration-300 font-medium text-sm",
+                      "p-5 rounded-xl border-2 transition-all duration-300 text-center h-full",
                       "hover:scale-[1.02] active:scale-[0.98]",
                       selectedHelpful.includes(id)
                         ? "border-primary bg-primary/10 text-foreground shadow-lg"
                         : "border-border text-muted-foreground hover:border-primary/30 bg-card"
                     )}
                   >
-                    <div className="text-center">
-                      <div className="font-semibold">{label}</div>
-                      <div className="text-xs font-normal text-muted-foreground mt-0.5">{description}</div>
-                    </div>
+                    <div className="font-semibold text-base mb-1.5">{label}</div>
+                    <div className="text-xs font-normal text-muted-foreground leading-relaxed">{description}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-border">
+            <div className="mt-8 pt-6 border-t border-border">
               <Button
                 variant="brand"
                 size="lg"
@@ -448,30 +446,33 @@ export default function Onboarding() {
         );
 
       case 5:
-        // Final step - optional sharing
+        // Final step - optional sharing with engaging prompt
         return (
           <div className="flex-1 flex flex-col min-h-0 pb-safe">
-            <div className="mb-6 animate-fade-up">
+            <div className="mb-8 animate-fade-up text-center">
               <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-                Anything on your mind?
+                What's one thing you'd like clarity on right now?
               </h2>
               <p className="text-sm text-muted-foreground">
-                Share something you're thinking about, or skip to get started
+                Share a decision, situation, or challenge you're facing — or skip to get started
               </p>
             </div>
 
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 flex items-start pt-4">
-                <MicroInput
-                  placeholder="What's on your mind today?"
-                  value={baselineMoment}
-                  onChange={(e) => setBaselineMoment(e.target.value)}
-                  className="w-full"
-                />
-              </div>
+            <div className="flex-1 flex flex-col justify-center min-h-0">
+              <VoiceFirstInput
+                onTranscript={(text) => setBaselineMoment(text)}
+                onComplete={() => {
+                  if (baselineMoment.trim()) {
+                    handleComplete();
+                  }
+                }}
+                placeholder="Tap to speak or type your challenge"
+                processingText="Processing..."
+                className="w-full max-w-md mx-auto"
+              />
             </div>
 
-            <div className="mt-6 pt-4 border-t border-border flex gap-3">
+            <div className="mt-8 pt-6 border-t border-border flex gap-3">
               <Button
                 variant="ghost"
                 size="lg"
@@ -496,7 +497,7 @@ export default function Onboarding() {
                 size="lg"
                 className="flex-1"
                 onClick={handleComplete}
-                disabled={isSaving || isUpdating}
+                disabled={isSaving || isUpdating || !baselineMoment.trim()}
               >
                 {isSaving || isUpdating ? (
                   <>
@@ -520,28 +521,31 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="viewport-container bg-background">
-      {/* Background glow */}
-      <div className="fixed inset-0 bg-glow pointer-events-none" />
+    <>
+      {ErrorModal}
+      <div className="viewport-container bg-background">
+        {/* Background glow */}
+        <div className="fixed inset-0 bg-glow pointer-events-none" />
 
-      <div className="relative flex-1 flex flex-col min-h-0 max-w-lg mx-auto w-full px-6 py-6 safe-area-top overflow-hidden">
-        {/* Progress indicator */}
-        {step > 0 && step < 6 && (
-          <div className="flex gap-2 mb-6">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className={cn(
-                  "flex-1 h-1.5 rounded-full transition-all duration-300",
-                  i <= step ? "bg-brand-gradient" : "bg-muted"
-                )}
-              />
-            ))}
-          </div>
-        )}
+        <div className="relative flex-1 flex flex-col min-h-0 max-w-lg mx-auto w-full px-6 py-6 safe-area-top overflow-hidden">
+          {/* Progress indicator */}
+          {step > 0 && step < 6 && (
+            <div className="flex gap-2 mb-6">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "flex-1 h-1.5 rounded-full transition-all duration-300",
+                    i <= step ? "bg-brand-gradient" : "bg-muted"
+                  )}
+                />
+              ))}
+            </div>
+          )}
 
-        {renderStep()}
+          {renderStep()}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

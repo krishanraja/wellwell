@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { toast } from "sonner";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { logger } from "@/lib/logger";
 
 interface UpgradePromptProps {
@@ -21,6 +21,7 @@ export function UpgradePrompt({
   className = '',
 }: UpgradePromptProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { showError, ErrorModal } = useErrorModal();
 
   const handleUpgrade = async () => {
     setIsLoading(true);
@@ -30,7 +31,7 @@ export function UpgradePrompt({
       
       if (error) {
         logger.error('Failed to create checkout', { error });
-        toast.error('Failed to start checkout. Please try again.');
+        showError('Failed to start checkout. Please try again.', 'Checkout Error');
         return;
       }
 
@@ -39,7 +40,7 @@ export function UpgradePrompt({
       }
     } catch (err) {
       logger.error('Checkout error', { error: err });
-      toast.error('Something went wrong. Please try again.');
+      showError('Something went wrong. Please try again.', 'Error');
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +48,9 @@ export function UpgradePrompt({
 
   if (variant === 'inline') {
     return (
-      <div className={`flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-xl ${className}`}>
+      <>
+        {ErrorModal}
+        <div className={`flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-xl ${className}`}>
         <div className="p-2 bg-primary/10 rounded-lg">
           <Sparkles className="w-5 h-5 text-primary" />
         </div>
@@ -67,12 +70,15 @@ export function UpgradePrompt({
           <ArrowRight className="w-3 h-3" />
         </Button>
       </div>
+      </>
     );
   }
 
   if (variant === 'card') {
     return (
-      <div className={`p-6 bg-gradient-to-br from-primary/10 via-background to-cinder/10 border border-primary/20 rounded-2xl ${className}`}>
+      <>
+        {ErrorModal}
+        <div className={`p-6 bg-gradient-to-br from-primary/10 via-background to-cinder/10 border border-primary/20 rounded-2xl ${className}`}>
         <div className="flex items-center gap-2 mb-4">
           <Lock className="w-5 h-5 text-primary" />
           <span className="text-sm font-medium text-primary">Pro Feature</span>
@@ -90,12 +96,15 @@ export function UpgradePrompt({
           {isLoading ? 'Loading...' : 'Upgrade for $2/month'}
         </Button>
       </div>
+      </>
     );
   }
 
   // modal variant
   return (
-    <div className={`fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-6 z-50 ${className}`}>
+    <>
+      {ErrorModal}
+      <div className={`fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-6 z-50 ${className}`}>
       <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-xl">
         <div className="text-center mb-6">
           <div className="inline-flex p-3 bg-primary/10 rounded-full mb-4">
@@ -143,5 +152,6 @@ export function UpgradePrompt({
         </Button>
       </div>
     </div>
+    </>
   );
 }

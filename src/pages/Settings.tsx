@@ -8,11 +8,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { User, Bell, Moon, Shield, LogOut, Sparkles, CreditCard, Loader2, HelpCircle, BookOpen, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 
 export default function Settings() {
   const { user } = useAuth();
   const { isPro, subscription, isLoading, refreshSubscription } = useSubscription();
+  const { showError, ErrorModal } = useErrorModal();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [notifications, setNotifications] = useState(true);
@@ -34,15 +35,17 @@ export default function Settings() {
       if (error) throw error;
       if (data?.url) window.open(data.url, "_blank");
     } catch {
-      toast.error("Failed to open subscription management.");
+      showError("Failed to open subscription management.", "Error");
     } finally {
       setPortalLoading(false);
     }
   };
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <>
+      {ErrorModal}
+      <Layout>
+        <div className="space-y-6">
         <div className="animate-fade-up">
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">Settings</h1>
           <p className="text-muted-foreground">Customize your WellWell experience.</p>
@@ -180,5 +183,6 @@ export default function Settings() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

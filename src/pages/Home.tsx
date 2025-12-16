@@ -8,6 +8,7 @@ import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
 import WelcomeBackScreen from "@/components/wellwell/WelcomeBackScreen";
 import { RitualTimeIndicator } from "@/components/wellwell/RitualTimeIndicator";
 import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useNavigate } from "react-router-dom";
 import { useContextualNudge } from "@/hooks/useContextualNudge";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
@@ -52,6 +53,7 @@ export default function Home() {
     timeContext,
   } = useContextualNudge();
   
+  const { showError, ErrorModal } = useErrorModal();
   const { trackUsage } = useUsageLimit("unified");
   const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { events, isLoading: eventsLoading } = useEvents();
@@ -83,6 +85,7 @@ export default function Home() {
     const result = await analyze({
       tool: primaryNudge.type === 'freeform' ? 'unified' : primaryNudge.type,
       input: text,
+      onError: showError,
     });
     
     // Only track usage if analysis succeeded
@@ -106,7 +109,12 @@ export default function Home() {
 
   // Welcome screen for returning users - only on first session load
   if (showWelcome && isReturningUser) {
-    return <WelcomeBackScreen onComplete={handleWelcomeComplete} />;
+    return (
+      <>
+        {ErrorModal}
+        <WelcomeBackScreen onComplete={handleWelcomeComplete} />
+      </>
+    );
   }
 
   // Response view after AI analysis
@@ -307,5 +315,6 @@ export default function Home() {
         </div>
       </UsageLimitGate>
     </Layout>
+    </>
   );
 }

@@ -5,6 +5,7 @@ import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Swords, Users, Heart, Eye, Sparkles, RotateCcw } from "lucide-react";
 
 export default function Conflict() {
   const [situation, setSituation] = useState("");
+  const { showError, ErrorModal } = useErrorModal();
   const { trackUsage } = useUsageLimit("conflict");
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
 
@@ -21,6 +23,7 @@ export default function Conflict() {
     await analyze({
       tool: "conflict",
       input: text,
+      onError: showError,
     });
   };
 
@@ -31,7 +34,9 @@ export default function Conflict() {
 
   if (!response) {
     return (
-      <Layout>
+      <>
+        {ErrorModal}
+        <Layout>
         <UsageLimitGate toolName="conflict">
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Header */}
@@ -130,5 +135,6 @@ export default function Conflict() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

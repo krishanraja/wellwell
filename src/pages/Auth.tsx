@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { useErrorModal } from '@/components/wellwell/ErrorModal';
 import { logger } from '@/lib/logger';
 import wellwellIcon from '@/assets/wellwell-icon.png';
 
@@ -15,7 +15,7 @@ const passwordSchema = z.string().min(6, 'Password must be at least 6 characters
 export default function Auth() {
   const navigate = useNavigate();
   const { user, signUp, signIn, loading } = useAuth();
-  const { toast } = useToast();
+  const { showError, ErrorModal } = useErrorModal();
   
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -67,13 +67,12 @@ export default function Auth() {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
-          toast({
-            title: 'Sign in failed',
-            description: error.message === 'Invalid login credentials' 
+          showError(
+            error.message === 'Invalid login credentials' 
               ? 'Invalid email or password. Please try again.'
               : error.message,
-            variant: 'destructive',
-          });
+            'Sign in failed'
+          );
           return;
         }
         navigate('/');
@@ -84,11 +83,7 @@ export default function Auth() {
           if (error.message.includes('already registered')) {
             message = 'This email is already registered. Try signing in instead.';
           }
-          toast({
-            title: 'Sign up failed',
-            description: message,
-            variant: 'destructive',
-          });
+          showError(message, 'Sign up failed');
           return;
         }
         navigate('/onboarding');
@@ -107,11 +102,13 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-      {/* Background glow */}
-      <div className="fixed inset-0 bg-glow-gradient opacity-50 pointer-events-none" />
-      
-      <div className="relative z-10 w-full max-w-sm space-y-8">
+    <>
+      {ErrorModal}
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+        {/* Background glow */}
+        <div className="fixed inset-0 bg-glow-gradient opacity-50 pointer-events-none" />
+        
+        <div className="relative z-10 w-full max-w-sm space-y-8">
         {/* Logo */}
         <div className="flex flex-col items-center space-y-4">
           <img src={wellwellIcon} alt="WellWell" className="h-14 w-14" />
@@ -200,5 +197,6 @@ export default function Auth() {
         </div>
       </div>
     </div>
+    </>
   );
 }

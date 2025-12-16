@@ -6,22 +6,30 @@ import { StoicCard, StoicCardHeader, StoicCardContent } from "@/components/wellw
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, RotateCcw, Trophy, Target, Sparkles } from "lucide-react";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 
 export default function WeeklyReset() {
   const [win, setWin] = useState("");
   const [challenge, setChallenge] = useState("");
   const [lesson, setLesson] = useState("");
+  const { showError, ErrorModal } = useErrorModal();
   const { analyze, isLoading, response } = useStoicAnalyzer();
 
   const handleSubmit = async () => {
     if (win.trim() || challenge.trim() || lesson.trim()) {
-      await analyze({ tool: "weekly_reset", input: `Win: ${win}\nChallenge: ${challenge}\nLesson: ${lesson}` });
+      await analyze({ 
+        tool: "weekly_reset", 
+        input: `Win: ${win}\nChallenge: ${challenge}\nLesson: ${lesson}`,
+        onError: showError,
+      });
     }
   };
 
   return (
-    <Layout>
+    <>
+      {ErrorModal}
+      <Layout>
       <ProFeatureGate featureName="Weekly Reset" description="Get AI-powered weekly synthesis and pattern recognition.">
         <div className="space-y-6">
           <div className="animate-fade-up">
@@ -53,5 +61,6 @@ export default function WeeklyReset() {
         </div>
       </ProFeatureGate>
     </Layout>
+    </>
   );
 }

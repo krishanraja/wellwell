@@ -7,6 +7,7 @@ import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
 import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useCrossSessionMemory } from "@/hooks/useCrossSessionMemory";
@@ -18,6 +19,7 @@ import { Sunrise, Target, Shield, Compass, RotateCcw, Quote, X } from "lucide-re
 export default function Pulse() {
   const [challenge, setChallenge] = useState("");
   const [showTimeModal, setShowTimeModal] = useState(false);
+  const { showError, ErrorModal } = useErrorModal();
   const { trackUsage } = useUsageLimit("pulse");
   const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { yesterday } = useCrossSessionMemory();
@@ -52,6 +54,7 @@ export default function Pulse() {
     const result = await analyze({
       tool: "pulse",
       input: text,
+      onError: showError,
     });
     
     // Only track usage if analysis succeeded
@@ -72,7 +75,9 @@ export default function Pulse() {
 
   if (!response) {
     return (
-      <Layout>
+      <>
+        {ErrorModal}
+        <Layout>
         <UsageLimitGate toolName="pulse">
           <CheckInTimeModal 
             open={showTimeModal} 
@@ -206,5 +211,6 @@ export default function Pulse() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

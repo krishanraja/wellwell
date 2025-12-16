@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
+  onError?: (error: string) => void;
   className?: string;
   disabled?: boolean;
 }
 
-export function VoiceInput({ onTranscript, className, disabled }: VoiceInputProps) {
+export function VoiceInput({ onTranscript, onError, className, disabled }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
   const recognitionRef = useRef<any>(null);
@@ -48,9 +48,9 @@ export function VoiceInput({ onTranscript, className, disabled }: VoiceInputProp
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error);
       if (event.error === "not-allowed") {
-        toast.error("Microphone access denied. Please enable microphone permissions.");
+        onError?.("Microphone access denied. Please enable microphone permissions.");
       } else if (event.error !== "aborted") {
-        toast.error("Voice input error. Please try again.");
+        onError?.("Voice input error. Please try again.");
       }
       setIsListening(false);
     };
@@ -80,7 +80,7 @@ export function VoiceInput({ onTranscript, className, disabled }: VoiceInputProp
         setIsListening(true);
       } catch (error) {
         console.error("Failed to start recognition:", error);
-        toast.error("Failed to start voice input");
+        onError?.("Failed to start voice input");
       }
     }
   };

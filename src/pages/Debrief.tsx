@@ -7,6 +7,7 @@ import { VirtueBar } from "@/components/wellwell/VirtueBar";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
 import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useVirtueScores } from "@/hooks/useVirtueScores";
@@ -17,6 +18,7 @@ import { Moon, TrendingUp, TrendingDown, Minus, Target, RotateCcw, Sunrise, Spar
 export default function Debrief() {
   const [reflection, setReflection] = useState("");
   const [showTimeModal, setShowTimeModal] = useState(false);
+  const { showError, ErrorModal } = useErrorModal();
   const { trackUsage } = useUsageLimit("debrief");
   const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { scoresMap } = useVirtueScores();
@@ -45,6 +47,7 @@ export default function Debrief() {
         tomorrow: "",
         freeform: true, // Flag for AI to process as freeform
       }),
+      onError: showError,
     });
     
     // Only track usage if analysis succeeded
@@ -84,7 +87,9 @@ export default function Debrief() {
 
   if (!response) {
     return (
-      <Layout>
+      <>
+        {ErrorModal}
+        <Layout>
         <UsageLimitGate toolName="debrief">
           <CheckInTimeModal 
             open={showTimeModal} 
@@ -220,5 +225,6 @@ export default function Debrief() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

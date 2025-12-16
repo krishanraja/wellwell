@@ -16,7 +16,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { User, Save, ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Persona } from "@/types/database";
@@ -40,6 +40,7 @@ export default function EditProfile() {
   const navigate = useNavigate();
   const { profile, isLoading, updateProfile, isUpdating } = useProfile();
   const { user, signOut } = useAuth();
+  const { showError, ErrorModal } = useErrorModal();
   
   const [displayName, setDisplayName] = useState("");
   const [selectedPersona, setSelectedPersona] = useState<string>("");
@@ -63,7 +64,7 @@ export default function EditProfile() {
       });
       navigate("/profile");
     } catch (error) {
-      toast.error("Failed to save profile");
+      showError("Failed to save profile", "Error");
     }
   };
 
@@ -89,16 +90,15 @@ export default function EditProfile() {
       if (error) {
         // If edge function doesn't exist yet, show helpful message
         console.error("Delete account error:", error);
-        toast.error("Account deletion is not yet available. Please contact support to delete your account.");
+        showError("Account deletion is not yet available. Please contact support to delete your account.", "Account Deletion");
         return;
       }
 
-      toast.success("Account deleted successfully");
       await signOut();
       navigate("/landing");
     } catch (error) {
       console.error("Delete account error:", error);
-      toast.error("Failed to delete account. Please contact support.");
+      showError("Failed to delete account. Please contact support.", "Error");
     } finally {
       setIsDeleting(false);
     }
@@ -115,8 +115,10 @@ export default function EditProfile() {
   }
 
   return (
-    <Layout scrollable={true}>
-      <div className="space-y-6 pb-4">
+    <>
+      {ErrorModal}
+      <Layout scrollable={true}>
+        <div className="space-y-6 pb-4">
         {/* Header */}
         <div className="flex items-center gap-3 animate-fade-up">
           <button
@@ -257,5 +259,6 @@ export default function EditProfile() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

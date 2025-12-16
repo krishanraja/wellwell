@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
-import { toast } from "sonner";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { Sunrise, Moon, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,7 @@ const eveningPresets = [
 
 export function CheckInTimeModal({ open, onOpenChange }: CheckInTimeModalProps) {
   const { profile, updateProfile, isUpdating } = useProfile();
+  const { showError, ErrorModal } = useErrorModal();
   
   const [morningTime, setMorningTime] = useState<string | null>(null);
   const [eveningTime, setEveningTime] = useState<string | null>(null);
@@ -48,10 +49,9 @@ export function CheckInTimeModal({ open, onOpenChange }: CheckInTimeModalProps) 
         morning_pulse_time: morningTime,
         evening_debrief_time: eveningTime,
       });
-      toast.success("Check-in times saved!");
       onOpenChange(false);
     } catch (error) {
-      toast.error("Failed to save times");
+      showError("Failed to save times", "Error");
     }
   };
   
@@ -60,8 +60,10 @@ export function CheckInTimeModal({ open, onOpenChange }: CheckInTimeModalProps) 
   };
   
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm mx-auto bg-background border-border">
+    <>
+      {ErrorModal}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-sm mx-auto bg-background border-border">
         <DialogHeader>
           <DialogTitle className="font-display text-xl text-center">
             Set Your Daily Rituals
@@ -145,6 +147,7 @@ export function CheckInTimeModal({ open, onOpenChange }: CheckInTimeModalProps) 
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 

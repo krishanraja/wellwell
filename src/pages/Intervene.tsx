@@ -6,12 +6,14 @@ import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { Flame, RefreshCw, Target, Shield, RotateCcw, Wind, X } from "lucide-react";
 
 export default function Intervene() {
   const [trigger, setTrigger] = useState("");
+  const { showError, ErrorModal } = useErrorModal();
   const { trackUsage } = useUsageLimit("intervene");
   const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
 
@@ -21,6 +23,7 @@ export default function Intervene() {
     const result = await analyze({
       tool: "intervene",
       input: JSON.stringify({ trigger: text, intensity: 7 }), // Default intensity, AI refines
+      onError: showError,
     });
     
     // Only track usage if analysis succeeded
@@ -40,7 +43,9 @@ export default function Intervene() {
 
   if (!response) {
     return (
-      <Layout>
+      <>
+        {ErrorModal}
+        <Layout>
         <UsageLimitGate toolName="intervene">
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Compact calming header */}
@@ -156,5 +161,6 @@ export default function Intervene() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

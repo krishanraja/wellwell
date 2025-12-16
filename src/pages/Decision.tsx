@@ -5,6 +5,7 @@ import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Scale, Brain, Eye, Sparkles, RotateCcw } from "lucide-react";
 
 export default function Decision() {
   const [decision, setDecision] = useState("");
+  const { showError, ErrorModal } = useErrorModal();
   const { trackUsage } = useUsageLimit("decision");
   const { analyze, isLoading, response, reset } = useStoicAnalyzer();
 
@@ -21,6 +23,7 @@ export default function Decision() {
     await analyze({
       tool: "decision",
       input: text,
+      onError: showError,
     });
   };
 
@@ -31,7 +34,9 @@ export default function Decision() {
 
   if (!response) {
     return (
-      <Layout>
+      <>
+        {ErrorModal}
+        <Layout>
         <UsageLimitGate toolName="decision">
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Header */}
@@ -125,5 +130,6 @@ export default function Decision() {
         </div>
       </div>
     </Layout>
+    </>
   );
 }

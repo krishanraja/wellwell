@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { logger } from "@/lib/logger";
 import { Check, Sparkles, Loader2 } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -25,6 +25,7 @@ const proFeatures = [
 
 export default function Pricing() {
   const { isPro, isLoading, refreshSubscription } = useSubscription();
+  const { showError, ErrorModal } = useErrorModal();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ export default function Pricing() {
       
       if (error) {
         logger.error("Failed to create checkout", { error });
-        toast.error("Failed to start checkout. Please try again.");
+        showError("Failed to start checkout. Please try again.", "Checkout Error");
         return;
       }
 
@@ -53,7 +54,7 @@ export default function Pricing() {
       }
     } catch (err) {
       logger.error("Checkout error", { error: err });
-      toast.error("Something went wrong. Please try again.");
+      showError("Something went wrong. Please try again.", "Error");
     } finally {
       setCheckoutLoading(false);
     }
@@ -66,7 +67,7 @@ export default function Pricing() {
       
       if (error) {
         logger.error("Failed to open portal", { error });
-        toast.error("Failed to open subscription management.");
+        showError("Failed to open subscription management.", "Error");
         return;
       }
 
@@ -75,7 +76,7 @@ export default function Pricing() {
       }
     } catch (err) {
       logger.error("Portal error", { error: err });
-      toast.error("Something went wrong.");
+      showError("Something went wrong.", "Error");
     } finally {
       setCheckoutLoading(false);
     }
@@ -92,8 +93,10 @@ export default function Pricing() {
   }
 
   return (
-    <Layout>
-      <div className="flex-1 flex flex-col py-2">
+    <>
+      {ErrorModal}
+      <Layout>
+        <div className="flex-1 flex flex-col py-2">
         <div className="text-center mb-3 animate-fade-up">
           <h1 className="font-display text-xl font-bold text-foreground mb-1">Choose Your Path</h1>
           <p className="text-muted-foreground text-xs">Build Stoic habits at your own pace</p>
@@ -185,5 +188,6 @@ export default function Pricing() {
         </p>
       </div>
     </Layout>
+    </>
   );
 }

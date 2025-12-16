@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { logger } from "@/lib/logger";
-import { toast } from "sonner";
 
 interface StoicResponse {
   summary?: string;
@@ -22,6 +21,7 @@ interface AnalyzeParams {
   tool: string;
   input: string;
   requestId?: string; // For idempotency
+  onError?: (error: string) => void; // Error callback
 }
 
 const STORAGE_KEY_PREFIX = 'wellwell_analysis_';
@@ -139,20 +139,19 @@ export function useStoicAnalyzer() {
       abortControllerRef.current = null;
       setIsLoading(false);
       logger.info("Analysis cancelled by user");
-      toast.info("Analysis cancelled");
     }
   };
 
-  const analyze = async ({ tool, input, requestId }: AnalyzeParams) => {
+  const analyze = async ({ tool, input, requestId, onError }: AnalyzeParams) => {
     if (!user) {
-      toast.error("Please sign in to continue");
+      onError?.("Please sign in to continue");
       return null;
     }
 
     // Guard against concurrent calls
     if (isLoading) {
       logger.warn("Analysis already in progress, ignoring duplicate call");
-      toast.info("Analysis already in progress. Please wait.");
+      onError?.("Analysis already in progress. Please wait.");
       return null;
     }
 
@@ -164,7 +163,7 @@ export function useStoicAnalyzer() {
     const exists = await checkExistingEvent(reqId);
     if (exists) {
       logger.info("Skipping duplicate request", { requestId: reqId });
-      toast.info("This analysis was already completed");
+      onError?.("This analysis was already completed");
       return null;
     }
 
@@ -311,7 +310,7 @@ export function useStoicAnalyzer() {
           errorMessage = "Request timed out. Please try again.";
         }
         
-        toast.error(errorMessage);
+        onError?.(errorMessage);
         
         // Provide fallback response (Fix #6)
         const fallbackResponse = getFallbackResponse(tool, input);
@@ -465,7 +464,7 @@ export function useStoicAnalyzer() {
         return fallbackResponse;
       }
       
-      toast.error("Something went wrong. Please try again.");
+      onError?.("Something went wrong. Please try again.");
       return null;
     } finally {
       setIsLoading(false);

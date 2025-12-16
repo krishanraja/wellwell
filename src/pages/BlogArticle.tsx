@@ -4,7 +4,6 @@ import { Layout } from "@/components/wellwell/Layout";
 import { getArticleBySlug, getArticleSchema, blogArticles } from "@/data/blogData";
 import { Clock, ArrowLeft, ArrowRight, Share2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 
 // Simple markdown-to-HTML converter for blog content
@@ -75,7 +74,7 @@ export default function BlogArticle() {
     } else {
       // Fallback: copy to clipboard
       await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard");
+      // Silent success - clipboard copy doesn't need notification
     }
   };
 

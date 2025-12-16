@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Mic, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VoiceFirstInputProps {
   onTranscript: (text: string) => void;
   onComplete?: () => void;
+  onError?: (error: string) => void;
   placeholder?: string;
   processingText?: string;
   isProcessing?: boolean;
@@ -16,6 +17,7 @@ interface VoiceFirstInputProps {
 export function VoiceFirstInput({ 
   onTranscript, 
   onComplete,
+  onError,
   placeholder = "Tap to speak",
   processingText = "Finding your Stoic truth...",
   isProcessing = false,
@@ -23,92 +25,124 @@ export function VoiceFirstInput({
   disabled 
 }: VoiceFirstInputProps) {
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
   const [transcript, setTranscript] = useState("");
   const [showTextInput, setShowTextInput] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Check for MediaRecorder support
   useEffect(() => {
-    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognitionAPI) {
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
       setIsSupported(false);
       setShowTextInput(true);
-      return;
     }
 
-    const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
-
-    recognition.onresult = (event: any) => {
-      let finalTranscript = "";
-      let interimTranscript = "";
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const text = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += text;
-        } else {
-          interimTranscript += text;
-        }
-      }
-
-      if (finalTranscript) {
-        setTranscript(prev => prev + (prev ? " " : "") + finalTranscript);
-      }
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error:", event.error);
-      if (event.error === "not-allowed") {
-        toast.error("Microphone access denied. Please enable microphone permissions.");
-        setShowTextInput(true);
-      } else if (event.error !== "aborted") {
-        toast.error("Voice input error. Please try again or type instead.");
-      }
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognitionRef.current = recognition;
-
+    // Cleanup on unmount
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
   }, []);
 
-  const toggleListening = useCallback(() => {
-    if (!recognitionRef.current) {
-      setShowTextInput(true);
-      return;
-    }
+  const transcribeAudio = useCallback(async (audioBlob: Blob) => {
+    setIsTranscribing(true);
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
 
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-      // If we have transcript, send it
-      if (transcript.trim()) {
-        onTranscript(transcript);
-        onComplete?.();
+      const { data, error } = await supabase.functions.invoke('whisper-transcribe', {
+        body: formData,
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Transcription failed');
       }
-    } else {
-      try {
-        setTranscript("");
-        recognitionRef.current.start();
-        setIsListening(true);
-      } catch (error) {
-        console.error("Failed to start recognition:", error);
-        setShowTextInput(true);
+
+      if (data?.text) {
+        const newTranscript = transcript + (transcript ? " " : "") + data.text;
+        setTranscript(newTranscript);
+        return newTranscript;
+      } else {
+        throw new Error('No transcription received');
       }
+    } catch (error: any) {
+      console.error('Transcription error:', error);
+      onError?.(error.message || 'Failed to transcribe audio. Please try again or type instead.');
+      return null;
+    } finally {
+      setIsTranscribing(false);
     }
-  }, [isListening, transcript, onTranscript, onComplete]);
+  }, [transcript, onError]);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+      });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+
+        if (audioChunksRef.current.length > 0) {
+          const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
+          const newTranscript = await transcribeAudio(audioBlob);
+          if (newTranscript) {
+            onTranscript(newTranscript);
+            onComplete?.();
+          }
+        }
+      };
+
+      mediaRecorder.start();
+      setIsListening(true);
+      setTranscript("");
+    } catch (error: any) {
+      console.error('Failed to start recording:', error);
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        onError?.("Microphone access denied. Please enable microphone permissions.");
+      } else {
+        onError?.("Failed to start recording. Please try again or type instead.");
+      }
+      setShowTextInput(true);
+    }
+  }, [transcribeAudio, onTranscript, onComplete, onError]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isListening) {
+      mediaRecorderRef.current.stop();
+      setIsListening(false);
+    }
+  }, [isListening]);
+
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }, [isListening, startRecording, stopRecording]);
 
   const handleTextSubmit = () => {
     if (transcript.trim()) {
@@ -176,17 +210,18 @@ export function VoiceFirstInput({
       <button
         type="button"
         onClick={toggleListening}
-        disabled={disabled}
+        disabled={disabled || isTranscribing}
         className={cn(
           "relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 mb-4",
-          isListening
+          isListening || isTranscribing
             ? "bg-primary shadow-2xl shadow-primary/40 scale-110"
-            : "bg-muted hover:bg-muted/80 hover:scale-105"
+            : "bg-muted hover:bg-muted/80 hover:scale-105",
+          (disabled || isTranscribing) && "opacity-50 cursor-not-allowed"
         )}
         aria-label={isListening ? "Stop listening" : "Start voice input"}
       >
-        {/* Animated rings when listening */}
-        {isListening && (
+        {/* Animated rings when listening or transcribing */}
+        {(isListening || isTranscribing) && (
           <>
             <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping" style={{ animationDuration: "1.5s" }} />
             <div className="absolute -inset-3 rounded-full border-2 border-primary/30 animate-pulse" />
@@ -194,20 +229,24 @@ export function VoiceFirstInput({
           </>
         )}
         
-        <Mic 
-          className={cn(
-            "w-8 h-8 transition-all",
-            isListening ? "text-primary-foreground" : "text-muted-foreground"
-          )} 
-        />
+        {isTranscribing ? (
+          <Loader2 className="w-8 h-8 text-primary-foreground animate-spin" />
+        ) : (
+          <Mic 
+            className={cn(
+              "w-8 h-8 transition-all",
+              isListening ? "text-primary-foreground" : "text-muted-foreground"
+            )} 
+          />
+        )}
       </button>
 
       {/* Status text - compact */}
       <p className={cn(
         "text-base font-medium mb-1 transition-colors",
-        isListening ? "text-primary" : "text-foreground"
+        isListening || isTranscribing ? "text-primary" : "text-foreground"
       )}>
-        {isListening ? "I'm listening..." : placeholder}
+        {isTranscribing ? "Transcribing..." : isListening ? "I'm listening..." : placeholder}
       </p>
 
       {/* Live transcript - compact */}
