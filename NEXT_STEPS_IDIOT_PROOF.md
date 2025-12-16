@@ -55,28 +55,32 @@ You need to run 2 new SQL files in your Supabase database.
 
 **Option A: Using Supabase CLI (Recommended)**
 
-1. Open your terminal/command prompt
-2. Navigate to your project folder:
-   ```bash
-   cd c:\Users\krish\OneDrive\Documents\WellWell\wellwell
-   ```
+**EASIEST METHOD - Use File Explorer:**
 
-3. Make sure you're logged in:
-   ```bash
-   supabase login
-   ```
+1. Open **File Explorer** (Windows key + E)
+2. Navigate to: `C:\Users\krish\OneDrive\Documents\WellWell\wellwell`
+3. Click in the **address bar** at the top (where it shows the folder path)
+4. Type: `cmd` and press **Enter**
+   - This opens Command Prompt already in the correct folder!
+5. Type: `supabase functions deploy delete-account`
+6. Press **Enter**
+7. You should see: ✅ **"Deployed Function delete-account"**
 
-4. Link to your project (if not already linked):
-   ```bash
-   supabase link --project-ref zioacippbtcbctexywgc
-   ```
+**ALTERNATIVE - Manual Navigation:**
 
-5. Deploy the function:
-   ```bash
-   supabase functions deploy delete-account
+1. Open **Command Prompt** (search "cmd" in Windows)
+2. Type this EXACT command (with quotes):
    ```
-
+   cd "C:\Users\krish\OneDrive\Documents\WellWell\wellwell"
+   ```
+3. Press **Enter**
+4. Type: `supabase functions deploy delete-account`
+5. Press **Enter**
 6. You should see: ✅ **"Deployed Function delete-account"**
+
+**If you get "supabase is not recognized":**
+- You need to install Supabase CLI first
+- See Option B below (Dashboard method) - it's easier!
 
 **Option B: Using Supabase Dashboard (If CLI doesn't work)**
 

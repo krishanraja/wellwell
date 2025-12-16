@@ -24,11 +24,24 @@ Copy this checklist and check off each item as you complete it.
 
 **Option A: Using Command Line**
 
-- [ ] **Step 2.1:** Open terminal/command prompt
-- [ ] **Step 2.2:** Type: `cd` then space, then drag your project folder into terminal, press Enter
+- [ ] **Step 2.1:** Open Command Prompt (search "cmd" in Windows)
+- [ ] **Step 2.2:** Type this EXACT command (replace with your actual path):
+  ```
+  cd "C:\Users\krish\OneDrive\Documents\WellWell\wellwell"
+  ```
+  Then press Enter
 - [ ] **Step 2.3:** Type: `supabase functions deploy delete-account`
 - [ ] **Step 2.4:** Press Enter
 - [ ] **Step 2.5:** See "Deployed" message ✅
+
+**Alternative: Easier Method**
+- [ ] **Step 2.1:** Open File Explorer
+- [ ] **Step 2.2:** Navigate to: `C:\Users\krish\OneDrive\Documents\WellWell\wellwell`
+- [ ] **Step 2.3:** Click in the address bar (where it shows the path)
+- [ ] **Step 2.4:** Type: `cmd` and press Enter (this opens Command Prompt in that folder!)
+- [ ] **Step 2.5:** Type: `supabase functions deploy delete-account`
+- [ ] **Step 2.6:** Press Enter
+- [ ] **Step 2.7:** See "Deployed" message ✅
 
 **Option B: Using Dashboard (if command line doesn't work)**
 
