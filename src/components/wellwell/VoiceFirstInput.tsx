@@ -58,13 +58,29 @@ export function VoiceFirstInput({
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
 
-      const { data, error } = await supabase.functions.invoke('whisper-transcribe', {
+      // Get Supabase URL and anon key from environment
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Supabase configuration missing');
+      }
+
+      // Call the function directly using fetch (FormData support)
+      const response = await fetch(`${supabaseUrl}/functions/v1/whisper-transcribe`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
         body: formData,
       });
 
-      if (error) {
-        throw new Error(error.message || 'Transcription failed');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Transcription failed' }));
+        throw new Error(errorData.error || `Transcription failed: ${response.status}`);
       }
+
+      const data = await response.json();
 
       if (data?.text) {
         const newTranscript = transcript + (transcript ? " " : "") + data.text;
