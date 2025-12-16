@@ -1,9 +1,9 @@
 # WellWell Supabase Automatic Setup Script
 # This script automatically configures all Supabase edge function environment variables
 
-$PROJECT_ID = "zioacippbtcbctexywgc"
-$SUPABASE_URL = "https://zioacippbtcbctexywgc.supabase.co"
-$PUBLISHABLE_KEY = "sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO"
+# Get project ID from environment or use placeholder
+$PROJECT_ID = if ($env:SUPABASE_PROJECT_ID) { $env:SUPABASE_PROJECT_ID } else { "YOUR_PROJECT_ID" }
+$SUPABASE_URL = if ($env:SUPABASE_URL) { $env:SUPABASE_URL } else { "https://$PROJECT_ID.supabase.co" }
 
 Write-Host ""
 Write-Host "=== WellWell Supabase Automatic Setup ===" -ForegroundColor Cyan

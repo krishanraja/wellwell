@@ -10,8 +10,9 @@
  * 3. Run: node scripts/add-edge-function-secrets.js
  */
 
-const PROJECT_ID = 'zioacippbtcbctexywgc';
-const SUPABASE_URL = 'https://zioacippbtcbctexywgc.supabase.co';
+// Get project ID from environment or use placeholder
+const PROJECT_ID = process.env.SUPABASE_PROJECT_ID || 'YOUR_PROJECT_ID';
+const SUPABASE_URL = process.env.SUPABASE_URL || `https://${PROJECT_ID}.supabase.co`;
 
 // Environment variables to set
 const SECRETS = {
@@ -43,10 +44,10 @@ async function addSecrets() {
 
   if (!anonKey || !serviceRoleKey) {
     console.log('⚠️  SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY not found in environment.');
-    console.log('   Please get them from: https://supabase.com/dashboard/project/zioacippbtcbctexywgc/settings/api');
+    console.log(`   Please get them from: https://supabase.com/dashboard/project/${PROJECT_ID}/settings/api`);
     console.log('   Then set them as environment variables and run this script again.\n');
     console.log('   Or you can add them manually in the dashboard:\n');
-    console.log('   https://supabase.com/dashboard/project/zioacippbtcbctexywgc/functions/secrets\n');
+    console.log(`   https://supabase.com/dashboard/project/${PROJECT_ID}/functions/secrets\n`);
     process.exit(1);
   }
 
@@ -88,12 +89,12 @@ async function addSecrets() {
 
     console.log('\n✅ Done! All secrets have been processed.\n');
     console.log('💡 If any secrets failed, add them manually at:');
-    console.log('   https://supabase.com/dashboard/project/zioacippbtcbctexywgc/functions/secrets\n');
+    console.log(`   https://supabase.com/dashboard/project/${PROJECT_ID}/functions/secrets\n`);
 
   } catch (error) {
     console.error('❌ Error:', error.message);
     console.log('\n💡 Alternative: Add secrets manually in the Supabase dashboard');
-    console.log('   URL: https://supabase.com/dashboard/project/zioacippbtcbctexywgc/functions/secrets\n');
+    console.log(`   URL: https://supabase.com/dashboard/project/${PROJECT_ID}/functions/secrets\n`);
     process.exit(1);
   }
 }

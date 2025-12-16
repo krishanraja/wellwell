@@ -17,9 +17,40 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate required environment variables
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+
+  if (!supabaseUrl || !anonKey) {
+    logStep("ERROR", { message: "Missing required Supabase environment variables" });
+    return new Response(
+      JSON.stringify({ 
+        error: "Server configuration error: Missing SUPABASE_URL or SUPABASE_ANON_KEY" 
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
+  }
+
+  if (!stripeKey) {
+    logStep("ERROR", { message: "STRIPE_SECRET_KEY is not set" });
+    return new Response(
+      JSON.stringify({ 
+        error: "Server configuration error: STRIPE_SECRET_KEY is not configured" 
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
+  }
+
   const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    supabaseUrl,
+    anonKey
   );
 
   try {
@@ -37,9 +68,6 @@ serve(async (req) => {
     
     const maskedEmail = user.email.replace(/^(.{2})(.*)(@.*)$/, '$1***$3');
     logStep("User authenticated", { userId: user.id, email: maskedEmail });
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     

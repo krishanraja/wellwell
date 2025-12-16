@@ -6,42 +6,61 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
-// Validate environment variables
+// Validate environment variables with detailed error messages
 if (!SUPABASE_URL) {
   throw new Error(
-    'Missing VITE_SUPABASE_URL environment variable. ' +
-    'Please ensure your .env file contains: VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co'
+    '❌ Missing VITE_SUPABASE_URL environment variable.\n\n' +
+    'Please ensure your .env file contains:\n' +
+    '  VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co\n\n' +
+    'Get your project URL from: https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api'
   );
 }
 
 if (!SUPABASE_PUBLISHABLE_KEY) {
   throw new Error(
-    'Missing VITE_SUPABASE_PUBLISHABLE_KEY environment variable. ' +
-    'Please ensure your .env file contains the correct publishable key from your Supabase project settings.'
+    '❌ Missing VITE_SUPABASE_PUBLISHABLE_KEY environment variable.\n\n' +
+    'Please ensure your .env file contains the correct publishable (anon) key.\n' +
+    'Get it from: https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api\n' +
+    'Look for the "anon public" key (it should be a JWT token starting with "eyJ...")'
   );
 }
 
-// Extract project ID from URL if not explicitly provided
-const projectIdFromUrl = SUPABASE_URL.match(/https?:\/\/([^.]+)\.supabase\.co/)?.[1];
-const expectedProjectId = SUPABASE_PROJECT_ID || projectIdFromUrl;
+// Validate URL format
+const urlPattern = /^https:\/\/([^.]+)\.supabase\.co\/?$/;
+if (!urlPattern.test(SUPABASE_URL)) {
+  throw new Error(
+    `❌ Invalid VITE_SUPABASE_URL format: "${SUPABASE_URL}"\n\n` +
+    'Expected format: https://YOUR_PROJECT_ID.supabase.co\n' +
+    'Example: https://abcdefghijklmnop.supabase.co'
+  );
+}
+
+// Extract project ID from URL
+const projectIdFromUrl = SUPABASE_URL.match(urlPattern)?.[1];
 
 // Optional validation: warn if project ID doesn't match (only if explicitly set)
 if (SUPABASE_PROJECT_ID && projectIdFromUrl && SUPABASE_PROJECT_ID !== projectIdFromUrl) {
   console.warn(
-    `⚠️  Warning: Supabase URL project ID (${projectIdFromUrl}) does not match VITE_SUPABASE_PROJECT_ID (${SUPABASE_PROJECT_ID}).`
+    `⚠️  Warning: Supabase URL project ID (${projectIdFromUrl}) does not match ` +
+    `VITE_SUPABASE_PROJECT_ID (${SUPABASE_PROJECT_ID}). Using project ID from URL.`
   );
 }
 
-// Diagnostic: Validate publishable key format (Supabase anon keys are JWTs starting with 'eyJ')
-if (SUPABASE_PUBLISHABLE_KEY && !SUPABASE_PUBLISHABLE_KEY.startsWith('eyJ')) {
-  console.error(
-    '❌ AUTHENTICATION ERROR: Invalid Supabase publishable key format detected.\n' +
-    `   Current key starts with: "${SUPABASE_PUBLISHABLE_KEY.substring(0, 20)}..."\n` +
-    '   Expected format: JWT token starting with "eyJ..."\n' +
-    '   This will cause all authentication to fail.\n' +
-    '   Get your correct anon key from: https://supabase.com/dashboard/project/zioacippbtcbctexywgc/settings/api\n' +
-    '   Look for the "anon" or "public" key (it should be a long JWT token).'
-  );
+// Validate publishable key format (Supabase anon keys are JWTs starting with 'eyJ')
+if (!SUPABASE_PUBLISHABLE_KEY.startsWith('eyJ')) {
+  const errorMessage = 
+    '❌ AUTHENTICATION ERROR: Invalid Supabase publishable key format.\n\n' +
+    `Current key starts with: "${SUPABASE_PUBLISHABLE_KEY.substring(0, 20)}..."\n\n` +
+    'Expected format: JWT token starting with "eyJ..."\n' +
+    'This will cause all authentication to fail.\n\n' +
+    'To fix:\n' +
+    '1. Go to: https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api\n' +
+    '2. Copy the "anon public" key (not the service_role key)\n' +
+    '3. Update VITE_SUPABASE_PUBLISHABLE_KEY in your .env file\n' +
+    '4. Restart your development server';
+  
+  console.error(errorMessage);
+  // Don't throw here - let it fail at runtime so user can see the actual error
 }
 
 // Import the supabase client like this:

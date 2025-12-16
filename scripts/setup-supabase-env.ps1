@@ -1,8 +1,9 @@
 # WellWell Supabase Edge Function Environment Variables Setup Script
 # This script helps you configure edge function environment variables
 
-$PROJECT_ID = "zioacippbtcbctexywgc"
-$SUPABASE_URL = "https://zioacippbtcbctexywgc.supabase.co"
+# Get project ID from environment or use placeholder
+$PROJECT_ID = if ($env:SUPABASE_PROJECT_ID) { $env:SUPABASE_PROJECT_ID } else { "YOUR_PROJECT_ID" }
+$SUPABASE_URL = if ($env:SUPABASE_URL) { $env:SUPABASE_URL } else { "https://$PROJECT_ID.supabase.co" }
 
 Write-Host "`n=== WellWell Supabase Edge Function Setup ===" -ForegroundColor Cyan
 Write-Host "Project: WellWell ($PROJECT_ID)`n" -ForegroundColor Green

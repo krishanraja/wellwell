@@ -17,17 +17,45 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate required environment variables
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    logStep("ERROR", { message: "Missing required Supabase environment variables" });
+    return new Response(
+      JSON.stringify({ 
+        error: "Server configuration error: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY" 
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
+  }
+
+  if (!stripeKey) {
+    logStep("ERROR", { message: "STRIPE_SECRET_KEY is not set" });
+    return new Response(
+      JSON.stringify({ 
+        error: "Server configuration error: STRIPE_SECRET_KEY is not configured" 
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      }
+    );
+  }
+
   const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    supabaseUrl,
+    serviceRoleKey,
     { auth: { persistSession: false } }
   );
 
   try {
     logStep("Function started");
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");

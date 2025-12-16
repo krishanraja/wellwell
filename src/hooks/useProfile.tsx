@@ -27,6 +27,57 @@ export function useProfile() {
         throw error;
       }
 
+      // If profile is missing, try to recover it
+      if (!data) {
+        logger.warn('Profile missing for user, attempting recovery', { userId: user.id });
+        
+        try {
+          // Call RPC function to ensure profile exists
+          const { error: recoveryError } = await supabase.rpc('ensure_profile_exists');
+          
+          if (recoveryError) {
+            logger.error('Profile recovery failed', { error: recoveryError.message });
+            // Don't throw - allow user to continue, they can retry later
+            endTimer();
+            return null;
+          }
+          
+          logger.info('Profile recovery successful, refetching profile');
+          
+          // Retry fetching profile after recovery
+          const { data: recoveredData, error: retryError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+          
+          if (retryError) {
+            logger.error('Failed to fetch profile after recovery', { error: retryError.message });
+            endTimer();
+            return null;
+          }
+          
+          if (recoveredData) {
+            endTimer();
+            logger.info('Profile recovered successfully');
+            return {
+              ...recoveredData,
+              persona: recoveredData.persona as Persona | null,
+              challenges: recoveredData.challenges || [],
+              goals: recoveredData.goals || [],
+              morning_pulse_time: recoveredData.morning_pulse_time || null,
+              evening_debrief_time: recoveredData.evening_debrief_time || null,
+            } as Profile;
+          }
+        } catch (recoveryErr) {
+          logger.error('Profile recovery exception', { 
+            error: recoveryErr instanceof Error ? recoveryErr.message : 'Unknown error' 
+          });
+          endTimer();
+          return null;
+        }
+      }
+
       endTimer();
       logger.debug('Profile fetched', { hasProfile: !!data });
       
@@ -45,6 +96,7 @@ export function useProfile() {
       return null;
     },
     enabled: !!user?.id,
+    retry: 1, // Retry once if profile is missing (will trigger recovery)
   });
 
   const updateProfileMutation = useMutation({

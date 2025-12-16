@@ -218,3 +218,4 @@ If issues occur:
    - Contact Supabase support if needed
 
 
+

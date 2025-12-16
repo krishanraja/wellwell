@@ -51,7 +51,7 @@ const personas = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { updateProfile, isUpdating } = useProfile();
+  const { profile, isLoading: isProfileLoading, error: profileError, updateProfile, isUpdating } = useProfile();
   const { createEvent } = useEvents();
   const [step, setStep] = useState(0);
   const [selectedSituations, setSelectedSituations] = useState<string[]>([]);
@@ -64,6 +64,35 @@ export default function Onboarding() {
   const [eveningHour, setEveningHour] = useState([20]); // Default 8 PM
   
   const [isSaving, setIsSaving] = useState(false);
+
+  // Show loading state while profile is being fetched/recovered
+  if (isProfileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Setting up your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if profile cannot be loaded or recovered
+  if (profileError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <h2 className="text-xl font-semibold mb-2">Unable to load profile</h2>
+          <p className="text-muted-foreground mb-4">
+            There was an error setting up your profile. Please try refreshing the page.
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const toggleSituation = (id: string) => {
     setSelectedSituations((prev) =>
@@ -82,6 +111,14 @@ export default function Onboarding() {
     
     setIsSaving(true);
     try {
+      // Ensure profile exists before updating
+      if (!profile) {
+        logger.warn("Profile missing during onboarding completion, this should not happen");
+        toast.error("Profile not found. Please refresh the page and try again.");
+        setIsSaving(false);
+        return;
+      }
+
       logger.info("Saving onboarding data", {
         situations: selectedSituations,
         helpful: selectedHelpful,

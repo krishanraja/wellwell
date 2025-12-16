@@ -130,18 +130,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deleteAccount = async () => {
     logger.interaction('Delete account attempt');
     
+    if (!user?.id) {
+      const error = new Error('No user logged in');
+      logger.error('Delete account failed', { error: error.message });
+      return { error };
+    }
+
+    if (!session?.access_token) {
+      const error = new Error('No session token available');
+      logger.error('Delete account failed', { error: error.message });
+      return { error };
+    }
+    
     try {
-      // Delete user account - this will cascade delete profile and all related data
-      // due to ON DELETE CASCADE in the database schema
-      const { error } = await supabase.auth.admin.deleteUser(user?.id || '');
+      // Get Supabase URL from environment to construct edge function URL
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) {
+        throw new Error('VITE_SUPABASE_URL not configured');
+      }
+
+      // Extract project reference from URL (e.g., https://xxx.supabase.co -> xxx)
+      const projectRef = supabaseUrl.match(/https?:\/\/([^.]+)\.supabase\.co/)?.[1];
+      if (!projectRef) {
+        throw new Error('Invalid Supabase URL format');
+      }
+
+      // Call edge function to delete account
+      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/delete-account`;
       
-      if (error) {
-        // If admin API fails, try user deletion via RPC or direct auth
-        // For user-initiated deletion, we may need an edge function
-        logger.error('Delete account failed', { error: error.message });
+      logger.debug('Calling delete-account edge function', { url: edgeFunctionUrl });
+      
+      const response = await fetch(edgeFunctionUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const error = new Error(data.error || `Failed to delete account: ${response.statusText}`);
+        logger.error('Delete account failed', { 
+          error: error.message,
+          status: response.status,
+          response: data 
+        });
         return { error };
       }
 
+      // Sign out locally after successful deletion
+      await supabase.auth.signOut();
+      
       logger.info('Account deleted successfully');
       return { error: null };
     } catch (err) {

@@ -12,8 +12,9 @@
  *   3. Run: node scripts/setup-supabase-env.js
  */
 
-const SUPABASE_PROJECT_ID = 'zioacippbtcbctexywgc';
-const SUPABASE_URL = `https://zioacippbtcbctexywgc.supabase.co`;
+// Get project ID from environment or use placeholder
+const SUPABASE_PROJECT_ID = process.env.SUPABASE_PROJECT_ID || 'YOUR_PROJECT_ID';
+const SUPABASE_URL = process.env.SUPABASE_URL || `https://${SUPABASE_PROJECT_ID}.supabase.co`;
 
 // Required environment variables for edge functions
 const REQUIRED_ENV_VARS = {
@@ -81,7 +82,7 @@ async function setupEdgeFunctionEnvVars() {
     // This is a template - you may need to adjust based on Supabase's actual API
     console.log('\n⚠️  Note: This script uses the Supabase Management API.');
     console.log('   If the API structure has changed, you may need to set these manually:');
-    console.log('   1. Go to: https://supabase.com/dashboard/project/zioacippbtcbctexywgc/settings/functions');
+    console.log(`   1. Go to: https://supabase.com/dashboard/project/${SUPABASE_PROJECT_ID}/settings/functions`);
     console.log('   2. Add the following environment variables:');
     console.log(`      - SUPABASE_URL: ${SUPABASE_URL}`);
     console.log('      - SUPABASE_ANON_KEY: (from Settings > API > anon/public key)');
@@ -91,7 +92,7 @@ async function setupEdgeFunctionEnvVars() {
   } catch (error) {
     console.error('❌ Error:', error.message);
     console.log('\n💡 Alternative: Set environment variables manually in the Supabase dashboard');
-    console.log('   URL: https://supabase.com/dashboard/project/zioacippbtcbctexywgc/settings/functions\n');
+    console.log(`   URL: https://supabase.com/dashboard/project/${SUPABASE_PROJECT_ID}/settings/functions\n`);
     process.exit(1);
   }
 }
