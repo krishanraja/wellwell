@@ -623,9 +623,9 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not configured');
+    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
+    if (!GOOGLE_AI_API_KEY) {
+      console.error('GOOGLE_AI_API_KEY not configured');
       throw new Error('AI service not configured');
     }
 
@@ -667,22 +667,33 @@ serve(async (req) => {
         throw new Error('Invalid request type');
     }
 
-    console.log('Calling AI gateway...');
+    // Combine system prompt and user prompt for Gemini API
+    const fullPrompt = `${SYSTEM_PROMPT}\n\n${userPrompt}`;
+
+    console.log('Calling Google Gemini API...');
     const startTime = Date.now();
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_AI_API_KEY}`;
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt },
+        contents: [
+          {
+            parts: [
+              {
+                text: fullPrompt,
+              },
+            ],
+          },
         ],
-        response_format: { type: 'json_object' },
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.7,
+        },
       }),
     });
 
@@ -691,7 +702,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
+      console.error('Gemini API error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -699,7 +710,7 @@ serve(async (req) => {
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
+      if (response.status === 402 || response.status === 403) {
         return new Response(
           JSON.stringify({ error: 'AI usage limit reached. Please try again later.' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -710,7 +721,9 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    
+    // Extract content from Gemini API response format
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!content) {
       console.error('No content in AI response:', JSON.stringify(data));

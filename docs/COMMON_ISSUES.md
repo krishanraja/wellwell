@@ -85,19 +85,23 @@ const { data } = await supabase
 
 **Possible Causes**:
 1. Edge function not deployed
-2. `LOVABLE_API_KEY` not configured
+2. `GOOGLE_AI_API_KEY` not configured
 3. Rate limit exceeded
 4. Invalid request payload
+5. Google Gemini API quota exceeded
 
 **Debug Steps**:
-1. Check edge function logs in Cloud dashboard
-2. Verify API key exists in secrets
+1. Check edge function logs in Supabase dashboard
+2. Verify `GOOGLE_AI_API_KEY` exists in secrets
 3. Test with minimal payload
+4. Check Google AI API quota/usage
 
 **Solutions**:
 - Redeploy edge function
+- Add `GOOGLE_AI_API_KEY` to Supabase secrets
 - Add retry logic with exponential backoff
 - Show specific error message to user
+- Verify Google AI API key has sufficient quota
 
 ### Issue: AI response doesn't follow schema
 **Symptoms**: Missing fields in response, app crashes
