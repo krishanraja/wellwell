@@ -150,7 +150,8 @@ export default function Pulse() {
           </div>
         </UsageLimitGate>
       </Layout>
-    );
+    </>
+  );
   }
 
   const cards = [

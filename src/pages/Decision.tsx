@@ -77,7 +77,8 @@ export default function Decision() {
           </div>
         </UsageLimitGate>
       </Layout>
-    );
+    </>
+  );
   }
 
   const cards = [

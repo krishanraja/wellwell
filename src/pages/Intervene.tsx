@@ -105,7 +105,8 @@ export default function Intervene() {
           </div>
         </UsageLimitGate>
       </Layout>
-    );
+    </>
+  );
   }
 
   const cards = [

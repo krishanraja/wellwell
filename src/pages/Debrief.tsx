@@ -167,7 +167,8 @@ export default function Debrief() {
           </div>
         </UsageLimitGate>
       </Layout>
-    );
+    </>
+  );
   }
 
   const cards = [

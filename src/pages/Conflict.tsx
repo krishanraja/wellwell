@@ -77,7 +77,8 @@ export default function Conflict() {
           </div>
         </UsageLimitGate>
       </Layout>
-    );
+    </>
+  );
   }
 
   const cards = [
