@@ -3,19 +3,18 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import wellwellLogo from "@/assets/wellwell-logo.png";
 import wellwellIcon from "@/assets/wellwell-icon.png";
-import { User, Flame, Sunrise, Sun, Moon, LogOut } from "lucide-react";
+import { User, Flame, Sunrise, Sun, Moon, LogOut, Settings, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTimeOfDay } from "@/hooks/useTimeOfDay";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useStreak } from "@/hooks/useStreak";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 interface HeaderProps {
   showLogo?: boolean;
@@ -76,8 +75,8 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
         />
       ) : null}
       
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      <Drawer>
+        <DrawerTrigger asChild>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -85,27 +84,122 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
           >
             <User className="w-5 h-5" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align="end" 
-          alignOffset={-8}
-          sideOffset={8}
-          className="w-48"
-        >
-          <DropdownMenuItem onClick={() => navigate('/profile')}>
-            <User className="w-4 h-4 mr-2" />
-            Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/settings')}>
-            Settings
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </DrawerTrigger>
+        <DrawerContent className="rounded-t-3xl border-0 bg-transparent pb-safe">
+          {/* Glass container with gradient border */}
+          <div className="relative mx-3 mb-4 overflow-hidden rounded-3xl">
+            {/* Gradient border effect */}
+            <div 
+              className="absolute inset-0 rounded-3xl p-[1.5px]"
+              style={{ background: 'linear-gradient(135deg, hsl(90 100% 79%) 0%, hsl(187 100% 60%) 100%)' }}
+            >
+              <div className="h-full w-full rounded-3xl bg-background" />
+            </div>
+            
+            {/* Content */}
+            <div className="relative z-10 glass-card rounded-3xl">
+              {/* Profile Header */}
+              <div className="px-5 pt-6 pb-5">
+                <div className="flex items-center gap-4">
+                  {/* Avatar with gradient ring */}
+                  <div className="relative">
+                    <div 
+                      className="absolute -inset-1 rounded-full opacity-60"
+                      style={{ background: 'linear-gradient(135deg, hsl(90 100% 79%) 0%, hsl(187 100% 60%) 100%)' }}
+                    />
+                    <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
+                      <User className="h-7 w-7 text-muted-foreground" />
+                    </div>
+                  </div>
+                  
+                  {/* User info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display font-semibold text-foreground text-lg truncate">
+                      {displayName}
+                    </h3>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+                  
+                  {/* Streak badge */}
+                  {streak > 0 && (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-coral/10">
+                      <Flame className="w-4 h-4 text-coral" />
+                      <span className="text-sm font-semibold text-coral">{streak}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Divider */}
+              <div className="mx-5 h-px bg-border" />
+              
+              {/* Menu Items */}
+              <div className="p-2">
+                <DrawerClose asChild>
+                  <button 
+                    onClick={() => navigate('/profile')}
+                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-secondary/80 active:scale-[0.98]"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-aqua/10">
+                      <User className="h-5 w-5 text-aqua" />
+                    </div>
+                    <div className="flex-1">
+                      <span className="font-medium text-foreground">Profile</span>
+                      <p className="text-xs text-muted-foreground">View and edit your profile</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                  </button>
+                </DrawerClose>
+                
+                <DrawerClose asChild>
+                  <button 
+                    onClick={() => navigate('/settings')}
+                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-secondary/80 active:scale-[0.98]"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple/10">
+                      <Settings className="h-5 w-5 text-purple" />
+                    </div>
+                    <div className="flex-1">
+                      <span className="font-medium text-foreground">Settings</span>
+                      <p className="text-xs text-muted-foreground">Preferences & notifications</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                  </button>
+                </DrawerClose>
+              </div>
+              
+              {/* Divider */}
+              <div className="mx-5 h-px bg-border" />
+              
+              {/* Sign Out */}
+              <div className="p-2 pb-4">
+                <DrawerClose asChild>
+                  <button 
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-destructive/10 active:scale-[0.98]"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
+                      <LogOut className="h-5 w-5 text-destructive" />
+                    </div>
+                    <span className="font-medium text-destructive">Sign out</span>
+                  </button>
+                </DrawerClose>
+              </div>
+            </div>
+          </div>
+          
+          {/* Cancel button */}
+          <div className="mx-3 mb-4">
+            <DrawerClose asChild>
+              <button className="w-full py-4 rounded-2xl bg-secondary/80 font-medium text-foreground transition-all duration-200 hover:bg-secondary active:scale-[0.98]">
+                Cancel
+              </button>
+            </DrawerClose>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </header>
   );
 }
