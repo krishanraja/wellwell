@@ -104,32 +104,34 @@ export default function Decision() {
   ];
 
   return (
-    <Layout>
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="text-center py-2 animate-fade-up shrink-0">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan/10 rounded-full mb-1">
-            <Scale className="w-4 h-4 text-cyan" />
-            <span className="text-sm font-medium text-cyan">Decision Clarity</span>
+    <>
+      {ErrorModal}
+      <Layout>
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="text-center py-2 animate-fade-up shrink-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan/10 rounded-full mb-1">
+              <Scale className="w-4 h-4 text-cyan" />
+              <span className="text-sm font-medium text-cyan">Decision Clarity</span>
+            </div>
+            {decision && (
+              <p className="text-xs text-muted-foreground mt-1 px-4 line-clamp-1">
+                "{decision.slice(0, 50)}{decision.length > 50 ? '...' : ''}"
+              </p>
+            )}
           </div>
-          {decision && (
-            <p className="text-xs text-muted-foreground mt-1 px-4 line-clamp-1">
-              "{decision.slice(0, 50)}{decision.length > 50 ? '...' : ''}"
-            </p>
-          )}
+          
+          <div className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+            <CardCarousel className="h-full">{cards}</CardCarousel>
+          </div>
+          
+          <div className="py-4 shrink-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
+            <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
+              <RotateCcw className="w-4 h-4" />
+              New Decision
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
-          <CardCarousel className="h-full">{cards}</CardCarousel>
-        </div>
-        
-        <div className="py-4 shrink-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
-          <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
-            <RotateCcw className="w-4 h-4" />
-            New Decision
-          </Button>
-        </div>
-      </div>
-    </Layout>
+      </Layout>
     </>
   );
 }
