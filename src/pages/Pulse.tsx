@@ -182,35 +182,37 @@ export default function Pulse() {
   ];
 
   return (
-    <Layout>
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* Compact header */}
-        <div className="text-center py-2 animate-fade-up shrink-0">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full mb-1">
-            <Sunrise className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Your Stance</span>
+    <>
+      {ErrorModal}
+      <Layout>
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          {/* Compact header */}
+          <div className="text-center py-2 animate-fade-up shrink-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full mb-1">
+              <Sunrise className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">Your Stance</span>
+            </div>
+            {challenge && (
+              <p className="text-xs text-muted-foreground mt-1 px-4 line-clamp-1">
+                "{challenge.slice(0, 50)}{challenge.length > 50 ? '...' : ''}"
+              </p>
+            )}
           </div>
-          {challenge && (
-            <p className="text-xs text-muted-foreground mt-1 px-4 line-clamp-1">
-              "{challenge.slice(0, 50)}{challenge.length > 50 ? '...' : ''}"
-            </p>
-          )}
+          
+          {/* Card carousel - takes remaining space */}
+          <div className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
+            <CardCarousel className="h-full">{cards}</CardCarousel>
+          </div>
+          
+          {/* Reset button with proper bottom spacing */}
+          <div className="py-4 shrink-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
+            <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
+              <RotateCcw className="w-4 h-4" />
+              New Challenge
+            </Button>
+          </div>
         </div>
-        
-        {/* Card carousel - takes remaining space */}
-        <div className="flex-1 min-h-0 animate-fade-up" style={{ animationDelay: "100ms" }}>
-          <CardCarousel className="h-full">{cards}</CardCarousel>
-        </div>
-        
-        {/* Reset button with proper bottom spacing */}
-        <div className="py-4 shrink-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
-          <Button variant="outline" size="lg" className="w-full" onClick={handleReset}>
-            <RotateCcw className="w-4 h-4" />
-            New Challenge
-          </Button>
-        </div>
-      </div>
-    </Layout>
+      </Layout>
     </>
   );
 }
