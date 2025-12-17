@@ -191,9 +191,11 @@ export default function Home() {
 
   // Main contextual home view
   return (
-    <Layout showGreeting={false}>
-      <UsageLimitGate toolName="unified">
-        <div className="flex flex-col h-full overflow-hidden">
+    <>
+      {ErrorModal}
+      <Layout showGreeting={false}>
+        <UsageLimitGate toolName="unified">
+          <div className="flex flex-col h-full overflow-hidden">
           
           {/* Header with greeting and context */}
           <div className="shrink-0 pt-2 pb-4">
@@ -312,9 +314,9 @@ export default function Home() {
               </div>
             </div>
           )}
-        </div>
-      </UsageLimitGate>
-    </Layout>
+          </div>
+        </UsageLimitGate>
+      </Layout>
     </>
   );
 }
