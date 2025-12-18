@@ -6,7 +6,7 @@ import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
-import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
+import { CheckInTimeModal, wasRitualModalDismissed } from "@/components/wellwell/CheckInTimeModal";
 import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
@@ -19,23 +19,34 @@ import { Sunrise, Target, Shield, Compass, RotateCcw, Quote, X } from "lucide-re
 export default function Pulse() {
   const [challenge, setChallenge] = useState("");
   const [showTimeModal, setShowTimeModal] = useState(false);
+  const [modalChecked, setModalChecked] = useState(false);
   const { showError, ErrorModal } = useErrorModal();
   const { trackUsage } = useUsageLimit("pulse");
   const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { yesterday } = useCrossSessionMemory();
-  const { profile } = useProfile();
+  const { profile, isLoading: profileLoading } = useProfile();
   const { scoresMap } = useVirtueScores();
 
-  // Show time modal if user doesn't have morning pulse time set
+  // Show time modal ONCE if user doesn't have morning pulse time set
+  // Only check once per component mount, and respect session dismissal
   useEffect(() => {
-    if (profile && !profile.morning_pulse_time && !showTimeModal) {
+    if (profileLoading || modalChecked) return;
+    
+    // Check conditions for showing modal
+    const shouldShow = profile && 
+                       !profile.morning_pulse_time && 
+                       !wasRitualModalDismissed();
+    
+    if (shouldShow) {
       // Small delay to avoid showing immediately on page load
       const timer = setTimeout(() => {
         setShowTimeModal(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [profile, showTimeModal]);
+    
+    setModalChecked(true);
+  }, [profile, profileLoading, modalChecked]);
 
   // Get personalized stance based on user context
   const lowestVirtue = Object.entries(scoresMap).length > 0
@@ -50,7 +61,6 @@ export default function Pulse() {
 
   const handleTranscript = async (text: string) => {
     setChallenge(text);
-    // Fix #4: Move usage tracking AFTER AI success
     const result = await analyze({
       tool: "pulse",
       input: text,
@@ -73,6 +83,13 @@ export default function Pulse() {
     reset();
   };
 
+  const handleModalClose = (open: boolean) => {
+    setShowTimeModal(open);
+    if (!open) {
+      setModalChecked(true); // Prevent re-opening
+    }
+  };
+
   if (!response) {
     return (
       <>
@@ -81,7 +98,7 @@ export default function Pulse() {
         <UsageLimitGate toolName="pulse">
           <CheckInTimeModal 
             open={showTimeModal} 
-            onOpenChange={setShowTimeModal}
+            onOpenChange={handleModalClose}
           />
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Compact header with wisdom */}
@@ -130,7 +147,7 @@ export default function Pulse() {
                   processingText="Finding your Stoic stance..."
                   isProcessing={isLoading}
                 />
-                {/* Cancel button during processing (Fix #1) */}
+                {/* Cancel button during processing */}
                 {isLoading && (
                   <Button
                     variant="ghost"

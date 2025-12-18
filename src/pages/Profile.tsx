@@ -98,7 +98,7 @@ export default function Profile() {
         </div>
 
         {/* Scrollable content - more compact */}
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 scrollbar-hide pb-20">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 scrollbar-hide">
           {/* Virtue balance - compact */}
           <div className="p-2.5 glass-card">
             <div className="flex items-center justify-between mb-1.5">
@@ -137,7 +137,7 @@ export default function Profile() {
           )}
 
           {/* Recent activity - compact inline list */}
-          <div className="p-2.5 glass-card mb-4">
+          <div className="p-2.5 glass-card">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5">Recent Activity</p>
             <div className="space-y-1">
               {recentEvents.length > 0 ? (

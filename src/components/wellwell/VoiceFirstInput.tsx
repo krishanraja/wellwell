@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Mic, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 
 interface VoiceFirstInputProps {
   onTranscript: (text: string) => void;
@@ -210,7 +209,7 @@ export function VoiceFirstInput({
             type="button"
             onClick={handleTextSubmit}
             disabled={!transcript.trim() || disabled}
-            className="ml-auto px-5 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="ml-auto px-5 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue
           </button>

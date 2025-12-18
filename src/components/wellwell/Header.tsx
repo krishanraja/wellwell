@@ -22,6 +22,57 @@ interface HeaderProps {
   className?: string;
 }
 
+// Reusable menu item component for consistent styling
+interface MenuItemProps {
+  icon: React.ElementType;
+  iconColor: string;
+  iconBg: string;
+  label: string;
+  description?: string;
+  onClick: () => void;
+  variant?: 'default' | 'destructive';
+}
+
+function MenuItem({ icon: Icon, iconColor, iconBg, label, description, onClick, variant = 'default' }: MenuItemProps) {
+  const isDestructive = variant === 'destructive';
+  
+  return (
+    <DrawerClose asChild>
+      <button 
+        onClick={onClick}
+        className={cn(
+          "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left",
+          "transition-all duration-200 active:scale-[0.98]",
+          isDestructive 
+            ? "hover:bg-destructive/10" 
+            : "hover:bg-secondary/80"
+        )}
+      >
+        <div 
+          className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0"
+          style={{ backgroundColor: iconBg }}
+        >
+          <Icon className="h-5 w-5" style={{ color: iconColor }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className={cn(
+            "font-medium block",
+            isDestructive ? "text-destructive" : "text-foreground"
+          )}>
+            {label}
+          </span>
+          {description && (
+            <p className="text-xs text-muted-foreground truncate">{description}</p>
+          )}
+        </div>
+        {!isDestructive && (
+          <ChevronRight className="h-5 w-5 text-muted-foreground/50 shrink-0" />
+        )}
+      </button>
+    </DrawerClose>
+  );
+}
+
 export function Header({ showLogo = true, showGreeting = false, className }: HeaderProps) {
   const navigate = useNavigate();
   const timeTheme = useTimeOfDay();
@@ -39,7 +90,7 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
   
   return (
     <header className={cn(
-      "flex items-center justify-between py-3 px-1",
+      "flex items-center justify-between py-3 px-1 shrink-0",
       className
     )}>
       {/* Left side - empty spacer for layout balance */}
@@ -48,7 +99,7 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
       {showGreeting ? (
         <div className="flex items-center gap-2">
           <div 
-            className="p-1.5 rounded-lg"
+            className="p-1.5 rounded-xl"
             style={{ backgroundColor: `${timeTheme.accent}20` }}
           >
             <TimeIcon 
@@ -80,12 +131,17 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
           <Button 
             variant="ghost" 
             size="icon" 
-            className="text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-xl"
+            className="text-muted-foreground hover:text-foreground hover:bg-secondary/80 rounded-xl h-10 w-10"
           >
             <User className="w-5 h-5" />
           </Button>
         </DrawerTrigger>
-        <DrawerContent className="rounded-t-3xl border-0 bg-transparent pb-safe">
+        <DrawerContent className="rounded-t-3xl border-0 bg-transparent">
+          {/* Drag handle indicator */}
+          <div className="flex justify-center pt-3 pb-2">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          </div>
+          
           {/* Glass container with gradient border */}
           <div className="relative mx-3 mb-4 overflow-hidden rounded-3xl">
             {/* Gradient border effect */}
@@ -99,10 +155,10 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
             {/* Content */}
             <div className="relative z-10 glass-card rounded-3xl">
               {/* Profile Header */}
-              <div className="px-5 pt-6 pb-5">
+              <div className="px-5 pt-5 pb-4">
                 <div className="flex items-center gap-4">
                   {/* Avatar with gradient ring */}
-                  <div className="relative">
+                  <div className="relative shrink-0">
                     <div 
                       className="absolute -inset-1 rounded-full opacity-60"
                       style={{ background: 'linear-gradient(135deg, hsl(90 100% 79%) 0%, hsl(187 100% 60%) 100%)' }}
@@ -124,7 +180,7 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
                   
                   {/* Streak badge */}
                   {streak > 0 && (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-coral/10">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-coral/10 shrink-0">
                       <Flame className="w-4 h-4 text-coral" />
                       <span className="text-sm font-semibold text-coral">{streak}</span>
                     </div>
@@ -133,65 +189,48 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
               </div>
               
               {/* Divider */}
-              <div className="mx-5 h-px bg-border" />
+              <div className="mx-5 h-px bg-border/50" />
               
               {/* Menu Items */}
               <div className="p-2">
-                <DrawerClose asChild>
-                  <button 
-                    onClick={() => navigate('/profile')}
-                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-secondary/80 active:scale-[0.98]"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-aqua/10">
-                      <User className="h-5 w-5 text-aqua" />
-                    </div>
-                    <div className="flex-1">
-                      <span className="font-medium text-foreground">Profile</span>
-                      <p className="text-xs text-muted-foreground">View and edit your profile</p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
-                  </button>
-                </DrawerClose>
+                <MenuItem
+                  icon={User}
+                  iconColor="hsl(187 100% 60%)"
+                  iconBg="hsl(187 100% 60% / 0.1)"
+                  label="Profile"
+                  description="View and edit your profile"
+                  onClick={() => navigate('/profile')}
+                />
                 
-                <DrawerClose asChild>
-                  <button 
-                    onClick={() => navigate('/settings')}
-                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-secondary/80 active:scale-[0.98]"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple/10">
-                      <Settings className="h-5 w-5 text-purple" />
-                    </div>
-                    <div className="flex-1">
-                      <span className="font-medium text-foreground">Settings</span>
-                      <p className="text-xs text-muted-foreground">Preferences & notifications</p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
-                  </button>
-                </DrawerClose>
+                <MenuItem
+                  icon={Settings}
+                  iconColor="hsl(260 80% 65%)"
+                  iconBg="hsl(260 80% 65% / 0.1)"
+                  label="Settings"
+                  description="Preferences & notifications"
+                  onClick={() => navigate('/settings')}
+                />
               </div>
               
               {/* Divider */}
-              <div className="mx-5 h-px bg-border" />
+              <div className="mx-5 h-px bg-border/50" />
               
               {/* Sign Out */}
-              <div className="p-2 pb-4">
-                <DrawerClose asChild>
-                  <button 
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-destructive/10 active:scale-[0.98]"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
-                      <LogOut className="h-5 w-5 text-destructive" />
-                    </div>
-                    <span className="font-medium text-destructive">Sign out</span>
-                  </button>
-                </DrawerClose>
+              <div className="p-2 pb-3">
+                <MenuItem
+                  icon={LogOut}
+                  iconColor="hsl(0 72% 51%)"
+                  iconBg="hsl(0 72% 51% / 0.1)"
+                  label="Sign out"
+                  onClick={handleSignOut}
+                  variant="destructive"
+                />
               </div>
             </div>
           </div>
           
           {/* Cancel button */}
-          <div className="mx-3 mb-4">
+          <div className="mx-3 mb-4 pb-safe">
             <DrawerClose asChild>
               <button className="w-full py-4 rounded-2xl bg-secondary/80 font-medium text-foreground transition-all duration-200 hover:bg-secondary active:scale-[0.98]">
                 Cancel

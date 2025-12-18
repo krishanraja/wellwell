@@ -280,11 +280,11 @@ export default function Home() {
 
           {/* SECONDARY OPTIONS - Compact grid for situational tools */}
           {secondaryNudges.length > 0 && (
-            <div className="shrink-0 pb-safe">
+            <div className="shrink-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                 Or choose a specific situation
               </p>
-              <div className="grid grid-cols-3 gap-2 mb-4">
+              <div className="grid grid-cols-3 gap-2">
                 {secondaryNudges.map((nudge) => {
                   const NudgeIcon = nudge.icon;
                   return (

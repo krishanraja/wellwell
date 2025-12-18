@@ -29,9 +29,10 @@ export function Layout({
         {showHeader && <Header showGreeting={showGreeting} />}
         
         <main className={cn(
-          "flex-1 flex flex-col min-h-0 px-4 py-2 safe-bottom",
-          "max-h-[calc(100dvh-var(--nav-height)-var(--header-height)-env(safe-area-inset-bottom,0px))]",
-          scrollable ? "overflow-y-auto" : "overflow-hidden",
+          "flex-1 flex flex-col min-h-0 px-4 py-2",
+          // Proper bottom padding to clear the fixed nav bar
+          showNav && "pb-20",
+          scrollable ? "overflow-y-auto scrollbar-hide" : "overflow-hidden",
           className
         )}>
           {children}

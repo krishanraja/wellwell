@@ -34,7 +34,7 @@ export function useStoicAnalyzer() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const currentRequestIdRef = useRef<string | null>(null);
 
-  // Fallback response generator (Fix #6) - defined early for use in error handling
+  // Fallback response generator - defined early for use in error handling
   const getFallbackResponse = (tool: string, input: string): StoicResponse | null => {
     const baseResponse: StoicResponse = {
       control_map: "Focus on what you can control: your response, your effort, your composure. What's not yours: others' reactions, outcomes, timing.",
@@ -177,7 +177,7 @@ export function useStoicAnalyzer() {
     try {
       logger.info("Calling stoic-analyzer", { tool, userId: user.id, requestId: reqId });
 
-      // Refresh profile context before AI call (Fix #8)
+      // Refresh profile context before AI call
       let freshProfile = profile;
       if (profileLoading || !profile) {
         // Fetch fresh profile if not available
@@ -298,7 +298,7 @@ export function useStoicAnalyzer() {
       if (error) {
         logger.error("Stoic analyzer error", { error, requestId: reqId });
         
-        // Specific error messages (Fix #9)
+        // Specific error messages
         let errorMessage = "Failed to get insight. Please try again.";
         if (error.message?.includes("rate limit") || error.message?.includes("429")) {
           errorMessage = "Too many requests. Please wait a moment and try again.";
@@ -312,7 +312,7 @@ export function useStoicAnalyzer() {
         
         onError?.(errorMessage);
         
-        // Provide fallback response (Fix #6)
+        // Provide fallback response
         const fallbackResponse = getFallbackResponse(tool, input);
         if (fallbackResponse) {
           logger.info("Using fallback response", { tool });
@@ -328,24 +328,7 @@ export function useStoicAnalyzer() {
       // Extract the analysis from the response
       const analysis = data?.analysis || data;
       
-      // Save the event only after successful AI response (with request ID for idempotency)
-      const { error: eventError } = await supabase.from("events").insert({
-        profile_id: user.id,
-        tool_name: tool,
-        raw_input: input,
-        question_key: reqId, // Use request ID instead of tool name
-        structured_values: analysis ? { 
-          ai_response: true,
-          request_id: reqId,
-          response: transformedResponse, // Store response for recovery
-        } : null,
-      });
-
-      if (eventError) {
-        logger.warn("Failed to save event", { error: eventError });
-      }
-      
-      // Transform the response to match our expected format
+      // CRITICAL FIX: Transform the response BEFORE using it in the event insert
       const transformedResponse: StoicResponse = {
         summary: analysis?.day_summary || analysis?.reality_check || analysis?.summary,
         control_map: Array.isArray(analysis?.control_map?.yours) 
@@ -364,9 +347,26 @@ export function useStoicAnalyzer() {
         }] : undefined),
       };
       
+      // Save the event only after successful AI response (with request ID for idempotency)
+      const { error: eventError } = await supabase.from("events").insert({
+        profile_id: user.id,
+        tool_name: tool,
+        raw_input: input,
+        question_key: reqId,
+        structured_values: analysis ? { 
+          ai_response: true,
+          request_id: reqId,
+          response: transformedResponse,
+        } : null,
+      });
+
+      if (eventError) {
+        logger.warn("Failed to save event", { error: eventError });
+      }
+      
       setResponse(transformedResponse);
 
-      // Persist state to storage (Fix #2)
+      // Persist state to storage
       if (user.id) {
         try {
           const storageKey = `${STORAGE_KEY_PREFIX}${user.id}`;
@@ -382,7 +382,7 @@ export function useStoicAnalyzer() {
         }
       }
 
-      // Update virtue scores if provided (Fix #7: Batch update for transaction-like behavior)
+      // Update virtue scores if provided (Batch update for transaction-like behavior)
       if (transformedResponse.virtue_updates && Array.isArray(transformedResponse.virtue_updates)) {
         const updates = transformedResponse.virtue_updates.filter(u => u.delta !== 0);
         
@@ -456,7 +456,7 @@ export function useStoicAnalyzer() {
 
       logger.error("Unexpected error in stoic analyzer", { error: err, requestId: reqId });
       
-      // Provide fallback response on unexpected errors (Fix #6)
+      // Provide fallback response on unexpected errors
       const fallbackResponse = getFallbackResponse(tool, input);
       if (fallbackResponse) {
         logger.info("Using fallback response after error", { tool });
@@ -489,6 +489,6 @@ export function useStoicAnalyzer() {
     isLoading,
     response,
     reset,
-    cancel, // Expose cancel function (Fix #1)
+    cancel,
   };
 }
