@@ -74,11 +74,21 @@ export default function Profile() {
     return null;
   }
 
+  // Get just the most recent event for inline display
+  const lastEvent = recentEvents[0];
+
   return (
     <Layout>
-      <div className="flex flex-col h-full overflow-hidden">
-        {/* Compact header with name and streak inline */}
-        <div className="shrink-0 flex items-center justify-between py-1 mb-2">
+      {/* CSS Grid layout with explicit row heights - guarantees no overflow */}
+      <div 
+        className="grid gap-2 h-full"
+        style={{
+          gridTemplateRows: 'auto auto 1fr auto',
+          maxHeight: '100%',
+        }}
+      >
+        {/* Row 1: Header - auto height */}
+        <div className="flex items-center justify-between py-1">
           <h1 className="font-display text-lg font-bold text-foreground">
             {displayName}'s Journey
           </h1>
@@ -97,69 +107,37 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Scrollable content - more compact */}
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 scrollbar-hide">
-          {/* Virtue balance - compact */}
-          <div className="p-2.5 glass-card">
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">Virtue Balance</p>
-              {recommendedFocus && (
-                <span className="text-[10px] text-primary font-medium capitalize px-1.5 py-0.5 bg-primary/10 rounded-full">
-                  Focus: {recommendedFocus}
-                </span>
-              )}
-            </div>
-            <VirtueBar {...virtues} compact />
+        {/* Row 2: Virtue balance - auto height */}
+        <div className="p-2 glass-card">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Virtue Balance</p>
+            {recommendedFocus && (
+              <span className="text-[9px] text-primary font-medium capitalize px-1.5 py-0.5 bg-primary/10 rounded-full">
+                Focus: {recommendedFocus}
+              </span>
+            )}
           </div>
+          <VirtueBar {...virtues} compact />
+        </div>
 
-          {/* Virtue Trends Chart - more compact */}
-          <div className="p-2.5 glass-card">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-primary" />
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">14-Day Trends</p>
-            </div>
+        {/* Row 3: Chart - takes remaining space (1fr), with explicit min/max */}
+        <div className="p-2 glass-card flex flex-col overflow-hidden" style={{ minHeight: '100px' }}>
+          <div className="flex items-center gap-1.5 mb-1 shrink-0">
+            <TrendingUp className="w-3 h-3 text-primary" />
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">14-Day Trends</p>
+          </div>
+          <div className="flex-1 min-h-0">
             <VirtueChart days={14} compact />
           </div>
+        </div>
 
-          {/* Pattern Insight - compact */}
-          {topPattern && (
-            <div className="p-2.5 glass-card bg-primary/5 border-primary/20">
-              <div className="flex items-start gap-2">
-                <div className="p-1 rounded-md bg-primary/10 shrink-0">
-                  <Lightbulb className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground leading-tight">{topPattern.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{topPattern.description}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Recent activity - compact inline list */}
-          <div className="p-2.5 glass-card">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5">Recent Activity</p>
-            <div className="space-y-1">
-              {recentEvents.length > 0 ? (
-                recentEvents.map((event, index) => (
-                  <div 
-                    key={event.id} 
-                    className={`flex items-center justify-between py-0.5 ${
-                      index < recentEvents.length - 1 ? "border-b border-border/30" : ""
-                    }`}
-                  >
-                    <span className="text-sm text-foreground">
-                      {toolLabels[event.tool_name] || event.tool_name}
-                    </span>
-                    <span className="text-muted-foreground text-[11px]">
-                      {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-center py-1 text-xs">No activity yet</p>
-              )}
-            </div>
+        {/* Row 4: Bottom insight - auto height, single line */}
+        <div className="p-2 glass-card bg-primary/5">
+          <div className="flex items-center gap-2">
+            <Lightbulb className="w-3.5 h-3.5 text-primary shrink-0" />
+            <p className="text-xs text-foreground truncate flex-1">
+              {topPattern ? topPattern.title : (lastEvent ? `Last: ${toolLabels[lastEvent.tool_name] || lastEvent.tool_name}` : "Start your Stoic journey")}
+            </p>
           </div>
         </div>
       </div>

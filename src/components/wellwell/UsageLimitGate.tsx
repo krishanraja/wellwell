@@ -29,20 +29,9 @@ export function UsageLimitGate({ toolName, children, onLimitReached }: UsageLimi
     return <>{children}</>;
   }
 
-  // Free users who have remaining uses
+  // Free users who have remaining uses - pass through without wrapping
   if (canUse) {
-    return (
-      <>
-        {children}
-        {dailyLimit !== Infinity && (
-          <div className="text-center py-2">
-            <p className="text-xs text-muted-foreground">
-              {dailyLimit - usedToday} of {dailyLimit} free {dailyLimit === 1 ? 'use' : 'uses'} remaining today
-            </p>
-          </div>
-        )}
-      </>
-    );
+    return <>{children}</>;
   }
 
   // Free users who hit the limit

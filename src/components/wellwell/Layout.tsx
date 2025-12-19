@@ -28,13 +28,17 @@ export function Layout({
       <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full h-full overflow-hidden">
         {showHeader && <Header showGreeting={showGreeting} />}
         
-        <main className={cn(
-          "flex-1 flex flex-col min-h-0 px-4 py-2",
-          // Proper bottom padding to clear the fixed nav bar
-          showNav && "pb-20",
-          scrollable ? "overflow-y-auto scrollbar-hide" : "overflow-hidden",
-          className
-        )}>
+        {/* Main content area - uses CSS calc for exact height fitting */}
+        <main 
+          className={cn(
+            "flex-1 flex flex-col px-4 py-2 overflow-hidden",
+            className
+          )}
+          style={{
+            // Calculate exact available height: viewport - header (56px) - nav (64px + safe area) - padding
+            paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px) + 0.5rem)' : undefined,
+          }}
+        >
           {children}
         </main>
         

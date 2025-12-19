@@ -19,7 +19,7 @@ export function VirtueChart({ days = 14, compact = false }: VirtueChartProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-40">
+      <div className="flex items-center justify-center h-full min-h-[80px]">
         <Loader2 className="w-5 h-5 animate-spin text-primary" />
       </div>
     );
@@ -27,7 +27,7 @@ export function VirtueChart({ days = 14, compact = false }: VirtueChartProps) {
 
   if (history.length === 0) {
     return (
-      <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
+      <div className="flex items-center justify-center h-full min-h-[80px] text-muted-foreground text-sm">
         Start using WellWell to see your virtue trends
       </div>
     );
@@ -43,7 +43,7 @@ export function VirtueChart({ days = 14, compact = false }: VirtueChartProps) {
   }));
 
   return (
-    <div className={compact ? 'h-32' : 'h-48'}>
+    <div className="h-full w-full min-h-[80px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={formattedData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
           <XAxis 
@@ -106,9 +106,9 @@ export function VirtueChart({ days = 14, compact = false }: VirtueChartProps) {
             strokeWidth={2}
             dot={false}
             activeDot={{ r: 4 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+        />
+      </LineChart>
+    </ResponsiveContainer>
     </div>
   );
 }

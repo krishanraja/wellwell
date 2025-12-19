@@ -87,12 +87,12 @@ export function RitualTimeIndicator({
   const hasAnyTimes = pulseTimeMinutes !== null || debriefTimeMinutes !== null;
   
   return (
-    <div className="flex gap-2 mb-4">
+    <div className="flex gap-2">
       {/* Morning Pulse Indicator */}
       <button
         onClick={onSetTimeClick}
         className={cn(
-          "flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all",
+          "flex-1 flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all",
           hasCompletedPulseToday 
             ? "bg-primary/5 border-primary/30" 
             : isPulseActive
@@ -145,7 +145,7 @@ export function RitualTimeIndicator({
       <button
         onClick={onSetTimeClick}
         className={cn(
-          "flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all",
+          "flex-1 flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all",
           hasCompletedDebriefToday 
             ? "bg-primary/5 border-primary/30" 
             : isDebriefActive

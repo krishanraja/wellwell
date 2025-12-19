@@ -189,131 +189,130 @@ export default function Home() {
 
   const PrimaryIcon = primaryNudge.icon;
 
-  // Main contextual home view
+  // Main contextual home view - CSS Grid for guaranteed no-scroll layout
   return (
     <>
       {ErrorModal}
       <Layout showGreeting={false}>
         <UsageLimitGate toolName="unified">
-          <div className="flex flex-col h-full overflow-hidden">
-          
-          {/* Header with greeting and context */}
-          <div className="shrink-0 pt-2 pb-4">
-            <div className="flex items-center justify-between mb-1">
-              <h1 className="font-display text-xl font-bold text-foreground">
-                {greeting}
-              </h1>
-              {streak >= 2 && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-coral/10 rounded-full">
-                  <Flame className="w-3.5 h-3.5 text-coral" />
-                  <span className="text-xs font-semibold text-coral">{streak}</span>
-                </div>
-              )}
+          {/* CSS Grid with explicit row sizing - guarantees no overflow */}
+          <div 
+            className="grid gap-2 h-full"
+            style={{
+              gridTemplateRows: secondaryNudges.length > 0 ? 'auto auto 1fr auto' : 'auto auto 1fr',
+              maxHeight: '100%',
+            }}
+          >
+            {/* Row 1: Header - auto height */}
+            <div className="pt-1">
+              <div className="flex items-center justify-between mb-0.5">
+                <h1 className="font-display text-xl font-bold text-foreground">
+                  {greeting}
+                </h1>
+                {streak >= 2 && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-coral/10 rounded-full">
+                    <Flame className="w-3.5 h-3.5 text-coral" />
+                    <span className="text-xs font-semibold text-coral">{streak}</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">{contextMessage}</p>
             </div>
-            <p className="text-sm text-muted-foreground">{contextMessage}</p>
-          </div>
 
-          {/* Daily Ritual Indicators with time display */}
-          <div className="shrink-0 mb-3">
+            {/* Row 2: Ritual Indicators - auto height */}
             <RitualTimeIndicator
               hasCompletedPulseToday={hasCompletedPulseToday}
               hasCompletedDebriefToday={hasCompletedDebriefToday}
               onSetTimeClick={() => setShowTimeModal(true)}
             />
-          </div>
-          
-          {/* Check-in Time Modal */}
-          <CheckInTimeModal 
-            open={showTimeModal} 
-            onOpenChange={setShowTimeModal}
-          />
+            
+            {/* Check-in Time Modal */}
+            <CheckInTimeModal 
+              open={showTimeModal} 
+              onOpenChange={setShowTimeModal}
+            />
 
-          {/* PRIMARY ACTION - The main contextual nudge (compact) */}
-          <div className="shrink-0 mb-4">
+            {/* Row 3: Primary Action Card - takes remaining space (1fr) */}
             <div 
-              className="p-5 rounded-3xl border-2 transition-all flex flex-col"
+              className="p-3 rounded-2xl border-2 flex flex-col overflow-hidden"
               style={{ 
                 borderColor: `${primaryNudge.accentColor}40`,
-                background: `linear-gradient(135deg, ${primaryNudge.accentColor}10 0%, ${primaryNudge.accentColor}05 50%, transparent 100%)`
+                background: `linear-gradient(135deg, ${primaryNudge.accentColor}10 0%, ${primaryNudge.accentColor}05 50%, transparent 100%)`,
+                minHeight: '120px',
               }}
             >
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-2 mb-2 shrink-0">
                 <div 
-                  className="p-2.5 rounded-2xl"
+                  className="p-1.5 rounded-xl"
                   style={{ backgroundColor: `${primaryNudge.accentColor}20` }}
                 >
-                  <PrimaryIcon className="w-5 h-5" style={{ color: primaryNudge.accentColor }} />
+                  <PrimaryIcon className="w-4 h-4" style={{ color: primaryNudge.accentColor }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="font-display text-lg font-bold text-foreground">
+                  <h2 className="font-display text-base font-bold text-foreground leading-tight">
                     {primaryNudge.headline}
                   </h2>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     {primaryNudge.subtext}
                   </p>
                 </div>
               </div>
               
-              <div className="relative">
+              {/* Voice input - fills remaining card space */}
+              <div className="flex-1 min-h-0 flex flex-col relative">
                 <VoiceFirstInput
                   onTranscript={handleTranscript}
                   placeholder={primaryNudge.placeholder}
                   processingText={primaryNudge.processingText}
                   isProcessing={isLoading}
-                  className="py-3"
+                  className="flex-1 min-h-0"
                 />
-                {/* Cancel button during processing (Fix #1) */}
                 {isLoading && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={cancel}
-                    className="absolute top-2 right-2 z-10"
+                    className="absolute top-1 right-1 z-10"
                   >
                     <X className="w-4 h-4" />
-                    Cancel
                   </Button>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* SECONDARY OPTIONS - Compact grid for situational tools */}
-          {secondaryNudges.length > 0 && (
-            <div className="shrink-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Or choose a specific situation
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {secondaryNudges.map((nudge) => {
-                  const NudgeIcon = nudge.icon;
-                  return (
-                    <button
-                      key={nudge.type}
-                      onClick={() => handleSecondaryNudge(nudge.route)}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border-2 border-border/50 bg-card/50",
-                        "hover:bg-card hover:border-border hover:shadow-glow transition-all active:scale-[0.98]"
-                      )}
-                    >
-                      <div 
-                        className="w-8 h-8 rounded-lg flex items-center justify-center"
-                        style={{ backgroundColor: `${nudge.accentColor}20` }}
+            {/* Row 4: Secondary Options - auto height, compact grid */}
+            {secondaryNudges.length > 0 && (
+              <div>
+                <div className="grid grid-cols-3 gap-1">
+                  {secondaryNudges.map((nudge) => {
+                    const NudgeIcon = nudge.icon;
+                    return (
+                      <button
+                        key={nudge.type}
+                        onClick={() => handleSecondaryNudge(nudge.route)}
+                        className={cn(
+                          "flex items-center gap-1.5 py-1.5 px-2 rounded-lg border border-border/50 bg-card/50",
+                          "hover:bg-card hover:border-border transition-all active:scale-[0.98]"
+                        )}
                       >
-                        <NudgeIcon 
-                          className="w-4 h-4" 
-                          style={{ color: nudge.accentColor }} 
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-foreground text-center leading-tight">
-                        {nudge.headline}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <div 
+                          className="w-5 h-5 rounded flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: `${nudge.accentColor}20` }}
+                        >
+                          <NudgeIcon 
+                            className="w-3 h-3" 
+                            style={{ color: nudge.accentColor }} 
+                          />
+                        </div>
+                        <span className="text-[10px] font-medium text-foreground truncate">
+                          {nudge.headline}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
           </div>
         </UsageLimitGate>
       </Layout>
