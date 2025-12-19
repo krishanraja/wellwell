@@ -166,22 +166,21 @@ export function VoiceFirstInput({
     }
   };
 
-  // Processing state - compact, centered
+  // Processing state - elegant centered
   if (isProcessing) {
     return (
       <div className={cn("flex flex-col items-center justify-center flex-1 min-h-0", className)}>
-        <div className="relative mb-2">
-          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-            <Loader2 className="w-5 h-5 text-primary animate-spin" />
+        <div className="relative mb-4">
+          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center animate-breathe">
+            <Loader2 className="w-7 h-7 text-primary animate-spin" />
           </div>
-          <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: "1.5s" }} />
         </div>
-        <p className="text-xs font-medium text-foreground animate-pulse">{processingText}</p>
+        <p className="text-sm font-medium text-foreground">{processingText}</p>
       </div>
     );
   }
 
-  // Text input fallback - compact
+  // Text input fallback
   if (showTextInput) {
     return (
       <div className={cn("flex flex-col flex-1 min-h-0", className)}>
@@ -190,25 +189,25 @@ export function VoiceFirstInput({
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
           placeholder="Share what's on your mind..."
-          className="flex-1 min-h-0 w-full bg-muted/50 rounded-lg p-2 text-sm text-foreground placeholder:text-muted-foreground resize-none border border-border focus:border-primary outline-none"
+          className="flex-1 min-h-[80px] w-full bg-muted/30 rounded-2xl p-4 text-sm text-foreground placeholder:text-muted-foreground resize-none border border-border/50 focus:border-primary/50 outline-none transition-colors"
           disabled={disabled}
         />
-        <div className="flex items-center gap-2 mt-1.5 shrink-0">
+        <div className="flex items-center justify-between mt-3 shrink-0">
           {isSupported && (
             <button
               type="button"
               onClick={() => setShowTextInput(false)}
-              className="flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/50 transition-colors"
             >
-              <Mic className="w-3 h-3" />
-              Voice
+              <Mic className="w-3.5 h-3.5" />
+              Use voice
             </button>
           )}
           <button
             type="button"
             onClick={handleTextSubmit}
             disabled={!transcript.trim() || disabled}
-            className="ml-auto px-4 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             Continue
           </button>
@@ -217,58 +216,78 @@ export function VoiceFirstInput({
     );
   }
 
-  // Voice-first interface - compact, centered
+  // Voice-first interface - large, elegant, centered
   return (
-    <div className={cn("flex flex-col items-center justify-center flex-1 min-h-0 py-1", className)}>
-      {/* Voice button - smaller */}
+    <div className={cn("flex flex-col items-center justify-center flex-1 min-h-0", className)}>
+      {/* Large voice button with breathing animation */}
       <button
         type="button"
         onClick={toggleListening}
         disabled={disabled || isTranscribing}
         className={cn(
-          "relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 mb-1.5",
+          "relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 mb-3",
           isListening || isTranscribing
-            ? "bg-primary shadow-xl shadow-primary/40 scale-105"
-            : "bg-muted hover:bg-muted/80",
+            ? "bg-primary scale-110"
+            : "bg-muted/80 hover:bg-muted animate-breathe",
           (disabled || isTranscribing) && "opacity-50 cursor-not-allowed"
         )}
+        style={{
+          boxShadow: isListening || isTranscribing 
+            ? '0 0 40px hsl(var(--primary) / 0.5)' 
+            : undefined
+        }}
         aria-label={isListening ? "Stop listening" : "Start voice input"}
       >
+        {/* Outer glow ring when active */}
         {(isListening || isTranscribing) && (
-          <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping" style={{ animationDuration: "1.5s" }} />
+          <>
+            <div className="absolute -inset-2 rounded-full border-2 border-primary/30 animate-ping" style={{ animationDuration: "2s" }} />
+            <div className="absolute -inset-4 rounded-full border border-primary/20 animate-pulse" />
+          </>
         )}
         
         {isTranscribing ? (
-          <Loader2 className="w-5 h-5 text-primary-foreground animate-spin" />
+          <Loader2 className="w-7 h-7 text-primary-foreground animate-spin" />
         ) : (
-          <Mic className={cn("w-5 h-5", isListening ? "text-primary-foreground" : "text-muted-foreground")} />
+          <Mic className={cn(
+            "w-7 h-7 transition-colors duration-300",
+            isListening ? "text-primary-foreground" : "text-muted-foreground"
+          )} />
         )}
       </button>
 
-      {/* Status text */}
+      {/* Status text - elegant */}
       <p className={cn(
-        "text-xs font-medium",
+        "text-sm font-medium transition-colors duration-300 mb-1",
         isListening || isTranscribing ? "text-primary" : "text-foreground"
       )}>
-        {isTranscribing ? "Transcribing..." : isListening ? "Listening..." : placeholder}
+        {isTranscribing ? "Transcribing..." : isListening ? "I'm listening..." : placeholder}
       </p>
 
-      {/* Type option */}
+      {/* Subtle type option */}
       {!isListening && !transcript && (
         <button
           type="button"
           onClick={() => setShowTextInput(true)}
-          className="text-[10px] text-muted-foreground hover:text-foreground"
+          className="text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors"
         >
-          Or type instead
+          — or type instead —
         </button>
       )}
 
-      {/* Transcript preview */}
-      {transcript && (
-        <p className="w-full mt-1.5 p-1.5 bg-muted/50 rounded-lg text-xs text-foreground line-clamp-2 text-center">
-          {transcript}
+      {/* Tap to stop hint */}
+      {isListening && (
+        <p className="text-xs text-muted-foreground animate-fade-in">
+          Tap the mic when you're done
         </p>
+      )}
+
+      {/* Transcript preview */}
+      {transcript && !isListening && (
+        <div className="w-full max-w-xs mt-3 p-3 bg-muted/30 rounded-2xl animate-fade-up">
+          <p className="text-xs text-muted-foreground mb-1">What I heard:</p>
+          <p className="text-sm text-foreground line-clamp-2">{transcript}</p>
+        </div>
       )}
     </div>
   );

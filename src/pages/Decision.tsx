@@ -19,12 +19,20 @@ export default function Decision() {
 
   const handleTranscript = async (text: string) => {
     setDecision(text);
-    await trackUsage();
-    await analyze({
+    // Track usage only after successful AI analysis
+    const result = await analyze({
       tool: "decision",
       input: text,
       onError: showError,
     });
+    
+    if (result) {
+      try {
+        await trackUsage();
+      } catch (err) {
+        console.warn("Failed to track usage", err);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -67,6 +75,7 @@ export default function Decision() {
               
               <VoiceFirstInput
                 onTranscript={handleTranscript}
+                onError={showError}
                 placeholder="Tap to describe your decision"
                 processingText="Analyzing your choice..."
                 isProcessing={isLoading}

@@ -81,6 +81,7 @@ export default function Intervene() {
               <div className="relative">
                 <VoiceFirstInput
                   onTranscript={handleTranscript}
+                  onError={showError}
                   placeholder="Tap to speak what happened"
                   processingText="Recalibrating..."
                   isProcessing={isLoading}

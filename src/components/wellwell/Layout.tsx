@@ -9,7 +9,6 @@ interface LayoutProps {
   showNav?: boolean;
   showGreeting?: boolean;
   className?: string;
-  scrollable?: boolean;
 }
 
 export function Layout({ 
@@ -18,30 +17,34 @@ export function Layout({
   showNav = true,
   showGreeting = false,
   className,
-  scrollable = false
 }: LayoutProps) {
+  // Calculate exact content height using dvh units
+  // Header: 56px, Nav: 64px + safe area
+  const contentHeight = showNav 
+    ? 'calc(100dvh - 56px - 64px - env(safe-area-inset-bottom, 0px))' 
+    : 'calc(100dvh - 56px)';
+
   return (
-    <div className="viewport-container bg-background overflow-hidden">
+    <div className="fixed inset-0 bg-background overflow-hidden">
       {/* Subtle background glow */}
       <div className="fixed inset-0 bg-glow pointer-events-none" />
       
-      <div className="relative flex-1 flex flex-col max-w-lg mx-auto w-full h-full overflow-hidden">
+      <div className="relative flex flex-col max-w-lg mx-auto w-full h-full">
+        {/* Header - fixed height */}
         {showHeader && <Header showGreeting={showGreeting} />}
         
-        {/* Main content area - uses CSS calc for exact height fitting */}
+        {/* Main content - exact calculated height, no overflow */}
         <main 
           className={cn(
-            "flex-1 flex flex-col px-4 py-2 overflow-hidden",
+            "flex flex-col px-4 py-2 overflow-hidden",
             className
           )}
-          style={{
-            // Calculate exact available height: viewport - header (56px) - nav (64px + safe area) - padding
-            paddingBottom: showNav ? 'calc(4rem + env(safe-area-inset-bottom, 0px) + 0.5rem)' : undefined,
-          }}
+          style={{ height: contentHeight }}
         >
           {children}
         </main>
         
+        {/* Bottom nav - fixed at bottom */}
         {showNav && <BottomNav />}
       </div>
     </div>

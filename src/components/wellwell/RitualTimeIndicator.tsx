@@ -86,112 +86,63 @@ export function RitualTimeIndicator({
   
   const hasAnyTimes = pulseTimeMinutes !== null || debriefTimeMinutes !== null;
   
+  // Compact inline chip style
   return (
-    <div className="flex gap-2">
-      {/* Morning Pulse Indicator */}
+    <div className="flex items-center justify-center gap-3 flex-wrap">
+      {/* Morning Pulse Chip */}
       <button
         onClick={onSetTimeClick}
         className={cn(
-          "flex-1 flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all",
+          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
           hasCompletedPulseToday 
-            ? "bg-primary/5 border-primary/30" 
+            ? "bg-primary/10 text-primary" 
             : isPulseActive
-              ? "bg-gradient-to-r from-amber-500/10 to-amber-500/5 border-amber-500/50 animate-pulse"
-              : "bg-muted/30 border-border/50 hover:border-border"
+              ? "bg-amber-500/10 text-amber-600 animate-pulse"
+              : "bg-muted/50 text-muted-foreground hover:bg-muted"
         )}
       >
-        <div className={cn(
-          "w-6 h-6 rounded-full flex items-center justify-center transition-all",
-          hasCompletedPulseToday
-            ? "bg-primary/20"
-            : isPulseActive
-              ? "bg-amber-500/20"
-              : "bg-muted/50"
-        )}>
-          {hasCompletedPulseToday ? (
-            <Check className="w-3.5 h-3.5 text-primary" />
-          ) : (
-            <Sunrise className={cn(
-              "w-3.5 h-3.5",
-              isPulseActive ? "text-amber-500" : "text-muted-foreground"
-            )} />
-          )}
-        </div>
-        <div className="flex flex-col items-start min-w-0">
-          <span className={cn(
-            "text-xs font-semibold truncate",
-            hasCompletedPulseToday 
-              ? "text-primary" 
-              : isPulseActive
-                ? "text-amber-500"
-                : "text-foreground"
-          )}>
-            Morning Pulse
-          </span>
-          {pulseTimeDisplay ? (
-            <span className={cn(
-              "text-[10px]",
-              isPulseActive ? "text-amber-500/70" : "text-muted-foreground"
-            )}>
-              {hasCompletedPulseToday ? "Complete" : `at ${pulseTimeDisplay}`}
-            </span>
-          ) : (
-            <span className="text-[10px] text-muted-foreground/60">Set time</span>
-          )}
-        </div>
+        {hasCompletedPulseToday ? (
+          <Check className="w-3 h-3" />
+        ) : (
+          <Sunrise className="w-3 h-3" />
+        )}
+        <span>
+          {hasCompletedPulseToday 
+            ? "Pulse ✓" 
+            : pulseTimeDisplay 
+              ? `Pulse ${pulseTimeDisplay}` 
+              : "Pulse"
+          }
+        </span>
       </button>
+
+      <span className="text-muted-foreground/30">•</span>
       
-      {/* Evening Debrief Indicator */}
+      {/* Evening Debrief Chip */}
       <button
         onClick={onSetTimeClick}
         className={cn(
-          "flex-1 flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all",
+          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
           hasCompletedDebriefToday 
-            ? "bg-primary/5 border-primary/30" 
+            ? "bg-primary/10 text-primary" 
             : isDebriefActive
-              ? "bg-gradient-to-r from-purple-500/10 to-purple-500/5 border-purple-500/50 animate-pulse"
-              : "bg-muted/30 border-border/50 hover:border-border"
+              ? "bg-purple-500/10 text-purple-600 animate-pulse"
+              : "bg-muted/50 text-muted-foreground hover:bg-muted"
         )}
       >
-        <div className={cn(
-          "w-6 h-6 rounded-full flex items-center justify-center transition-all",
-          hasCompletedDebriefToday
-            ? "bg-primary/20"
-            : isDebriefActive
-              ? "bg-purple-500/20"
-              : "bg-muted/50"
-        )}>
-          {hasCompletedDebriefToday ? (
-            <Check className="w-3.5 h-3.5 text-primary" />
-          ) : (
-            <Moon className={cn(
-              "w-3.5 h-3.5",
-              isDebriefActive ? "text-purple-500" : "text-muted-foreground"
-            )} />
-          )}
-        </div>
-        <div className="flex flex-col items-start min-w-0">
-          <span className={cn(
-            "text-xs font-semibold truncate",
-            hasCompletedDebriefToday 
-              ? "text-primary" 
-              : isDebriefActive
-                ? "text-purple-500"
-                : "text-foreground"
-          )}>
-            Evening Debrief
-          </span>
-          {debriefTimeDisplay ? (
-            <span className={cn(
-              "text-[10px]",
-              isDebriefActive ? "text-purple-500/70" : "text-muted-foreground"
-            )}>
-              {hasCompletedDebriefToday ? "Complete" : `at ${debriefTimeDisplay}`}
-            </span>
-          ) : (
-            <span className="text-[10px] text-muted-foreground/60">Set time</span>
-          )}
-        </div>
+        {hasCompletedDebriefToday ? (
+          <Check className="w-3 h-3" />
+        ) : (
+          <Moon className="w-3 h-3" />
+        )}
+        <span>
+          {hasCompletedDebriefToday 
+            ? "Debrief ✓" 
+            : debriefTimeDisplay 
+              ? `Debrief ${debriefTimeDisplay}` 
+              : "Debrief"
+          }
+        </span>
       </button>
     </div>
   );

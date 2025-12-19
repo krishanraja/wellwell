@@ -143,6 +143,7 @@ export default function Pulse() {
               <div className="relative">
                 <VoiceFirstInput
                   onTranscript={handleTranscript}
+                  onError={showError}
                   placeholder="Tap to speak your challenge"
                   processingText="Finding your Stoic stance..."
                   isProcessing={isLoading}

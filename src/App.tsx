@@ -24,6 +24,7 @@ import About from "./pages/About";
 import Library from "./pages/Library";
 import History from "./pages/History";
 import EditProfile from "./pages/EditProfile";
+import Trends from "./pages/Trends";
 import DailyStancesLibrary from "./pages/DailyStancesLibrary";
 import MeditationsLibrary from "./pages/MeditationsLibrary";
 import WisdomLibrary from "./pages/WisdomLibrary";
@@ -68,6 +69,7 @@ const App = () => (
                 <Route path="/debrief" element={<ProtectedRoute><Debrief /></ProtectedRoute>} />
                 <Route path="/more" element={<ProtectedRoute><More /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/trends" element={<ProtectedRoute><Trends /></ProtectedRoute>} />
                 <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
                 <Route path="/decision" element={<ProtectedRoute><Decision /></ProtectedRoute>} />
                 <Route path="/conflict" element={<ProtectedRoute><Conflict /></ProtectedRoute>} />

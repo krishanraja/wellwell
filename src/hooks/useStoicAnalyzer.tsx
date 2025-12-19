@@ -329,22 +329,49 @@ export function useStoicAnalyzer() {
       const analysis = data?.analysis || data;
       
       // CRITICAL FIX: Transform the response BEFORE using it in the event insert
-      const transformedResponse: StoicResponse = {
-        summary: analysis?.day_summary || analysis?.reality_check || analysis?.summary,
-        control_map: Array.isArray(analysis?.control_map?.yours) 
-          ? `Yours: ${analysis.control_map.yours.join(', ')}. Not yours: ${analysis.control_map.not_yours?.join(', ')}`
-          : analysis?.control_map,
-        virtue_focus: analysis?.virtue_rationale || analysis?.reframe || analysis?.virtue_focus,
-        surprise_or_tension: analysis?.surprise_or_tension || analysis?.intensity_assessment,
-        stance: analysis?.stance || analysis?.tomorrow_focus,
-        action: analysis?.immediate_action || analysis?.grounding_prompt || (analysis?.key_actions?.[0]),
-        virtue_updates: analysis?.virtue_movements?.map((vm: { virtue: string; delta: number }) => ({
+      // Handle all possible response formats from different tool types
+      let controlMapStr: string | undefined;
+      if (analysis?.control_map) {
+        if (typeof analysis.control_map === 'string') {
+          controlMapStr = analysis.control_map;
+        } else if (Array.isArray(analysis.control_map.yours)) {
+          const yours = analysis.control_map.yours.join(', ');
+          const notYours = Array.isArray(analysis.control_map.not_yours) 
+            ? analysis.control_map.not_yours.join(', ') 
+            : '';
+          controlMapStr = `Yours: ${yours}. Not yours: ${notYours}`;
+        }
+      }
+
+      // Extract virtue updates from various response formats
+      let virtueUpdates: Array<{ virtue: string; delta: number }> | undefined;
+      if (analysis?.virtue_movements && Array.isArray(analysis.virtue_movements)) {
+        virtueUpdates = analysis.virtue_movements.map((vm: { virtue: string; delta: number }) => ({
           virtue: vm.virtue,
-          delta: vm.delta,
-        })) || (analysis?.virtue ? [{
+          delta: vm.delta || 0,
+        }));
+      } else if (analysis?.virtue) {
+        // Single virtue from pulse/unified response
+        virtueUpdates = [{
           virtue: analysis.virtue,
           delta: 0,
-        }] : undefined),
+        }];
+      } else if (analysis?.virtue_applicable) {
+        // Intervene response format
+        virtueUpdates = [{
+          virtue: analysis.virtue_applicable,
+          delta: 0,
+        }];
+      }
+
+      const transformedResponse: StoicResponse = {
+        summary: analysis?.day_summary || analysis?.reality_check || analysis?.summary || undefined,
+        control_map: controlMapStr,
+        virtue_focus: analysis?.virtue_rationale || analysis?.reframe || analysis?.virtue_focus || undefined,
+        surprise_or_tension: analysis?.surprise_or_tension || analysis?.intensity_assessment || analysis?.key_insight || undefined,
+        stance: analysis?.stance || analysis?.tomorrow_stance || analysis?.tomorrow_focus || undefined,
+        action: analysis?.immediate_action || analysis?.grounding_prompt || (Array.isArray(analysis?.key_actions) ? analysis.key_actions[0] : undefined),
+        virtue_updates: virtueUpdates,
       };
       
       // Save the event only after successful AI response (with request ID for idempotency)

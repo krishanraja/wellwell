@@ -1,39 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Layout } from "@/components/wellwell/Layout";
 import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
-import { StoicCard, StoicCardContent } from "@/components/wellwell/StoicCard";
+import { StoicCard } from "@/components/wellwell/StoicCard";
 import { ActionChip } from "@/components/wellwell/ActionChip";
 import { CardCarousel } from "@/components/wellwell/CardCarousel";
 import { UsageLimitGate } from "@/components/wellwell/UsageLimitGate";
 import WelcomeBackScreen from "@/components/wellwell/WelcomeBackScreen";
 import { RitualTimeIndicator } from "@/components/wellwell/RitualTimeIndicator";
 import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
+import { QuickToolsSheet } from "@/components/wellwell/QuickToolsSheet";
 import { useErrorModal } from "@/components/wellwell/ErrorModal";
-import { useNavigate } from "react-router-dom";
 import { useContextualNudge } from "@/hooks/useContextualNudge";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useEvents } from "@/hooks/useEvents";
 import { useStreak } from "@/hooks/useStreak";
-import { useProfile } from "@/hooks/useProfile";
-import { cn } from "@/lib/utils";
-import { 
-  Sparkles, 
-  RotateCcw,
-  Target,
-  Shield,
-  Compass,
-  Flame,
-  X
-} from "lucide-react";
+import { RotateCcw, Target, Shield, Compass, Flame, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// Daily Stoic quotes for inspiration
+const stoicQuotes = [
+  { text: "The obstacle is the way.", author: "Marcus Aurelius" },
+  { text: "We suffer more in imagination than in reality.", author: "Seneca" },
+  { text: "No man is free who is not master of himself.", author: "Epictetus" },
+  { text: "Waste no more time arguing what a good man should be. Be one.", author: "Marcus Aurelius" },
+  { text: "It is not things that disturb us, but our judgments about things.", author: "Epictetus" },
+  { text: "Begin at once to live, and count each day as a separate life.", author: "Seneca" },
+  { text: "The best revenge is not to be like your enemy.", author: "Marcus Aurelius" },
+];
 
 // Local storage key to track if welcome has been shown (Fix #10: Persist across sessions)
 const WELCOME_SHOWN_KEY = 'wellwell_welcome_shown';
 
 export default function Home() {
-  const navigate = useNavigate();
   const [input, setInput] = useState("");
+  const [voiceInputKey, setVoiceInputKey] = useState(0); // Key to force VoiceFirstInput remount
   
   // Check localStorage to see if welcome was already shown (Fix #10)
   const [showWelcome, setShowWelcome] = useState(() => {
@@ -43,14 +44,11 @@ export default function Home() {
   
   const { 
     primaryNudge, 
-    secondaryNudges, 
     greeting, 
     contextMessage,
     isReturningUser,
     hasCompletedPulseToday,
     hasCompletedDebriefToday,
-    streakMessage,
-    timeContext,
   } = useContextualNudge();
   
   const { showError, ErrorModal } = useErrorModal();
@@ -58,7 +56,6 @@ export default function Home() {
   const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { events, isLoading: eventsLoading } = useEvents();
   const { streak } = useStreak();
-  const { profile, isLoading: profileLoading } = useProfile();
   
   const [showTimeModal, setShowTimeModal] = useState(false);
 
@@ -101,10 +98,7 @@ export default function Home() {
   const handleReset = () => {
     setInput("");
     reset();
-  };
-
-  const handleSecondaryNudge = (route: string) => {
-    navigate(route);
+    setVoiceInputKey(prev => prev + 1); // Force VoiceFirstInput to remount with fresh state
   };
 
   // Welcome screen for returning users - only on first session load
@@ -187,132 +181,101 @@ export default function Home() {
     );
   }
 
-  const PrimaryIcon = primaryNudge.icon;
+  // Get daily quote based on date (changes daily)
+  const dailyQuote = useMemo(() => {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+    return stoicQuotes[dayOfYear % stoicQuotes.length];
+  }, []);
 
-  // Main contextual home view - CSS Grid for guaranteed no-scroll layout
+  // Main contextual home view - World-class design
   return (
     <>
       {ErrorModal}
       <Layout showGreeting={false}>
         <UsageLimitGate toolName="unified">
-          {/* CSS Grid with explicit row sizing - guarantees no overflow */}
-          <div 
-            className="grid gap-2 h-full"
-            style={{
-              gridTemplateRows: secondaryNudges.length > 0 ? 'auto auto 1fr auto' : 'auto auto 1fr',
-              maxHeight: '100%',
-            }}
-          >
-            {/* Row 1: Header - auto height */}
-            <div className="pt-1">
-              <div className="flex items-center justify-between mb-0.5">
-                <h1 className="font-display text-xl font-bold text-foreground">
-                  {greeting}
-                </h1>
-                {streak >= 2 && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-coral/10 rounded-full">
-                    <Flame className="w-3.5 h-3.5 text-coral" />
-                    <span className="text-xs font-semibold text-coral">{streak}</span>
-                  </div>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">{contextMessage}</p>
+          {/* Elegant vertical layout - guaranteed to fit */}
+          <div className="flex flex-col h-full">
+            
+            {/* Top Section: Warm greeting with streak */}
+            <div className="shrink-0 text-center pt-2 pb-4">
+              {/* Streak badge */}
+              {streak >= 2 && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-coral/10 rounded-full mb-2 animate-flame">
+                  <Flame className="w-4 h-4 text-coral" />
+                  <span className="text-sm font-semibold text-coral">{streak} day streak</span>
+                </div>
+              )}
+              
+              {/* Large warm greeting */}
+              <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+                {greeting}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {contextMessage}
+              </p>
             </div>
 
-            {/* Row 2: Ritual Indicators - auto height */}
-            <RitualTimeIndicator
-              hasCompletedPulseToday={hasCompletedPulseToday}
-              hasCompletedDebriefToday={hasCompletedDebriefToday}
-              onSetTimeClick={() => setShowTimeModal(true)}
-            />
+            {/* Middle Section: Voice input - takes remaining space */}
+            <div className="flex-1 min-h-0 flex flex-col items-center justify-center relative">
+              {/* Inspirational quote */}
+              <div className="absolute top-0 left-0 right-0 text-center px-4">
+                <p className="text-sm text-muted-foreground/80 italic">
+                  "{dailyQuote.text}"
+                </p>
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  — {dailyQuote.author}
+                </p>
+              </div>
+              
+              {/* Voice input - centered */}
+              <div className="flex-1 flex items-center justify-center w-full px-4">
+                <VoiceFirstInput
+                  key={voiceInputKey}
+                  onTranscript={handleTranscript}
+                  onError={showError}
+                  placeholder="Speak freely"
+                  processingText="Finding your wisdom..."
+                  isProcessing={isLoading}
+                  className="w-full max-w-xs"
+                />
+              </div>
+              
+              {/* Cancel button during processing */}
+              {isLoading && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={cancel}
+                  className="absolute bottom-4 right-4"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Cancel
+                </Button>
+              )}
+            </div>
+
+            {/* Bottom Section: Compact toolbar - fixed height */}
+            <div className="shrink-0 py-3 border-t border-border/30">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                {/* Ritual chips */}
+                <RitualTimeIndicator
+                  hasCompletedPulseToday={hasCompletedPulseToday}
+                  hasCompletedDebriefToday={hasCompletedDebriefToday}
+                  onSetTimeClick={() => setShowTimeModal(true)}
+                />
+                
+                <span className="text-muted-foreground/30">•</span>
+                
+                {/* Quick Tools expandable */}
+                <QuickToolsSheet />
+              </div>
+            </div>
             
             {/* Check-in Time Modal */}
             <CheckInTimeModal 
               open={showTimeModal} 
               onOpenChange={setShowTimeModal}
             />
-
-            {/* Row 3: Primary Action Card - takes remaining space (1fr) */}
-            <div 
-              className="p-3 rounded-2xl border-2 flex flex-col overflow-hidden"
-              style={{ 
-                borderColor: `${primaryNudge.accentColor}40`,
-                background: `linear-gradient(135deg, ${primaryNudge.accentColor}10 0%, ${primaryNudge.accentColor}05 50%, transparent 100%)`,
-                minHeight: '120px',
-              }}
-            >
-              <div className="flex items-center gap-2 mb-2 shrink-0">
-                <div 
-                  className="p-1.5 rounded-xl"
-                  style={{ backgroundColor: `${primaryNudge.accentColor}20` }}
-                >
-                  <PrimaryIcon className="w-4 h-4" style={{ color: primaryNudge.accentColor }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-display text-base font-bold text-foreground leading-tight">
-                    {primaryNudge.headline}
-                  </h2>
-                  <p className="text-[11px] text-muted-foreground">
-                    {primaryNudge.subtext}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Voice input - fills remaining card space */}
-              <div className="flex-1 min-h-0 flex flex-col relative">
-                <VoiceFirstInput
-                  onTranscript={handleTranscript}
-                  placeholder={primaryNudge.placeholder}
-                  processingText={primaryNudge.processingText}
-                  isProcessing={isLoading}
-                  className="flex-1 min-h-0"
-                />
-                {isLoading && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={cancel}
-                    className="absolute top-1 right-1 z-10"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Row 4: Secondary Options - auto height, compact grid */}
-            {secondaryNudges.length > 0 && (
-              <div>
-                <div className="grid grid-cols-3 gap-1">
-                  {secondaryNudges.map((nudge) => {
-                    const NudgeIcon = nudge.icon;
-                    return (
-                      <button
-                        key={nudge.type}
-                        onClick={() => handleSecondaryNudge(nudge.route)}
-                        className={cn(
-                          "flex items-center gap-1.5 py-1.5 px-2 rounded-lg border border-border/50 bg-card/50",
-                          "hover:bg-card hover:border-border transition-all active:scale-[0.98]"
-                        )}
-                      >
-                        <div 
-                          className="w-5 h-5 rounded flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: `${nudge.accentColor}20` }}
-                        >
-                          <NudgeIcon 
-                            className="w-3 h-3" 
-                            style={{ color: nudge.accentColor }} 
-                          />
-                        </div>
-                        <span className="text-[10px] font-medium text-foreground truncate">
-                          {nudge.headline}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
         </UsageLimitGate>
       </Layout>

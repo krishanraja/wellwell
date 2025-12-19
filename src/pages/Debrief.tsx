@@ -143,6 +143,7 @@ export default function Debrief() {
               <div className="relative">
                 <VoiceFirstInput
                   onTranscript={handleTranscript}
+                  onError={showError}
                   placeholder="Tap to reflect on your day"
                   processingText="Synthesizing your day..."
                   isProcessing={isLoading}
