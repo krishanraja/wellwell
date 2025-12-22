@@ -67,10 +67,9 @@ export default function Auth() {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
+          // Generic error message to prevent account enumeration
           showError(
-            error.message === 'Invalid login credentials' 
-              ? 'Invalid email or password. Please try again.'
-              : error.message,
+            'Invalid email or password. Please try again.',
             'Sign in failed'
           );
           return;
@@ -79,9 +78,12 @@ export default function Auth() {
       } else {
         const { error } = await signUp(email, password, displayName);
         if (error) {
-          let message = error.message;
-          if (error.message.includes('already registered')) {
-            message = 'This email is already registered. Try signing in instead.';
+          // Generic error message - don't reveal if email exists
+          let message = 'Unable to create account. Please try again.';
+          if (error.message.includes('already registered') || error.message.includes('already exists')) {
+            message = 'This email may already be registered. Try signing in instead.';
+          } else if (error.message.includes('password')) {
+            message = error.message; // Password errors are safe to show
           }
           showError(message, 'Sign up failed');
           return;

@@ -5,6 +5,8 @@ import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/wellwell/ProtectedRoute";
 import { ErrorBoundary } from "@/components/wellwell/ErrorBoundary";
+import { SessionExpiredHandler } from "@/components/wellwell/SessionExpiredHandler";
+import { AuthDebugPanel } from "@/components/dev/AuthDebugPanel";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -51,6 +53,8 @@ const App = () => (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
+          <SessionExpiredHandler />
+          <AuthDebugPanel />
           <TooltipProvider>
             <BrowserRouter>
               <Routes>

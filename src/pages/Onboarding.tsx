@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LogoFull } from "@/components/wellwell/Header";
 import { Button } from "@/components/ui/button";
 import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
@@ -49,22 +49,142 @@ const personas = [
   { id: "friend", label: "Friend", tagline: "Keep me grounded", description: "Supportive, understanding" },
 ];
 
+const ONBOARDING_STORAGE_KEY = 'wellwell_onboarding_progress';
+
+interface OnboardingProgress {
+  step: number;
+  selectedSituations: string[];
+  selectedHelpful: string[];
+  selectedPersona: string;
+  baselineMoment: string;
+  morningHour: number[];
+  eveningHour: number[];
+}
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const { profile, isLoading: isProfileLoading, error: profileError, updateProfile, isUpdating } = useProfile();
   const { createEvent } = useEvents();
   const { showError, ErrorModal } = useErrorModal();
-  const [step, setStep] = useState(0);
-  const [selectedSituations, setSelectedSituations] = useState<string[]>([]);
-  const [selectedHelpful, setSelectedHelpful] = useState<string[]>([]);
-  const [selectedPersona, setSelectedPersona] = useState("");
-  const [baselineMoment, setBaselineMoment] = useState("");
+
+  // Log onboarding start
+  useEffect(() => {
+    logger.onboardingFunnel('onboarding_started');
+  }, []);
+  
+  // Initialize state from localStorage if available
+  const [step, setStep] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as OnboardingProgress;
+        return parsed.step || 0;
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return 0;
+  });
+  
+  const [selectedSituations, setSelectedSituations] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as OnboardingProgress;
+        return parsed.selectedSituations || [];
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return [];
+  });
+  
+  const [selectedHelpful, setSelectedHelpful] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as OnboardingProgress;
+        return parsed.selectedHelpful || [];
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return [];
+  });
+  
+  const [selectedPersona, setSelectedPersona] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as OnboardingProgress;
+        return parsed.selectedPersona || "";
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return "";
+  });
+  
+  const [baselineMoment, setBaselineMoment] = useState(() => {
+    try {
+      const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as OnboardingProgress;
+        return parsed.baselineMoment || "";
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return "";
+  });
   
   // Time sliders: [morningHour, eveningHour] where hour is 0-23
-  const [morningHour, setMorningHour] = useState([7]); // Default 7 AM
-  const [eveningHour, setEveningHour] = useState([20]); // Default 8 PM
+  const [morningHour, setMorningHour] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as OnboardingProgress;
+        return parsed.morningHour || [7];
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return [7]; // Default 7 AM
+  });
+  
+  const [eveningHour, setEveningHour] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as OnboardingProgress;
+        return parsed.eveningHour || [20];
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return [20]; // Default 8 PM
+  });
   
   const [isSaving, setIsSaving] = useState(false);
+
+  // Save progress to localStorage whenever state changes
+  useEffect(() => {
+    try {
+      const progress: OnboardingProgress = {
+        step,
+        selectedSituations,
+        selectedHelpful,
+        selectedPersona,
+        baselineMoment,
+        morningHour,
+        eveningHour,
+      };
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(progress));
+    } catch (error) {
+      // Ignore storage errors (e.g., quota exceeded, private browsing)
+      logger.warn('Failed to save onboarding progress', { error });
+    }
+  }, [step, selectedSituations, selectedHelpful, selectedPersona, baselineMoment, morningHour, eveningHour]);
 
   // Show loading state while profile is being fetched/recovered
   if (isProfileLoading) {
@@ -158,6 +278,15 @@ export default function Onboarding() {
       }
 
       logger.info("Onboarding completed successfully");
+      logger.onboardingFunnel('onboarding_completed', step);
+      
+      // Clear onboarding progress from localStorage after successful completion
+      try {
+        localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+      } catch {
+        // Ignore storage errors
+      }
+      
       navigate("/");
     } catch (error) {
       logger.error("Failed to save onboarding data", { error });
@@ -191,7 +320,15 @@ export default function Onboarding() {
                 Get practical wisdom in seconds, not minutes.
               </p>
             </div>
-            <Button variant="brand" size="lg" onClick={() => setStep(1)} className="w-full max-w-xs">
+            <Button 
+              variant="brand" 
+              size="lg" 
+              onClick={() => {
+                logger.onboardingFunnel('onboarding_step_0_completed');
+                setStep(1);
+              }} 
+              className="w-full max-w-xs"
+            >
               Get started
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -241,7 +378,10 @@ export default function Onboarding() {
                 variant="brand"
                 size="lg"
                 className="w-full"
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  logger.onboardingFunnel('onboarding_step_1_completed', 1);
+                  setStep(2);
+                }}
               >
                 Continue
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -289,7 +429,10 @@ export default function Onboarding() {
                 variant="brand"
                 size="lg"
                 className="w-full"
-                onClick={() => setStep(3)}
+                onClick={() => {
+                  logger.onboardingFunnel('onboarding_step_2_completed', 2);
+                  setStep(3);
+                }}
               >
                 Continue
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -338,7 +481,10 @@ export default function Onboarding() {
                 variant="brand"
                 size="lg"
                 className="w-full"
-                onClick={() => setStep(4)}
+                onClick={() => {
+                  logger.onboardingFunnel('onboarding_step_3_completed', 3);
+                  setStep(4);
+                }}
               >
                 Continue
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -436,7 +582,10 @@ export default function Onboarding() {
                 variant="brand"
                 size="lg"
                 className="flex-1"
-                onClick={() => setStep(5)}
+                onClick={() => {
+                  logger.onboardingFunnel('onboarding_step_4_completed', 4);
+                  setStep(5);
+                }}
               >
                 Continue
                 <ArrowRight className="w-4 h-4 ml-2" />

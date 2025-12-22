@@ -6,11 +6,11 @@
 
 @layer base {
   :root {
-    /* Navigation safe area system */
-    --nav-height: 4rem;
-    --header-height: 3.5rem; /* Approximate header height */
-    --safe-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 0.75rem);
-    --viewport-height: calc(100dvh - var(--nav-height) - var(--header-height) - env(safe-area-inset-bottom, 0px));
+    /* Navigation safe area system - cleaned up */
+    --header-height: 3.5rem;
+    --nav-inner-height: 3.5rem;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-total-height: calc(var(--nav-inner-height) + var(--safe-area-bottom));
     
     --background: 160 20% 98%;
     --foreground: 165 20% 5%;
@@ -48,6 +48,7 @@
     --shadow-glow: 0 0 40px hsl(187 100% 60% / 0.2);
     --shadow-card: 0 2px 12px -2px hsl(165 20% 5% / 0.05);
     --shadow-elevated: 0 8px 30px -8px hsl(165 20% 5% / 0.12);
+    --shadow-nav: 0 -4px 24px -4px hsl(165 20% 5% / 0.08);
     --glass-bg: hsl(160 20% 98% / 0.7);
     --glass-border: hsl(160 15% 90% / 0.5);
     --sidebar-background: 160 20% 98%;
@@ -84,6 +85,7 @@
     --glass-bg: hsl(165 15% 8% / 0.7);
     --glass-border: hsl(165 15% 20% / 0.5);
     --shadow-elevated: 0 8px 30px -8px hsl(0 0% 0% / 0.4);
+    --shadow-nav: 0 -4px 24px -4px hsl(0 0% 0% / 0.3);
     --sidebar-background: 165 20% 5%;
     --sidebar-foreground: 160 20% 98%;
     --sidebar-primary: 187 100% 60%;
@@ -103,9 +105,52 @@
 }
 
 @layer components {
-  .gradient-text { @apply bg-clip-text text-transparent; background-image: var(--gradient-brand); filter: drop-shadow(0 2px 4px hsl(187 100% 50% / 0.25)); }
+  /* ============================================
+     APP LAYOUT SYSTEM - Clean mobile-first layout
+     ============================================ */
   
-  /* Glass morphism cards */
+  .app-container {
+    @apply fixed inset-0 bg-background overflow-hidden;
+  }
+  
+  .app-wrapper {
+    @apply relative flex flex-col max-w-lg mx-auto w-full h-full;
+  }
+  
+  .app-content {
+    @apply flex-1 flex flex-col px-4 py-2 overflow-hidden;
+  }
+  
+  .app-content-with-nav {
+    padding-bottom: var(--nav-total-height);
+  }
+  
+  /* ============================================
+     BOTTOM NAVIGATION - Clean, solid design
+     ============================================ */
+  
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50;
+    background: hsl(var(--background));
+    box-shadow: var(--shadow-nav);
+  }
+  
+  .bottom-nav-container {
+    @apply px-4;
+    padding-top: 0.5rem;
+    padding-bottom: calc(0.5rem + var(--safe-area-bottom));
+  }
+  
+  /* ============================================
+     GLASS MORPHISM CARDS
+     ============================================ */
+  
+  .gradient-text { 
+    @apply bg-clip-text text-transparent; 
+    background-image: var(--gradient-brand); 
+    filter: drop-shadow(0 2px 4px hsl(187 100% 50% / 0.25)); 
+  }
+  
   .glass-card {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -139,8 +184,15 @@
     pointer-events: none;
   }
   
-  .stoic-card { @apply bg-card rounded-2xl p-4 border border-border; box-shadow: var(--shadow-card); }
-  .stoic-card-compact { @apply bg-card rounded-xl p-3 border border-border; box-shadow: var(--shadow-card); }
+  .stoic-card { 
+    @apply bg-card rounded-2xl p-4 border border-border; 
+    box-shadow: var(--shadow-card); 
+  }
+  
+  .stoic-card-compact { 
+    @apply bg-card rounded-xl p-3 border border-border; 
+    box-shadow: var(--shadow-card); 
+  }
   
   /* Hero card with gradient rim */
   .hero-card {
@@ -175,6 +227,29 @@
     background: radial-gradient(circle at 30% 30%, hsl(var(--primary) / 0.08) 0%, transparent 50%);
     pointer-events: none;
   }
+  
+  /* ============================================
+     ACTION COMMIT CARD - Prominent action display
+     ============================================ */
+  
+  .action-commit-card {
+    @apply relative rounded-2xl p-5 overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.05) 100%);
+    border: 2px solid hsl(var(--primary) / 0.3);
+    box-shadow: 0 4px 24px -4px hsl(var(--primary) / 0.15);
+  }
+  
+  .action-commit-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, hsl(var(--primary) / 0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  
+  /* ============================================
+     UTILITY CLASSES
+     ============================================ */
   
   .glow { box-shadow: var(--shadow-glow); }
   .bg-brand-gradient { background: var(--gradient-brand); }
@@ -229,7 +304,7 @@
     animation: pulse-ring 2s ease-out infinite;
   }
   
-  /* Bottom nav glass effect */
+  /* Legacy nav classes - keeping for backwards compatibility */
   .nav-glass {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -257,11 +332,9 @@
 }
 
 @layer utilities {
-  /* Safe area utilities */
-  .safe-bottom { padding-bottom: var(--safe-bottom); }
-  .pb-safe { padding-bottom: var(--safe-bottom); }
-  .min-h-safe { min-height: var(--viewport-height); }
-  .max-h-safe { max-height: var(--viewport-height); }
+  /* Safe area utilities - updated */
+  .safe-bottom { padding-bottom: var(--nav-total-height); }
+  .pb-safe { padding-bottom: var(--nav-total-height); }
   
   .animate-fade-up { animation: fadeUp 0.5s ease-out forwards; }
   .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }

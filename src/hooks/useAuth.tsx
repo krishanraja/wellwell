@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useRef, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
@@ -7,10 +7,13 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  sessionExpired: boolean;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error: Error | null }>;
+  refreshSession: () => Promise<{ error: Error | null }>;
+  dismissSessionExpired: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const previousSessionRef = useRef<Session | null>(null);
 
   useEffect(() => {
     logger.debug('AuthProvider: Setting up auth state listener');
@@ -31,6 +36,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           event 
         });
         
+        // Detect session expiry: had session before, now don't, and it wasn't explicit sign out
+        if (previousSessionRef.current && !session && event !== 'SIGNED_OUT') {
+          logger.warn('Session expired unexpectedly', { event });
+          setSessionExpired(true);
+        } else if (event === 'TOKEN_REFRESHED' && session) {
+          // Session refreshed successfully
+          setSessionExpired(false);
+          logger.info('Session refreshed successfully');
+        } else if (event === 'SIGNED_OUT' && previousSessionRef.current) {
+          // Explicit sign out or session expired
+          setSessionExpired(true);
+        } else if (session) {
+          // Session restored or created
+          setSessionExpired(false);
+        }
+        
+        previousSessionRef.current = session;
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -59,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, displayName?: string) => {
+    logger.authFunnel('auth_signup_started');
     logger.interaction('Sign up attempt', { email });
     const endTimer = logger.startTimer('signUp');
     
@@ -78,10 +101,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         logger.error('Sign up failed', { error: error.message });
+        logger.authFunnel('auth_signup_failed', { error_type: error.message });
         return { error };
       }
 
       logger.info('Sign up successful', { email });
+      logger.authFunnel('auth_signup_completed');
+      
+      // #region agent log
+      console.log('[DEBUG] Signup successful, sending lead email...', { email: email.substring(0, 3) + '***' });
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:signUp',message:'Signup successful, sending lead email',data:{email:email.substring(0,3)+'***'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+
+      // Send lead notification email (fire and forget - don't block signup)
+      sendLeadEmail(email, displayName).catch((err) => {
+        console.error('[DEBUG] Lead email FAILED:', err instanceof Error ? err.message : 'Unknown');
+        logger.error('Lead email failed', { error: err instanceof Error ? err.message : 'Unknown' });
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:signUp',message:'Lead email FAILED',data:{error:err instanceof Error ? err.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
+      });
+      
       endTimer();
       return { error: null };
     } catch (err) {
@@ -91,7 +131,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Helper function to send lead notification emails
+  const sendLeadEmail = async (email: string, name?: string) => {
+    // #region agent log
+    console.log('[DEBUG] Calling send-lead-email edge function...');
+    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:sendLeadEmail',message:'Calling send-lead-email edge function',data:{email:email.substring(0,3)+'***'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
+    const { data, error } = await supabase.functions.invoke('send-lead-email', {
+      body: {
+        type: 'signup',
+        email,
+        name: name || email.split('@')[0],
+        source: 'auth_signup'
+      }
+    });
+    
+    console.log('[DEBUG] send-lead-email response:', { data, error: error?.message });
+    
+    if (error) {
+      // #region agent log
+      console.error('[DEBUG] Edge function returned error:', error.message);
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:sendLeadEmail',message:'Edge function returned error',data:{error:error.message},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      throw error;
+    }
+    
+    // #region agent log
+    console.log('[DEBUG] Lead email sent successfully:', data);
+    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:sendLeadEmail',message:'Lead email sent successfully',data:{emailId:data?.emailId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
+    logger.info('Lead email sent', { emailId: data?.emailId });
+    return data;
+  };
+
   const signIn = async (email: string, password: string) => {
+    logger.authFunnel('auth_signin_started');
     logger.interaction('Sign in attempt', { email });
     const endTimer = logger.startTimer('signIn');
     
@@ -103,10 +179,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         logger.error('Sign in failed', { error: error.message });
+        logger.authFunnel('auth_signin_failed', { error_type: error.message });
         return { error };
       }
 
       logger.info('Sign in successful', { email });
+      logger.authFunnel('auth_signin_completed');
       endTimer();
       return { error: null };
     } catch (err) {
@@ -192,8 +270,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshSession = async () => {
+    logger.interaction('Refresh session attempt');
+    
+    try {
+      const { data: { session: newSession }, error } = await supabase.auth.refreshSession();
+      
+      if (error) {
+        logger.error('Session refresh failed', { error: error.message });
+        return { error };
+      }
+      
+      if (newSession) {
+        logger.info('Session refreshed successfully');
+        setSessionExpired(false);
+        return { error: null };
+      }
+      
+      // No session after refresh - user needs to sign in again
+      logger.warn('No session after refresh');
+      return { error: new Error('Session could not be refreshed. Please sign in again.') };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      logger.error('Session refresh exception', { error: error.message });
+      return { error };
+    }
+  };
+
+  const dismissSessionExpired = () => {
+    setSessionExpired(false);
+    logger.info('Session expired modal dismissed');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, deleteAccount }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      loading, 
+      sessionExpired,
+      signUp, 
+      signIn, 
+      signOut, 
+      deleteAccount,
+      refreshSession,
+      dismissSessionExpired,
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -18,33 +18,27 @@ export function Layout({
   showGreeting = false,
   className,
 }: LayoutProps) {
-  // Calculate exact content height using dvh units
-  // Header: 56px, Nav: 64px + safe area
-  const contentHeight = showNav 
-    ? 'calc(100dvh - 56px - 64px - env(safe-area-inset-bottom, 0px))' 
-    : 'calc(100dvh - 56px)';
-
   return (
-    <div className="fixed inset-0 bg-background overflow-hidden">
+    <div className="app-container">
       {/* Subtle background glow */}
       <div className="fixed inset-0 bg-glow pointer-events-none" />
       
-      <div className="relative flex flex-col max-w-lg mx-auto w-full h-full">
+      <div className="app-wrapper">
         {/* Header - fixed height */}
         {showHeader && <Header showGreeting={showGreeting} />}
         
-        {/* Main content - exact calculated height, no overflow */}
+        {/* Main content - fills available space */}
         <main 
           className={cn(
-            "flex flex-col px-4 py-2 overflow-hidden",
+            "app-content",
+            showNav && "app-content-with-nav",
             className
           )}
-          style={{ height: contentHeight }}
         >
           {children}
         </main>
         
-        {/* Bottom nav - fixed at bottom */}
+        {/* Bottom nav - fixed at bottom with safe area */}
         {showNav && <BottomNav />}
       </div>
     </div>

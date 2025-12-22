@@ -1,11 +1,13 @@
 import { forwardRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LogoFull } from "@/components/wellwell/Header";
-import { ArrowRight, Shield, Zap, Brain, Sparkles, Quote, Users } from "lucide-react";
+import { ArrowRight, Shield, Zap, Brain, Sparkles, Quote, Users, Mail, Loader2, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import SplashScreen from "@/components/wellwell/SplashScreen";
+import { logger } from "@/lib/logger";
 
 const testimonials = [
   {
@@ -28,6 +30,70 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
   const [insightsCount, setInsightsCount] = useState<number>(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
+  
+  // Waitlist form state
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = useState(false);
+  const [waitlistError, setWaitlistError] = useState("");
+
+  const handleWaitlistSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!waitlistEmail.trim()) return;
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(waitlistEmail)) {
+      setWaitlistError("Please enter a valid email address");
+      return;
+    }
+    
+    setWaitlistLoading(true);
+    setWaitlistError("");
+    
+    // #region agent log
+    console.log('[DEBUG] Waitlist form submitted', { email: waitlistEmail.substring(0, 3) + '***' });
+    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Landing.tsx:handleWaitlistSubmit',message:'Waitlist form submitted',data:{email:waitlistEmail.substring(0,3)+'***'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
+    
+    try {
+      console.log('[DEBUG] Calling send-lead-email edge function...');
+      const { data, error } = await supabase.functions.invoke('send-lead-email', {
+        body: {
+          type: 'waitlist',
+          email: waitlistEmail,
+          source: 'landing_waitlist'
+        }
+      });
+      
+      console.log('[DEBUG] Edge function response:', { data, error: error?.message });
+      
+      if (error) {
+        // #region agent log
+        console.error('[DEBUG] Waitlist email FAILED:', error.message);
+        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Landing.tsx:handleWaitlistSubmit',message:'Waitlist email FAILED',data:{error:error.message},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
+        throw error;
+      }
+      
+      // #region agent log
+      console.log('[DEBUG] Waitlist email sent successfully:', data);
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Landing.tsx:handleWaitlistSubmit',message:'Waitlist email sent successfully',data:{emailId:data?.emailId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
+      
+      logger.info('Waitlist signup', { email: waitlistEmail });
+      setWaitlistSuccess(true);
+      setWaitlistEmail("");
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[DEBUG] Waitlist catch block error:', err);
+      logger.error('Waitlist error', { error: errorMsg });
+      // Show detailed error for debugging (temporary)
+      setWaitlistError(`Error: ${errorMsg}`);
+    } finally {
+      setWaitlistLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && user) {
@@ -188,6 +254,56 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
                   }`} 
                 />
               ))}
+            </div>
+          </div>
+
+          {/* Email Waitlist Form */}
+          <div className="mt-4 animate-fade-up" style={{ animationDelay: "450ms" }}>
+            <div className="max-w-sm mx-auto">
+              {waitlistSuccess ? (
+                <div className="flex items-center justify-center gap-2 py-3 px-4 bg-primary/10 rounded-xl border border-primary/20">
+                  <Check className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-primary font-medium">You're on the list! We'll be in touch.</span>
+                </div>
+              ) : (
+                <form onSubmit={handleWaitlistSubmit} className="space-y-2">
+                  <p className="text-xs text-center text-[hsl(160_15%_70%)] mb-2">
+                    Not ready to sign up? Get Stoic wisdom in your inbox.
+                  </p>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(160_15%_50%)]" />
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={waitlistEmail}
+                        onChange={(e) => {
+                          setWaitlistEmail(e.target.value);
+                          if (waitlistError) setWaitlistError("");
+                        }}
+                        className="pl-10 bg-[hsl(165_20%_18%)] border-[hsl(160_15%_25%)] text-[hsl(160_20%_95%)] placeholder:text-[hsl(160_15%_50%)] focus:border-primary"
+                        disabled={waitlistLoading}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      variant="brand"
+                      size="default"
+                      disabled={waitlistLoading || !waitlistEmail.trim()}
+                      className="shrink-0"
+                    >
+                      {waitlistLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Join"
+                      )}
+                    </Button>
+                  </div>
+                  {waitlistError && (
+                    <p className="text-xs text-red-400 text-center">{waitlistError}</p>
+                  )}
+                </form>
+              )}
             </div>
           </div>
 

@@ -66,9 +66,29 @@ if (!SUPABASE_PUBLISHABLE_KEY.startsWith('eyJ')) {
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Import secure storage adapter
+import { secureStorage } from '@/lib/secureStorage';
+
+/**
+ * SECURITY NOTE: Token Storage
+ * 
+ * Current implementation uses a secure storage adapter that:
+ * - Stores tokens in sessionStorage (cleared on tab close)
+ * - Stores non-sensitive data in localStorage
+ * 
+ * This reduces XSS risk compared to pure localStorage, but tokens are still
+ * accessible to JavaScript. For maximum security, consider:
+ * 
+ * 1. Using httpOnly cookies via an edge function proxy
+ * 2. Implementing Content Security Policy (CSP) headers
+ * 3. Using Subresource Integrity (SRI) for scripts
+ * 
+ * See: src/lib/secureStorage.ts for implementation details
+ */
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: secureStorage,
     persistSession: true,
     autoRefreshToken: true,
   }

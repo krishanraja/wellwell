@@ -89,3 +89,11 @@ After deployment, test the frontend:
 ### Issue: Edge function returns "AI service not configured"
 - **Solution**: Add `GOOGLE_AI_API_KEY` to Supabase secrets
 - **Location**: Supabase dashboard → Functions → Secrets
+
+
+
+
+
+
+
+

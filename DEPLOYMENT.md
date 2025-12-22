@@ -103,3 +103,11 @@ curl -X POST https://zioacippbtcbctexywgc.supabase.co/functions/v1/whisper-trans
 - Verify `GOOGLE_AI_API_KEY` is set in Supabase secrets
 - Check Google AI API quota
 - Review edge function logs for specific errors
+
+
+
+
+
+
+
+

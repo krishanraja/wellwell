@@ -183,6 +183,30 @@ export const logger = {
   setUserContext: (userId: string) => {
     log('info', 'User context set', { userId });
   },
+
+  /**
+   * Log auth funnel events (privacy-safe: no PII)
+   */
+  authFunnel: (event: string, context?: LogContext) => {
+    // Privacy-safe: only log event name and metadata, never email or PII
+    return log('info', `Auth Funnel: ${event}`, { 
+      event,
+      category: 'auth_funnel',
+      ...context 
+    });
+  },
+
+  /**
+   * Log onboarding funnel events
+   */
+  onboardingFunnel: (event: string, step?: number, context?: LogContext) => {
+    return log('info', `Onboarding Funnel: ${event}`, { 
+      event,
+      step,
+      category: 'onboarding_funnel',
+      ...context 
+    });
+  },
 };
 
 export default logger;

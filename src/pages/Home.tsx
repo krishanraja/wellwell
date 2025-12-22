@@ -9,34 +9,37 @@ import WelcomeBackScreen from "@/components/wellwell/WelcomeBackScreen";
 import { RitualTimeIndicator } from "@/components/wellwell/RitualTimeIndicator";
 import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
 import { QuickToolsSheet } from "@/components/wellwell/QuickToolsSheet";
+import { ActionFollowUp } from "@/components/wellwell/ActionFollowUp";
 import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useContextualNudge } from "@/hooks/useContextualNudge";
 import { useUsageLimit } from "@/hooks/useUsageLimit";
 import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useEvents } from "@/hooks/useEvents";
 import { useStreak } from "@/hooks/useStreak";
-import { RotateCcw, Target, Shield, Compass, Flame, X } from "lucide-react";
+import { usePendingActions } from "@/hooks/usePendingActions";
+import { RotateCcw, Target, Shield, Compass, Flame, X, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Daily Stoic quotes for inspiration
+// Daily Stoic quotes for inspiration - primary source material
 const stoicQuotes = [
-  { text: "The obstacle is the way.", author: "Marcus Aurelius" },
+  { text: "The impediment to action advances action. What stands in the way becomes the way.", author: "Marcus Aurelius" },
   { text: "We suffer more in imagination than in reality.", author: "Seneca" },
-  { text: "No man is free who is not master of himself.", author: "Epictetus" },
+  { text: "You have power over your mind—not outside events. Realize this, and you will find strength.", author: "Marcus Aurelius" },
   { text: "Waste no more time arguing what a good man should be. Be one.", author: "Marcus Aurelius" },
   { text: "It is not things that disturb us, but our judgments about things.", author: "Epictetus" },
-  { text: "Begin at once to live, and count each day as a separate life.", author: "Seneca" },
+  { text: "You could leave life right now. Let that determine what you do and say and think.", author: "Marcus Aurelius" },
   { text: "The best revenge is not to be like your enemy.", author: "Marcus Aurelius" },
+  { text: "If an evil has been pondered beforehand, the blow is gentle when it comes.", author: "Seneca" },
 ];
 
-// Local storage key to track if welcome has been shown (Fix #10: Persist across sessions)
+// Local storage key to track if welcome has been shown
 const WELCOME_SHOWN_KEY = 'wellwell_welcome_shown';
 
 export default function Home() {
   const [input, setInput] = useState("");
-  const [voiceInputKey, setVoiceInputKey] = useState(0); // Key to force VoiceFirstInput remount
+  const [voiceInputKey, setVoiceInputKey] = useState(0);
+  const [hasCommitted, setHasCommitted] = useState(false);
   
-  // Check localStorage to see if welcome was already shown (Fix #10)
   const [showWelcome, setShowWelcome] = useState(() => {
     return localStorage.getItem(WELCOME_SHOWN_KEY) !== 'true';
   });
@@ -45,7 +48,6 @@ export default function Home() {
   const { 
     primaryNudge, 
     greeting, 
-    contextMessage,
     isReturningUser,
     hasCompletedPulseToday,
     hasCompletedDebriefToday,
@@ -56,21 +58,25 @@ export default function Home() {
   const { analyze, isLoading, response, reset, cancel } = useStoicAnalyzer();
   const { events, isLoading: eventsLoading } = useEvents();
   const { streak } = useStreak();
+  const { 
+    pendingAction, 
+    shouldShowFollowUp, 
+    commitAction, 
+    dismissFollowUp, 
+    completeAction 
+  } = usePendingActions();
   
   const [showTimeModal, setShowTimeModal] = useState(false);
 
-  // Only show welcome for returning users on first load of the session
   useEffect(() => {
     if (!eventsLoading && isFirstLoad) {
       if (events.length === 0) {
-        // New user - skip welcome
         setShowWelcome(false);
       }
       setIsFirstLoad(false);
     }
   }, [eventsLoading, events.length, isFirstLoad]);
 
-  // Mark welcome as shown when it completes (Fix #10: Use localStorage)
   const handleWelcomeComplete = () => {
     localStorage.setItem(WELCOME_SHOWN_KEY, 'true');
     setShowWelcome(false);
@@ -78,14 +84,13 @@ export default function Home() {
 
   const handleTranscript = async (text: string) => {
     setInput(text);
-    // Fix #4: Move usage tracking AFTER AI success
+    setHasCommitted(false);
     const result = await analyze({
       tool: primaryNudge.type === 'freeform' ? 'unified' : primaryNudge.type,
       input: text,
       onError: showError,
     });
     
-    // Only track usage if analysis succeeded
     if (result) {
       try {
         await trackUsage();
@@ -97,11 +102,25 @@ export default function Home() {
 
   const handleReset = () => {
     setInput("");
+    setHasCommitted(false);
     reset();
-    setVoiceInputKey(prev => prev + 1); // Force VoiceFirstInput to remount with fresh state
+    setVoiceInputKey(prev => prev + 1);
   };
 
-  // Welcome screen for returning users - only on first session load
+  const handleCommitAction = () => {
+    setHasCommitted(true);
+    // Store the committed action for follow-up using the hook
+    if (response?.action) {
+      commitAction({
+        action: response.action,
+        committedAt: new Date().toISOString(),
+        input: input,
+        virtue: response.virtue_updates?.[0]?.virtue || 'wisdom',
+      });
+    }
+  };
+
+  // Welcome screen for returning users
   if (showWelcome && isReturningUser) {
     return (
       <>
@@ -115,6 +134,70 @@ export default function Home() {
   if (response) {
     const PrimaryIcon = primaryNudge.icon;
     
+    // Action-First View: Show action prominently before other cards
+    if (response.action && !hasCommitted) {
+      return (
+        <Layout showGreeting={false}>
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Header */}
+            <div className="text-center py-3 shrink-0">
+              <div 
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-2"
+                style={{ backgroundColor: `${primaryNudge.accentColor}20` }}
+              >
+                <PrimaryIcon className="w-4 h-4" style={{ color: primaryNudge.accentColor }} />
+                <span className="text-sm font-medium" style={{ color: primaryNudge.accentColor }}>
+                  Your One Action
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground px-4 line-clamp-1">
+                "{input.slice(0, 50)}{input.length > 50 ? '...' : ''}"
+              </p>
+            </div>
+            
+            {/* Action Card - Prominent */}
+            <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-0">
+              <div className="action-commit-card w-full max-w-sm animate-scale-in">
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Do This Now</p>
+                      <p className="text-xs text-primary capitalize">{response.virtue_updates?.[0]?.virtue || 'Wisdom'} in action</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-base font-medium text-foreground leading-relaxed mb-6">
+                    {response.action}
+                  </p>
+                  
+                  <Button 
+                    size="lg" 
+                    className="w-full bg-primary hover:bg-primary/90"
+                    onClick={handleCommitAction}
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    I'll do this
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Skip option */}
+              <button
+                onClick={() => setHasCommitted(true)}
+                className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Show me the full insight →
+              </button>
+            </div>
+          </div>
+        </Layout>
+      );
+    }
+    
+    // Full insight view (after commitment or if no action)
     const cards = [
       <StoicCard key="control" icon={Target} title="What's Yours" className="h-full flex flex-col">
         <p className="text-muted-foreground text-sm flex-1">
@@ -157,9 +240,9 @@ export default function Home() {
                 Your Insight
               </span>
             </div>
-            {input && (
-              <p className="text-xs text-muted-foreground mt-1 px-4 line-clamp-1">
-                "{input.slice(0, 60)}{input.length > 60 ? '...' : ''}"
+            {hasCommitted && response.action && (
+              <p className="text-xs text-primary mt-1 px-4">
+                ✓ Committed to action
               </p>
             )}
           </div>
@@ -181,22 +264,31 @@ export default function Home() {
     );
   }
 
-  // Get daily quote based on date (changes daily)
+  // Get daily quote based on date
   const dailyQuote = useMemo(() => {
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
     return stoicQuotes[dayOfYear % stoicQuotes.length];
   }, []);
 
-  // Main contextual home view - World-class design
+  // Main home view
   return (
     <>
       {ErrorModal}
+      
+      {/* Action Follow-Up Modal */}
+      {shouldShowFollowUp && pendingAction && (
+        <ActionFollowUp
+          pendingAction={pendingAction}
+          onComplete={completeAction}
+          onDismiss={dismissFollowUp}
+        />
+      )}
+      
       <Layout showGreeting={false}>
         <UsageLimitGate toolName="unified">
-          {/* Elegant vertical layout - guaranteed to fit */}
           <div className="flex flex-col h-full">
             
-            {/* Top Section: Warm greeting with streak */}
+            {/* Top Section: Greeting with streak */}
             <div className="shrink-0 text-center pt-2 pb-4">
               {/* Streak badge */}
               {streak >= 2 && (
@@ -206,16 +298,16 @@ export default function Home() {
                 </div>
               )}
               
-              {/* Large warm greeting */}
+              {/* Warm greeting */}
               <h1 className="font-display text-2xl font-bold text-foreground mb-1">
                 {greeting}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {contextMessage}
+                What needs your clarity right now?
               </p>
             </div>
 
-            {/* Middle Section: Voice input - takes remaining space */}
+            {/* Middle Section: Voice input */}
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center relative">
               {/* Inspirational quote */}
               <div className="absolute top-0 left-0 right-0 text-center px-4">
@@ -233,8 +325,8 @@ export default function Home() {
                   key={voiceInputKey}
                   onTranscript={handleTranscript}
                   onError={showError}
-                  placeholder="Speak freely"
-                  processingText="Finding your wisdom..."
+                  placeholder="Tap to speak"
+                  processingText="Finding your clarity..."
                   isProcessing={isLoading}
                   className="w-full max-w-xs"
                 />
@@ -254,8 +346,13 @@ export default function Home() {
               )}
             </div>
 
-            {/* Bottom Section: Compact toolbar - fixed height */}
+            {/* Bottom Section: Philosophy credential + toolbar */}
             <div className="shrink-0 py-3 border-t border-border/30">
+              {/* Philosophy credential */}
+              <p className="text-[10px] text-center text-muted-foreground/60 mb-2">
+                Trained on 2000 years of Stoic philosophy • Tuned for modern challenges
+              </p>
+              
               <div className="flex items-center justify-center gap-2 flex-wrap">
                 {/* Ritual chips */}
                 <RitualTimeIndicator
@@ -266,7 +363,7 @@ export default function Home() {
                 
                 <span className="text-muted-foreground/30">•</span>
                 
-                {/* Quick Tools expandable */}
+                {/* Quick Tools */}
                 <QuickToolsSheet />
               </div>
             </div>

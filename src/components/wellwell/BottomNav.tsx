@@ -43,49 +43,50 @@ export function BottomNav() {
   }, [events]);
 
   const navContent = (
-    <div 
-      className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-    >
-      {navItems.map(({ icon: Icon, label, path }) => {
-        const isActive = location.pathname === path;
-        const showIndicator = path === '/' && contextualIndicator && !isActive;
-        
-        return (
-          <button
-            key={path}
-            onClick={() => navigate(path)}
-            className={cn(
-              "nav-pill relative flex flex-col items-center justify-center gap-0.5 w-16 h-12 transition-all duration-300",
-              isActive && "nav-pill-active"
-            )}
-          >
-            {/* Contextual nudge indicator */}
-            {showIndicator && (
-              <span 
-                className="absolute -top-0.5 right-2.5 w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: contextualIndicator.color }}
-              />
-            )}
-            
-            <Icon className={cn(
-              "w-5 h-5 shrink-0 transition-all duration-300",
-              isActive ? "text-primary" : "text-muted-foreground"
-            )} />
-            <span className={cn(
-              "text-[10px] font-medium leading-none transition-all duration-300",
-              isActive ? "text-primary" : "text-muted-foreground"
-            )}>
-              {label}
-            </span>
-          </button>
-        );
-      })}
+    <div className="bottom-nav-container">
+      <div className="flex items-center justify-around max-w-lg mx-auto w-full">
+        {navItems.map(({ icon: Icon, label, path }) => {
+          const isActive = location.pathname === path;
+          const showIndicator = path === '/' && contextualIndicator && !isActive;
+          
+          return (
+            <button
+              key={path}
+              onClick={() => navigate(path)}
+              className={cn(
+                "relative flex flex-col items-center justify-center gap-1 py-2 px-4 rounded-xl transition-all duration-200",
+                isActive 
+                  ? "text-primary bg-primary/10" 
+                  : "text-muted-foreground hover:text-foreground active:scale-95"
+              )}
+            >
+              {/* Contextual nudge indicator */}
+              {showIndicator && (
+                <span 
+                  className="absolute top-1 right-1 w-2 h-2 rounded-full animate-pulse"
+                  style={{ backgroundColor: contextualIndicator.color }}
+                />
+              )}
+              
+              <Icon className={cn(
+                "w-5 h-5 shrink-0 transition-colors duration-200",
+                isActive && "drop-shadow-sm"
+              )} />
+              <span className={cn(
+                "text-[10px] font-medium leading-none transition-colors duration-200",
+                isActive && "font-semibold"
+              )}>
+                {label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 nav-glass z-50">
+    <nav className="bottom-nav">
       <OnboardingTooltip
         title="Navigate your practice"
         description="Home for insights, History for past wisdom, Journey for your growth, More for extra tools."
