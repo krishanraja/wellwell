@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, validateSupabaseConfig } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
 interface AuthContextType {
@@ -28,7 +28,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     logger.debug('AuthProvider: Setting up auth state listener');
     
-    // Set up auth state listener FIRST
+    // Validate configuration first (throws if invalid, caught by ErrorBoundary)
+    try {
+      validateSupabaseConfig();
+      console.log('[useAuth] Configuration validated successfully');
+    } catch (error) {
+      console.error('[useAuth] Configuration validation failed:', error);
+      // Re-throw to let ErrorBoundary catch it
+      throw error;
+    }
+    
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         logger.info(`Auth state changed: ${event}`, { 
