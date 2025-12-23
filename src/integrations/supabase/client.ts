@@ -3,6 +3,12 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { secureStorage } from '@/lib/secureStorage';
 
+// Verify secureStorage is available
+console.log('[SUPABASE_CLIENT] secureStorage imported:', typeof secureStorage);
+if (!secureStorage) {
+  console.error('[SUPABASE_CLIENT] secureStorage is null/undefined!');
+}
+
 /**
  * SECURITY NOTE: Token Storage
  * 
@@ -29,27 +35,43 @@ import { secureStorage } from '@/lib/secureStorage';
  * @throws {Error} If environment variables are missing or invalid
  */
 function initializeSupabaseClient() {
+  console.log('[SUPABASE_CLIENT] initializeSupabaseClient called');
+  
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
+  // Log env vars (masked for security)
+  console.log('[SUPABASE_CLIENT] Env vars check:', {
+    hasUrl: !!SUPABASE_URL,
+    urlLength: SUPABASE_URL?.length || 0,
+    urlPreview: SUPABASE_URL ? SUPABASE_URL.substring(0, 30) + '...' : 'MISSING',
+    hasKey: !!SUPABASE_PUBLISHABLE_KEY,
+    keyLength: SUPABASE_PUBLISHABLE_KEY?.length || 0,
+    keyPreview: SUPABASE_PUBLISHABLE_KEY ? SUPABASE_PUBLISHABLE_KEY.substring(0, 10) + '...' : 'MISSING',
+  });
+
   // Runtime validation (can be caught by ErrorBoundary)
   if (!SUPABASE_URL) {
-    throw new Error(
+    const error = new Error(
       '❌ Missing VITE_SUPABASE_URL environment variable.\n\n' +
       'Please ensure your .env file contains:\n' +
       '  VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co\n\n' +
       'Get your project URL from: https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api'
     );
+    console.error('[SUPABASE_CLIENT] Validation failed - missing URL:', error);
+    throw error;
   }
 
   if (!SUPABASE_PUBLISHABLE_KEY) {
-    throw new Error(
+    const error = new Error(
       '❌ Missing VITE_SUPABASE_PUBLISHABLE_KEY environment variable.\n\n' +
       'Please ensure your .env file contains the correct publishable (anon) key.\n' +
       'Get it from: https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api\n' +
       'Look for the "anon public" key (it should be a JWT token starting with "eyJ...")'
     );
+    console.error('[SUPABASE_CLIENT] Validation failed - missing key:', error);
+    throw error;
   }
 
   // Validate URL format
@@ -122,16 +144,27 @@ let _supabaseClient: ReturnType<typeof createClient<Database>> | null = null;
  */
 export const supabase = new Proxy({} as ReturnType<typeof createClient<Database>>, {
   get(_target, prop) {
-    // Initialize client on first access
-    if (!_supabaseClient) {
-      _supabaseClient = initializeSupabaseClient();
+    console.log('[SUPABASE_CLIENT] Proxy.get called with prop:', prop);
+    try {
+      // Initialize client on first access
+      if (!_supabaseClient) {
+        console.log('[SUPABASE_CLIENT] Initializing client...');
+        _supabaseClient = initializeSupabaseClient();
+        console.log('[SUPABASE_CLIENT] Client initialized successfully');
+      }
+      // Return the property from the actual client
+      const value = (_supabaseClient as any)[prop];
+      // If it's a function, bind it to maintain 'this' context
+      if (typeof value === 'function') {
+        return value.bind(_supabaseClient);
+      }
+      return value;
+    } catch (error) {
+      console.error('[SUPABASE_CLIENT] Error in Proxy.get:', error);
+      console.error('[SUPABASE_CLIENT] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('[SUPABASE_CLIENT] Error stack:', error instanceof Error ? error.stack : 'No stack');
+      // Re-throw to let ErrorBoundary catch it
+      throw error;
     }
-    // Return the property from the actual client
-    const value = (_supabaseClient as any)[prop];
-    // If it's a function, bind it to maintain 'this' context
-    if (typeof value === 'function') {
-      return value.bind(_supabaseClient);
-    }
-    return value;
   }
 });

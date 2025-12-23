@@ -24,9 +24,33 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('[ERROR_BOUNDARY] Caught error:', error);
+    console.error('[ERROR_BOUNDARY] Error message:', error?.message || 'NO MESSAGE');
+    console.error('[ERROR_BOUNDARY] Error name:', error?.name || 'NO NAME');
+    console.error('[ERROR_BOUNDARY] Error stack:', error?.stack || 'NO STACK');
+    console.error('[ERROR_BOUNDARY] Error toString:', error?.toString());
+    
+    // Try to serialize error object with all properties
+    try {
+      const errorProps = Object.getOwnPropertyNames(error);
+      const errorDetails: Record<string, any> = {};
+      errorProps.forEach(prop => {
+        try {
+          errorDetails[prop] = (error as any)[prop];
+        } catch (e) {
+          errorDetails[prop] = '[Unable to access]';
+        }
+      });
+      console.error('[ERROR_BOUNDARY] Full error object:', JSON.stringify(errorDetails, null, 2));
+    } catch (serializeError) {
+      console.error('[ERROR_BOUNDARY] Failed to serialize error:', serializeError);
+    }
+    
     logger.critical("Uncaught error in React component tree", {
-      error: error.message,
-      stack: error.stack,
+      error: error?.message || 'NO ERROR MESSAGE',
+      errorName: error?.name || 'NO ERROR NAME',
+      errorStack: error?.stack || 'NO STACK',
+      errorString: error?.toString(),
       componentStack: errorInfo.componentStack,
     });
   }
