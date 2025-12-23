@@ -68,7 +68,25 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
             </div>
 
-            {import.meta.env.DEV && this.state.error && (
+            {/* Show helpful message for environment variable errors (even in production) */}
+            {this.state.error?.message?.includes('VITE_SUPABASE') && (
+              <div className="p-4 bg-muted/50 rounded-xl text-left space-y-2">
+                <p className="text-sm font-semibold text-foreground">
+                  Configuration Error Detected
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  The application is missing required environment variables. Please check your deployment configuration.
+                </p>
+                {import.meta.env.DEV && (
+                  <p className="text-xs font-mono text-muted-foreground break-all mt-2 pt-2 border-t border-border">
+                    {this.state.error.message}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Show full error details in development mode */}
+            {import.meta.env.DEV && this.state.error && !this.state.error.message?.includes('VITE_SUPABASE') && (
               <div className="p-4 bg-muted/50 rounded-xl text-left overflow-auto max-h-40">
                 <p className="text-sm font-mono text-muted-foreground break-all">
                   {this.state.error.message}
