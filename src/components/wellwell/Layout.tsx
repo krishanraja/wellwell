@@ -8,6 +8,7 @@ interface LayoutProps {
   showHeader?: boolean;
   showNav?: boolean;
   showGreeting?: boolean;
+  scrollable?: boolean;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export function Layout({
   showHeader = true, 
   showNav = true,
   showGreeting = false,
+  scrollable = false,
   className,
 }: LayoutProps) {
   return (
@@ -32,6 +34,7 @@ export function Layout({
           className={cn(
             "app-content",
             showNav && "app-content-with-nav",
+            scrollable && "app-content-scrollable",
             className
           )}
         >

@@ -125,6 +125,12 @@
     padding-bottom: var(--nav-total-height);
   }
   
+  .app-content-scrollable {
+    @apply overflow-y-auto;
+    /* Ensure smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+  }
+  
   /* ============================================
      BOTTOM NAVIGATION - Clean, solid design
      ============================================ */
