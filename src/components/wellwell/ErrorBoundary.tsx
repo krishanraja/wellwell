@@ -138,7 +138,13 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              If this keeps happening, please contact support.
+              If this keeps happening, please{" "}
+              <a 
+                href="mailto:krish@themindmaker.ai" 
+                className="underline hover:text-foreground transition-colors"
+              >
+                contact support
+              </a>.
             </p>
           </div>
         </div>

@@ -53,10 +53,10 @@ const App = () => (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <SessionExpiredHandler />
-          <AuthDebugPanel />
           <TooltipProvider>
             <BrowserRouter>
+              <SessionExpiredHandler />
+              <AuthDebugPanel />
               <Routes>
                 {/* Public SEO pages - no auth required */}
                 <Route path="/landing" element={<Landing />} />
