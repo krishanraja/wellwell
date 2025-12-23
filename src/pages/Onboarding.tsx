@@ -180,9 +180,15 @@ export default function Onboarding() {
         eveningHour,
       };
       localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(progress));
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Onboarding.tsx:useEffect',message:'Saved onboarding progress',data:{step,selectedSituationsCount:selectedSituations.length,selectedHelpfulCount:selectedHelpful.length,hasPersona:!!selectedPersona},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+      // #endregion
     } catch (error) {
       // Ignore storage errors (e.g., quota exceeded, private browsing)
       logger.warn('Failed to save onboarding progress', { error });
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Onboarding.tsx:useEffect',message:'Failed to save onboarding progress',data:{error:error instanceof Error ? error.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'E'})}).catch(()=>{});
+      // #endregion
     }
   }, [step, selectedSituations, selectedHelpful, selectedPersona, baselineMoment, morningHour, eveningHour]);
 

@@ -277,6 +277,11 @@ export function useStoicAnalyzer() {
       }
 
       // Call the edge function with abort signal support
+      // #region agent log
+      const session = await supabase.auth.getSession();
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useStoicAnalyzer.tsx:analyze',message:'Before invoke: checking session',data:{hasSession:!!session.data.session,hasToken:!!session.data.session?.access_token,userId:user?.id,tool},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      
       const invokePromise = supabase.functions.invoke("stoic-analyzer", {
         body: payload,
       });
@@ -289,6 +294,10 @@ export function useStoicAnalyzer() {
 
       const { data, error } = await invokePromise;
 
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useStoicAnalyzer.tsx:analyze',message:'After invoke: response received',data:{hasError:!!error,errorMessage:error?.message,hasData:!!data,statusCode:error?.status},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+
       // Check if cancelled after API call
       if (signal.aborted) {
         logger.info("Analysis cancelled after API call");
@@ -297,6 +306,10 @@ export function useStoicAnalyzer() {
 
       if (error) {
         logger.error("Stoic analyzer error", { error, requestId: reqId });
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useStoicAnalyzer.tsx:analyze',message:'Edge function error',data:{errorMessage:error.message,errorStatus:error.status,errorContext:error.context,isAuthError:error.message?.includes('Unauthorized')||error.status===401,fullError:JSON.stringify(error)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         
         // Specific error messages
         let errorMessage = "Failed to get insight. Please try again.";
@@ -308,6 +321,10 @@ export function useStoicAnalyzer() {
           errorMessage = "Network error. Please check your connection and try again.";
         } else if (error.message?.includes("timeout")) {
           errorMessage = "Request timed out. Please try again.";
+        } else if (error.message?.includes("Unauthorized") || error.status === 401) {
+          errorMessage = "Authentication failed. Please sign in again.";
+        } else if (error.message?.includes("AI service not configured") || error.message?.includes("not configured")) {
+          errorMessage = "AI service is not configured. Please contact support.";
         }
         
         onError?.(errorMessage);

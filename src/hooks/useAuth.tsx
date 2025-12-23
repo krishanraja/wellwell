@@ -39,17 +39,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Detect session expiry: had session before, now don't, and it wasn't explicit sign out
         if (previousSessionRef.current && !session && event !== 'SIGNED_OUT') {
           logger.warn('Session expired unexpectedly', { event });
+          // #region agent log
+          fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:onAuthStateChange',message:'Session expired detected',data:{event,hadPreviousSession:!!previousSessionRef.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
           setSessionExpired(true);
         } else if (event === 'TOKEN_REFRESHED' && session) {
           // Session refreshed successfully
           setSessionExpired(false);
           logger.info('Session refreshed successfully');
+          // #region agent log
+          fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:onAuthStateChange',message:'Token refreshed successfully',data:{userId:session.user.id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
         } else if (event === 'SIGNED_OUT' && previousSessionRef.current) {
           // Explicit sign out or session expired
           setSessionExpired(true);
+          // #region agent log
+          fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:onAuthStateChange',message:'User signed out',data:{event},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
         } else if (session) {
           // Session restored or created
           setSessionExpired(false);
+          // #region agent log
+          fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:onAuthStateChange',message:'Session active',data:{event,userId:session.user.id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
         }
         
         previousSessionRef.current = session;

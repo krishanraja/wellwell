@@ -137,3 +137,4 @@ ORDER BY tablename, policyname;
 --    supabase.from('events').insert({ profile_id: 'user_b_id', tool_name: 'pulse', raw_input: 'test' })
 -- 6. Should fail with RLS policy error
 
+

@@ -53,6 +53,9 @@ export function VoiceFirstInput({
 
   const transcribeAudio = useCallback(async (audioBlob: Blob) => {
     setIsTranscribing(true);
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VoiceFirstInput.tsx:transcribeAudio',message:'Starting transcription',data:{audioBlobSize:audioBlob.size,audioBlobType:audioBlob.type},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+    // #endregion
     try {
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
@@ -65,6 +68,10 @@ export function VoiceFirstInput({
         throw new Error('Supabase configuration missing');
       }
 
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VoiceFirstInput.tsx:transcribeAudio',message:'Calling whisper-transcribe',data:{hasSupabaseUrl:!!supabaseUrl,hasAnonKey:!!supabaseAnonKey},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+      // #endregion
+
       // Call the function directly using fetch (FormData support)
       const response = await fetch(`${supabaseUrl}/functions/v1/whisper-transcribe`, {
         method: 'POST',
@@ -74,8 +81,15 @@ export function VoiceFirstInput({
         body: formData,
       });
 
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VoiceFirstInput.tsx:transcribeAudio',message:'Transcription response received',data:{status:response.status,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+      // #endregion
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Transcription failed' }));
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VoiceFirstInput.tsx:transcribeAudio',message:'Transcription failed',data:{status:response.status,error:errorData.error},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+        // #endregion
         throw new Error(errorData.error || `Transcription failed: ${response.status}`);
       }
 
@@ -84,12 +98,21 @@ export function VoiceFirstInput({
       if (data?.text) {
         const newTranscript = transcript + (transcript ? " " : "") + data.text;
         setTranscript(newTranscript);
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VoiceFirstInput.tsx:transcribeAudio',message:'Transcription successful',data:{textLength:data.text.length,textPreview:data.text.substring(0,50)},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+        // #endregion
         return newTranscript;
       } else {
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VoiceFirstInput.tsx:transcribeAudio',message:'No transcription text in response',data:{hasData:!!data,dataKeys:data ? Object.keys(data) : []},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+        // #endregion
         throw new Error('No transcription received');
       }
     } catch (error: any) {
       console.error('Transcription error:', error);
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'VoiceFirstInput.tsx:transcribeAudio',message:'Transcription exception',data:{errorMessage:error.message,errorName:error.name},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'G'})}).catch(()=>{});
+      // #endregion
       onError?.(error.message || 'Failed to transcribe audio. Please try again or type instead.');
       return null;
     } finally {

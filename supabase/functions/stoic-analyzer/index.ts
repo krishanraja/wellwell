@@ -636,7 +636,10 @@ serve(async (req) => {
 
     // Authenticate user
     const authHeader = req.headers.get('Authorization');
+    console.log('[AUTH CHECK] Authorization header present:', !!authHeader);
+    
     if (!authHeader) {
+      console.log('[AUTH CHECK] No auth header - returning 401');
       return new Response(
         JSON.stringify({ error: 'Unauthorized: No authorization header provided' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -644,9 +647,18 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('[AUTH CHECK] Token extracted, length:', token.length);
+    
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     
+    console.log('[AUTH CHECK] getUser result:', { 
+      hasUser: !!userData?.user, 
+      hasError: !!userError,
+      errorMessage: userError?.message 
+    });
+    
     if (userError || !userData?.user) {
+      console.log('[AUTH CHECK] Auth failed - returning 401');
       return new Response(
         JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -654,16 +666,21 @@ serve(async (req) => {
     }
 
     const user = userData.user;
-    console.log('User authenticated:', { userId: user.id, email: user.email?.substring(0, 3) + '***' });
+    console.log('[AUTH CHECK] User authenticated:', { userId: user.id, email: user.email?.substring(0, 3) + '***' });
 
     const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
+    console.log('[LLM CHECK] GOOGLE_AI_API_KEY present:', !!GOOGLE_AI_API_KEY, 'length:', GOOGLE_AI_API_KEY?.length || 0);
+    
     if (!GOOGLE_AI_API_KEY) {
-      console.error('GOOGLE_AI_API_KEY not configured');
-      throw new Error('AI service not configured');
+      console.error('[LLM CHECK] GOOGLE_AI_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'AI service not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const body: AnalysisRequest = await req.json();
-    console.log('Received request:', JSON.stringify({ type: body.type }));
+    console.log('[LLM CHECK] Received request:', JSON.stringify({ type: body.type, hasInput: !!body.input || !!body.challenge || !!body.trigger }));
 
     let userPrompt: string;
 
@@ -703,10 +720,13 @@ serve(async (req) => {
     // Combine system prompt and user prompt for Gemini API
     const fullPrompt = `${SYSTEM_PROMPT}\n\n${userPrompt}`;
 
-    console.log('Calling Google Gemini API...');
+    console.log('[LLM CHECK] Calling Google Gemini API...');
+    console.log('[LLM CHECK] Prompt length:', fullPrompt.length, 'characters');
     const startTime = Date.now();
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_AI_API_KEY}`;
+    
+    console.log('[LLM CHECK] API URL:', apiUrl.substring(0, 80) + '...');
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -731,11 +751,11 @@ serve(async (req) => {
     });
 
     const elapsed = Date.now() - startTime;
-    console.log(`AI response received in ${elapsed}ms, status: ${response.status}`);
+    console.log(`[LLM CHECK] AI response received in ${elapsed}ms, status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', response.status, errorText);
+      console.error('[LLM CHECK] Gemini API error:', response.status, errorText.substring(0, 500));
       
       if (response.status === 429) {
         return new Response(
@@ -754,27 +774,37 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    console.log('[LLM CHECK] Gemini response structure:', {
+      hasCandidates: !!data.candidates,
+      candidatesLength: data.candidates?.length || 0,
+      hasContent: !!data.candidates?.[0]?.content,
+      hasParts: !!data.candidates?.[0]?.content?.parts,
+      partsLength: data.candidates?.[0]?.content?.parts?.length || 0
+    });
     
     // Extract content from Gemini API response format
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!content) {
-      console.error('No content in AI response:', JSON.stringify(data));
+      console.error('[LLM CHECK] No content in AI response:', JSON.stringify(data).substring(0, 1000));
       throw new Error('Empty AI response');
     }
 
-    console.log('AI analysis complete, parsing response...');
+    console.log('[LLM CHECK] AI analysis complete, parsing response...');
+    console.log('[LLM CHECK] Content length:', content.length, 'characters');
     
     // Parse the JSON response
     let analysis;
     try {
       analysis = JSON.parse(content);
+      console.log('[LLM CHECK] Parsed analysis keys:', Object.keys(analysis || {}));
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
+      console.error('[LLM CHECK] Failed to parse AI response:', content.substring(0, 500));
+      console.error('[LLM CHECK] Parse error:', parseError);
       throw new Error('Invalid AI response format');
     }
 
-    console.log('Analysis successful:', JSON.stringify({ type: body.type }));
+    console.log('[LLM CHECK] Analysis successful:', JSON.stringify({ type: body.type }));
 
     return new Response(
       JSON.stringify({ success: true, analysis, type: body.type }),
