@@ -80,7 +80,7 @@ export function validateSupabaseConfig() {
   }
 
   // Check for both PUBLISHABLE_KEY and ANON_KEY (fallback)
-  const SUPABASE_KEY = SUPABASE_PUBLISHABLE_KEY || SUPABASE_ANON_KEY;
+  // SUPABASE_KEY already declared on line 55, reuse it here
   if (!SUPABASE_KEY) {
     // #region agent log
     fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'client.ts:validateSupabaseConfig',message:'About to throw - missing key',data:{checkedPublishable:!!SUPABASE_PUBLISHABLE_KEY,checkedAnon:!!SUPABASE_ANON_KEY},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'B'})}).catch(()=>{});
