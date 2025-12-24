@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   sessionExpired: boolean;
+  configError: Error | null;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -23,19 +24,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [configError, setConfigError] = useState<Error | null>(null);
   const previousSessionRef = useRef<Session | null>(null);
 
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'useEffect entry',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     logger.debug('AuthProvider: Setting up auth state listener');
     
-    // Validate configuration first (throws if invalid, caught by ErrorBoundary)
+    // Validate configuration - set error state instead of throwing
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Before validateSupabaseConfig call',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       validateSupabaseConfig();
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'After validateSupabaseConfig - success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      setConfigError(null);
       console.log('[useAuth] Configuration validated successfully');
     } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Caught error in try-catch - setting error state',data:{errorMessage:error instanceof Error ? error.message : 'Unknown',errorName:error instanceof Error ? error.name : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       console.error('[useAuth] Configuration validation failed:', error);
-      // Re-throw to let ErrorBoundary catch it
-      throw error;
+      const configErr = error instanceof Error ? error : new Error('Configuration validation failed');
+      setConfigError(configErr);
+      setLoading(false);
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Error state set, NOT throwing',data:{errorMessage:configErr.message},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      // Don't throw - set error state instead so ErrorBoundary doesn't need to catch it
+      // Return early to prevent setting up auth listeners with invalid config
+      return;
     }
     
     // Set up auth state listener
@@ -330,6 +352,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session, 
       loading, 
       sessionExpired,
+      configError,
       signUp, 
       signIn, 
       signOut, 

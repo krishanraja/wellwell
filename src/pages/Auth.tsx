@@ -14,7 +14,7 @@ const passwordSchema = z.string().min(6, 'Password must be at least 6 characters
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { user, signUp, signIn, loading } = useAuth();
+  const { user, signUp, signIn, loading, configError } = useAuth();
   const { showError, ErrorModal } = useErrorModal();
   
   const [isLogin, setIsLogin] = useState(true);
@@ -94,6 +94,27 @@ export default function Auth() {
       setIsSubmitting(false);
     }
   };
+
+  // Show configuration error if present
+  if (configError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-md text-center space-y-4">
+          <div className="p-4 bg-destructive/10 rounded-xl">
+            <h2 className="text-lg font-semibold text-destructive mb-2">
+              Configuration Error
+            </h2>
+            <p className="text-sm text-muted-foreground mb-2">
+              {configError.message}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Please check your environment variables and try again.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -163,3 +163,4 @@ After making changes to any page:
 - Pattern 2 (manual) is only needed for complex layouts with fixed headers/footers
 - When in doubt, use Pattern 1 - it's easier to maintain
 
+

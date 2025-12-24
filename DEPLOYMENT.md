@@ -114,3 +114,4 @@ curl -X POST https://zioacippbtcbctexywgc.supabase.co/functions/v1/whisper-trans
 
 
 
+
