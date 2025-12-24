@@ -28,33 +28,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const previousSessionRef = useRef<Session | null>(null);
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'useEffect entry',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     logger.debug('AuthProvider: Setting up auth state listener');
     
     // Validate configuration - set error state instead of throwing
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Before validateSupabaseConfig call',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       validateSupabaseConfig();
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'After validateSupabaseConfig - success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       setConfigError(null);
-      console.log('[useAuth] Configuration validated successfully');
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Caught error in try-catch - setting error state',data:{errorMessage:error instanceof Error ? error.message : 'Unknown',errorName:error instanceof Error ? error.name : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-      console.error('[useAuth] Configuration validation failed:', error);
       const configErr = error instanceof Error ? error : new Error('Configuration validation failed');
       setConfigError(configErr);
       setLoading(false);
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Error state set, NOT throwing',data:{errorMessage:configErr.message},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       // Don't throw - set error state instead so ErrorBoundary doesn't need to catch it
       // Return early to prevent setting up auth listeners with invalid config
       return;
@@ -73,29 +56,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Detect session expiry: had session before, now don't, and it wasn't explicit sign out
         if (previousSessionRef.current && !session && event !== 'SIGNED_OUT') {
           logger.warn('Session expired unexpectedly', { event });
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:onAuthStateChange',message:'Session expired detected',data:{event,hadPreviousSession:!!previousSessionRef.current},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-          // #endregion
           setSessionExpired(true);
         } else if (event === 'TOKEN_REFRESHED' && session) {
           // Session refreshed successfully
           setSessionExpired(false);
           logger.info('Session refreshed successfully');
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:onAuthStateChange',message:'Token refreshed successfully',data:{userId:session.user.id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-          // #endregion
         } else if (event === 'SIGNED_OUT' && previousSessionRef.current) {
           // Explicit sign out or session expired
           setSessionExpired(true);
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:onAuthStateChange',message:'User signed out',data:{event},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-          // #endregion
         } else if (session) {
           // Session restored or created
           setSessionExpired(false);
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:onAuthStateChange',message:'Session active',data:{event,userId:session.user.id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'F'})}).catch(()=>{});
-          // #endregion
         }
         
         previousSessionRef.current = session;
@@ -110,10 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       );
       subscription = data.subscription;
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Failed to set up auth listener',data:{errorMessage:error instanceof Error ? error.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-      console.error('[useAuth] Failed to set up auth state listener:', error);
       const configErr = error instanceof Error ? error : new Error('Failed to initialize Supabase client');
       setConfigError(configErr);
       setLoading(false);
@@ -131,10 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logger.setUserContext(session.user.id);
       }
     }).catch((error) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Failed to get initial session',data:{errorMessage:error instanceof Error ? error.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-      console.error('[useAuth] Failed to get initial session:', error);
+      logger.error('Failed to get initial session', { error: error instanceof Error ? error.message : 'Unknown' });
       setLoading(false);
     });
 
@@ -172,19 +136,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       logger.info('Sign up successful', { email });
       logger.authFunnel('auth_signup_completed');
-      
-      // #region agent log
-      console.log('[DEBUG] Signup successful, sending lead email...', { email: email.substring(0, 3) + '***' });
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:signUp',message:'Signup successful, sending lead email',data:{email:email.substring(0,3)+'***'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
 
       // Send lead notification email (fire and forget - don't block signup)
       sendLeadEmail(email, displayName).catch((err) => {
-        console.error('[DEBUG] Lead email FAILED:', err instanceof Error ? err.message : 'Unknown');
         logger.error('Lead email failed', { error: err instanceof Error ? err.message : 'Unknown' });
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:signUp',message:'Lead email FAILED',data:{error:err instanceof Error ? err.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
       });
       
       endTimer();
@@ -198,11 +153,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Helper function to send lead notification emails
   const sendLeadEmail = async (email: string, name?: string) => {
-    // #region agent log
-    console.log('[DEBUG] Calling send-lead-email edge function...');
-    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:sendLeadEmail',message:'Calling send-lead-email edge function',data:{email:email.substring(0,3)+'***'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    
     const { data, error } = await supabase.functions.invoke('send-lead-email', {
       body: {
         type: 'signup',
@@ -212,20 +162,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
     
-    console.log('[DEBUG] send-lead-email response:', { data, error: error?.message });
-    
     if (error) {
-      // #region agent log
-      console.error('[DEBUG] Edge function returned error:', error.message);
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:sendLeadEmail',message:'Edge function returned error',data:{error:error.message},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       throw error;
     }
-    
-    // #region agent log
-    console.log('[DEBUG] Lead email sent successfully:', data);
-    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:sendLeadEmail',message:'Lead email sent successfully',data:{emailId:data?.emailId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     
     logger.info('Lead email sent', { emailId: data?.emailId });
     return data;

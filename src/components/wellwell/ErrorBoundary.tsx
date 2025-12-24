@@ -20,22 +20,10 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ErrorBoundary.tsx:getDerivedStateFromError',message:'ErrorBoundary caught error',data:{errorMessage:error?.message || 'NO MESSAGE',errorName:error?.name || 'NO NAME'},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ErrorBoundary.tsx:componentDidCatch',message:'ErrorBoundary componentDidCatch called',data:{errorMessage:error?.message || 'NO MESSAGE',errorName:error?.name || 'NO NAME'},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    console.error('[ERROR_BOUNDARY] Caught error:', error);
-    console.error('[ERROR_BOUNDARY] Error message:', error?.message || 'NO MESSAGE');
-    console.error('[ERROR_BOUNDARY] Error name:', error?.name || 'NO NAME');
-    console.error('[ERROR_BOUNDARY] Error stack:', error?.stack || 'NO STACK');
-    console.error('[ERROR_BOUNDARY] Error toString:', error?.toString());
-    
     // Extract component name from componentStack for better debugging
     let componentName = 'Unknown';
     try {
@@ -51,28 +39,8 @@ export class ErrorBoundary extends Component<Props, State> {
           componentName = altMatch[1];
         }
       }
-      console.error('[ERROR_BOUNDARY] Component causing error:', componentName);
     } catch (parseError) {
-      console.error('[ERROR_BOUNDARY] Failed to parse component name:', parseError);
-    }
-    
-    // Log full component stack for debugging
-    console.error('[ERROR_BOUNDARY] Component stack:', errorInfo.componentStack);
-    
-    // Try to serialize error object with all properties
-    try {
-      const errorProps = Object.getOwnPropertyNames(error);
-      const errorDetails: Record<string, any> = {};
-      errorProps.forEach(prop => {
-        try {
-          errorDetails[prop] = (error as any)[prop];
-        } catch (e) {
-          errorDetails[prop] = '[Unable to access]';
-        }
-      });
-      console.error('[ERROR_BOUNDARY] Full error object:', JSON.stringify(errorDetails, null, 2));
-    } catch (serializeError) {
-      console.error('[ERROR_BOUNDARY] Failed to serialize error:', serializeError);
+      // Ignore parse errors
     }
     
     logger.critical("Uncaught error in React component tree", {
