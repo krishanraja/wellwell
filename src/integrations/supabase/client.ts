@@ -117,10 +117,70 @@ export function validateSupabaseConfig() {
 }
 
 /**
- * Supabase client instance.
+ * Internal client instance (lazy initialization)
+ * Only created after validation passes to prevent errors with invalid credentials
+ */
+let _supabaseClient: ReturnType<typeof createClient<Database>> | null = null;
+
+/**
+ * Get or create the Supabase client instance.
+ * Client is created lazily only when first accessed and after validation.
+ * This prevents errors from being thrown at module evaluation time.
+ */
+function getSupabaseClient(): ReturnType<typeof createClient<Database>> {
+  if (_supabaseClient) {
+    return _supabaseClient;
+  }
+
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'client.ts:getSupabaseClient',message:'Creating client lazily',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+  
+  console.log('[SUPABASE_CLIENT] Creating supabase client (lazy initialization)');
+  
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+  // Check for both env var names (resilient to Vercel naming)
+  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const SUPABASE_KEY = SUPABASE_PUBLISHABLE_KEY || SUPABASE_ANON_KEY;
+
+  // Validate before creating client
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    const error = new Error(
+      '❌ Cannot create Supabase client: Missing environment variables.\n\n' +
+      'Required: VITE_SUPABASE_URL and (VITE_SUPABASE_PUBLISHABLE_KEY or VITE_SUPABASE_ANON_KEY)\n\n' +
+      'Please ensure your environment variables are set correctly.'
+    );
+    console.error('[SUPABASE_CLIENT] Cannot create client:', error);
+    throw error;
+  }
+
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'client.ts:getSupabaseClient',message:'Creating client with validated env vars',data:{hasUrl:!!SUPABASE_URL,hasPublishableKey:!!SUPABASE_PUBLISHABLE_KEY,hasAnonKey:!!SUPABASE_ANON_KEY,usingKey:SUPABASE_PUBLISHABLE_KEY ? 'PUBLISHABLE' : 'ANON'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+
+  try {
+    _supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        storage: secureStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+      }
+    });
+    
+    console.log('[SUPABASE_CLIENT] Client created successfully');
+    return _supabaseClient;
+  } catch (error) {
+    console.error('[SUPABASE_CLIENT] Failed to create client:', error);
+    throw error;
+  }
+}
+
+/**
+ * Supabase client instance (lazy proxy).
  * 
- * Client is created immediately with environment variables (no validation at module level).
- * Validation should be called from React components (useEffect) so errors are caught by ErrorBoundary.
+ * Client is created lazily when first accessed, only after validation passes.
+ * This ensures module evaluation doesn't throw and prevents errors with invalid credentials.
  * 
  * Usage:
  * ```typescript
@@ -128,34 +188,28 @@ export function validateSupabaseConfig() {
  * 
  * // In useEffect:
  * useEffect(() => {
- *   validateSupabaseConfig(); // Throws if invalid, caught by ErrorBoundary
- *   const { data } = await supabase.auth.getSession();
+ *   validateSupabaseConfig(); // Validates env vars
+ *   const { data } = await supabase.auth.getSession(); // Client created here if valid
  * }, []);
  * ```
  */
-export const supabase = (() => {
-  console.log('[SUPABASE_CLIENT] Creating supabase client (module evaluation)');
-  
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
-  // Check for both env var names (resilient to Vercel naming)
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const SUPABASE_KEY = SUPABASE_PUBLISHABLE_KEY || SUPABASE_ANON_KEY || 'placeholder-key';
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'client.ts:supabase',message:'Creating client with env vars',data:{hasUrl:!!SUPABASE_URL,hasPublishableKey:!!SUPABASE_PUBLISHABLE_KEY,hasAnonKey:!!SUPABASE_ANON_KEY,usingKey:SUPABASE_PUBLISHABLE_KEY ? 'PUBLISHABLE' : SUPABASE_ANON_KEY ? 'ANON' : 'PLACEHOLDER'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
-  
-  // Create client immediately (no validation - that happens in validateSupabaseConfig)
-  // This ensures module evaluation doesn't throw
-  const client = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
-    auth: {
-      storage: secureStorage,
-      persistSession: true,
-      autoRefreshToken: true,
+export const supabase = new Proxy({} as ReturnType<typeof createClient<Database>>, {
+  get(_target, prop) {
+    try {
+      const client = getSupabaseClient();
+      const value = (client as any)[prop];
+      // If it's a function, bind it to the client
+      if (typeof value === 'function') {
+        return value.bind(client);
+      }
+      // If it's an object (like auth, from, etc.), return it as-is
+      return value;
+    } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'client.ts:supabase-proxy',message:'Error accessing supabase property',data:{prop:String(prop),errorMessage:error instanceof Error ? error.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      console.error(`[SUPABASE_CLIENT] Error accessing supabase.${String(prop)}:`, error);
+      throw error;
     }
-  });
-  
-  console.log('[SUPABASE_CLIENT] Client created successfully');
-  return client;
-})();
+  }
+});

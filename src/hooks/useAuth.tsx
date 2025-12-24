@@ -60,9 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    // Set up auth state listener (wrap in try-catch in case client creation fails)
+    let subscription: { unsubscribe: () => void };
+    try {
+      const { data } = supabase.auth.onAuthStateChange(
+        (event, session) => {
         logger.info(`Auth state changed: ${event}`, { 
           userId: session?.user?.id,
           event 
@@ -105,7 +107,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           logger.setUserContext(session.user.id);
         }
       }
-    );
+      );
+      subscription = data.subscription;
+    } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Failed to set up auth listener',data:{errorMessage:error instanceof Error ? error.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      console.error('[useAuth] Failed to set up auth state listener:', error);
+      const configErr = error instanceof Error ? error : new Error('Failed to initialize Supabase client');
+      setConfigError(configErr);
+      setLoading(false);
+      return;
+    }
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -117,10 +130,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         logger.setUserContext(session.user.id);
       }
+    }).catch((error) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.tsx:useEffect',message:'Failed to get initial session',data:{errorMessage:error instanceof Error ? error.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      console.error('[useAuth] Failed to get initial session:', error);
+      setLoading(false);
     });
 
     return () => {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, []);
 
