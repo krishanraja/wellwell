@@ -36,6 +36,29 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('[ERROR_BOUNDARY] Error stack:', error?.stack || 'NO STACK');
     console.error('[ERROR_BOUNDARY] Error toString:', error?.toString());
     
+    // Extract component name from componentStack for better debugging
+    let componentName = 'Unknown';
+    try {
+      // Try to extract component name from component stack
+      // Format: "at ComponentName (file:line:column)"
+      const componentMatch = errorInfo.componentStack.match(/at\s+(\w+)/);
+      if (componentMatch && componentMatch[1]) {
+        componentName = componentMatch[1];
+      } else {
+        // Try alternative format: "ComponentName\n    at ..."
+        const altMatch = errorInfo.componentStack.match(/^(\w+)/);
+        if (altMatch && altMatch[1]) {
+          componentName = altMatch[1];
+        }
+      }
+      console.error('[ERROR_BOUNDARY] Component causing error:', componentName);
+    } catch (parseError) {
+      console.error('[ERROR_BOUNDARY] Failed to parse component name:', parseError);
+    }
+    
+    // Log full component stack for debugging
+    console.error('[ERROR_BOUNDARY] Component stack:', errorInfo.componentStack);
+    
     // Try to serialize error object with all properties
     try {
       const errorProps = Object.getOwnPropertyNames(error);
@@ -58,6 +81,7 @@ export class ErrorBoundary extends Component<Props, State> {
       errorStack: error?.stack || 'NO STACK',
       errorString: error?.toString(),
       componentStack: errorInfo.componentStack,
+      componentName: componentName,
     });
   }
 
