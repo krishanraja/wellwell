@@ -26,7 +26,16 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Extract component name from componentStack for better debugging
     let componentName = 'Unknown';
+    let allComponentNames: string[] = [];
     try {
+      // Extract all component names from the stack
+      const componentMatches = errorInfo.componentStack.matchAll(/at\s+(\w+)/g);
+      for (const match of componentMatches) {
+        if (match[1]) {
+          allComponentNames.push(match[1]);
+        }
+      }
+      
       // Try to extract component name from component stack
       // Format: "at ComponentName (file:line:column)"
       const componentMatch = errorInfo.componentStack.match(/at\s+(\w+)/);
@@ -43,6 +52,9 @@ export class ErrorBoundary extends Component<Props, State> {
       // Ignore parse errors
     }
     
+    // Log full component stack for hooks violations
+    const isHooksError = error?.message?.includes('hooks') || error?.message?.includes('Rendered');
+    
     logger.critical("Uncaught error in React component tree", {
       error: error?.message || 'NO ERROR MESSAGE',
       errorName: error?.name || 'NO ERROR NAME',
@@ -50,7 +62,20 @@ export class ErrorBoundary extends Component<Props, State> {
       errorString: error?.toString(),
       componentStack: errorInfo.componentStack,
       componentName: componentName,
+      allComponentNames: allComponentNames,
+      isHooksError: isHooksError,
+      // For hooks errors, log the full stack
+      ...(isHooksError && { fullComponentStack: errorInfo.componentStack }),
     });
+    
+    // Also log to console in dev mode for easier debugging
+    if (import.meta.env.DEV) {
+      console.error('ErrorBoundary caught error:', error);
+      console.error('Component stack:', errorInfo.componentStack);
+      if (isHooksError) {
+        console.error('HOOKS VIOLATION DETECTED - Component names in stack:', allComponentNames);
+      }
+    }
   }
 
   private handleReset = () => {

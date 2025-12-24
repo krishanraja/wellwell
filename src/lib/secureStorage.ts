@@ -24,22 +24,13 @@ class SecureStorageAdapter implements StorageAdapter {
       // This reduces risk of XSS attacks persisting across sessions
       if (key.includes('token') || key.includes('session')) {
         const value = sessionStorage.getItem(this.prefix + key);
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'secureStorage.ts:getItem',message:'Reading token from sessionStorage',data:{key,hasValue:!!value,storageType:'sessionStorage'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
         return value;
       }
       // Use localStorage for non-sensitive data
       const value = localStorage.getItem(this.prefix + key);
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'secureStorage.ts:getItem',message:'Reading non-token from localStorage',data:{key,hasValue:!!value,storageType:'localStorage'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       return value;
     } catch (error) {
       console.error('Storage getItem error:', error);
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'secureStorage.ts:getItem',message:'Storage getItem error',data:{key,error:error instanceof Error ? error.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       return null;
     }
   }
@@ -48,20 +39,11 @@ class SecureStorageAdapter implements StorageAdapter {
     try {
       if (key.includes('token') || key.includes('session')) {
         sessionStorage.setItem(this.prefix + key, value);
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'secureStorage.ts:setItem',message:'Writing token to sessionStorage',data:{key,valueLength:value.length,storageType:'sessionStorage'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
       } else {
         localStorage.setItem(this.prefix + key, value);
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'secureStorage.ts:setItem',message:'Writing non-token to localStorage',data:{key,valueLength:value.length,storageType:'localStorage'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
       }
     } catch (error) {
       console.error('Storage setItem error:', error);
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/e5d437f1-f68d-44ce-9e0c-542a5ece8b0d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'secureStorage.ts:setItem',message:'Storage setItem error',data:{key,error:error instanceof Error ? error.message : 'Unknown'},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
     }
   }
 

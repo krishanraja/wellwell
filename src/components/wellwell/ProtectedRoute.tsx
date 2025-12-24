@@ -13,17 +13,18 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
+    // Only set ready when loading is complete
+    // This ensures we don't render children until auth state is fully determined
+    if (!loading) {
       // Small delay to ensure all state updates have propagated
-      // This prevents race conditions where components render before hooks are ready
       const timer = setTimeout(() => {
         setIsReady(true);
       }, 50);
       return () => clearTimeout(timer);
-    } else if (loading || !user) {
+    } else {
       setIsReady(false);
     }
-  }, [loading, user]);
+  }, [loading]);
 
   // NOW handle conditional rendering (no hooks after this point)
   // Show configuration error if present
@@ -47,17 +48,23 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (loading || !isReady) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
+  // Always render children to ensure hooks are called consistently
+  // Show loading overlay if needed, but children are always mounted
+  // Only redirect if we're certain there's no user (after loading completes)
+  if (!user && !loading && isReady) {
     return <Navigate to="/landing" replace />;
   }
 
-  return <>{children}</>;
+  // Always render children - this ensures hooks are called on every render
+  // Show loading overlay on top if loading or not ready
+  return (
+    <>
+      {(loading || !isReady) && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+      {children}
+    </>
+  );
 }
