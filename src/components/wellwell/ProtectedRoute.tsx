@@ -7,9 +7,25 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+  // ALL HOOKS CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
+  // This ensures hooks are always called in the same order, preventing React Error #300
   const { user, loading, configError } = useAuth();
   const [isReady, setIsReady] = useState(false);
 
+  useEffect(() => {
+    if (!loading && user) {
+      // Small delay to ensure all state updates have propagated
+      // This prevents race conditions where components render before hooks are ready
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    } else if (loading || !user) {
+      setIsReady(false);
+    }
+  }, [loading, user]);
+
+  // NOW handle conditional rendering (no hooks after this point)
   // Show configuration error if present
   if (configError) {
     return (
@@ -30,21 +46,6 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       </div>
     );
   }
-
-  // Ensure auth state is fully settled before rendering children
-  // This prevents React hooks violations during the login transition
-  useEffect(() => {
-    if (!loading && user) {
-      // Small delay to ensure all state updates have propagated
-      // This prevents race conditions where components render before hooks are ready
-      const timer = setTimeout(() => {
-        setIsReady(true);
-      }, 50);
-      return () => clearTimeout(timer);
-    } else if (loading || !user) {
-      setIsReady(false);
-    }
-  }, [loading, user]);
 
   if (loading || !isReady) {
     return (
