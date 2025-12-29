@@ -57,7 +57,7 @@ export default function Profile() {
   };
 
   const topPattern = patterns[0];
-  const lastEvent = events[0];
+  const lastEvent = events?.[0];
   const displayName = profile?.display_name || user?.email?.split("@")[0] || "Stoic";
 
   if (isLoading) {

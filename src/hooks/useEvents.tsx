@@ -33,7 +33,7 @@ export function useEvents(toolName?: ToolName) {
 
       if (error) {
         logger.error('Failed to fetch events', { error: error.message });
-        throw error;
+        return []; // Return empty array instead of throwing - allows graceful degradation
       }
 
       logger.debug('Events fetched', { count: data?.length || 0 });

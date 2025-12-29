@@ -24,7 +24,8 @@ export function useProfile() {
 
       if (error) {
         logger.error('Failed to fetch profile', { error: error.message });
-        throw error;
+        endTimer();
+        return null; // Return null instead of throwing - allows graceful degradation
       }
 
       // If profile is missing, try to recover it

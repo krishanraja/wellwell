@@ -1,180 +1,412 @@
-# Authentication Failure - Diagnostic Report
+# Error Prevention Diagnostic - Complete Problem Scope
 
 ## Problem Statement
-User cannot log in. Authentication is broken.
 
-## Call Graph
+Users frequently encounter the ErrorBoundary "Something went wrong" page. Previous fix only improved error display but didn't address WHY errors occur. Goal: **PREVENT errors from happening**, not just make them prettier.
 
+## Observed Errors (from existing diagnostics)
+
+### 1. Production Crash Errors
+- **Source**: DIAGNOSIS_PRODUCTION_ERROR.md, DIAGNOSIS_PRODUCTION_CRASH_V2.md
+- **Symptom**: Generic "Something went wrong" page on production
+- **Pattern**: Module-level throws or runtime validation errors
+- **Status**: Partially fixed (Proxy pattern implemented, but errors still occur)
+
+### 2. React Hooks Violations
+- **Source**: DIAGNOSIS_HOOKS_VIOLATION.md, ROOT_CAUSE_LOGIN_ERROR.md
+- **Symptom**: Error #300 "Rendered fewer hooks than expected"
+- **Pattern**: Occurs after login when user state changes
+- **Status**: Fixed (ProtectedRoute refactored, hooks called before conditionals)
+
+### 3. Login/Signup Errors
+- **Source**: DIAGNOSIS_LOGIN_ERROR.md
+- **Symptom**: ErrorBoundary triggered on form submit
+- **Pattern**: Unhandled async errors in auth flow
+- **Status**: Partially addressed (try-catch exists but may have gaps)
+
+## Complete Error Source Inventory
+
+### Category 1: Configuration Validation Errors
+
+#### 1.1 validateSupabaseConfig() Throws
+**File**: `src/integrations/supabase/client.ts:35-71`
+- **Line 48**: Throws if `VITE_SUPABASE_URL` missing
+- **Line 58**: Throws if `VITE_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_ANON_KEY` missing
+- **Line 69**: Throws if URL format invalid
+
+**Call Sites**:
+- `src/hooks/useAuth.tsx:35` - Wrapped in try-catch, sets `configError` state ✅
+- **No other call sites found** ✅
+
+**Error Propagation**:
+- ✅ Errors caught in useAuth.tsx
+- ✅ Sets configError state (displayed in Auth.tsx and ProtectedRoute.tsx)
+- ✅ Does NOT reach ErrorBoundary
+
+**Risk Level**: **LOW** - Properly handled
+
+---
+
+### Category 2: React Query queryFn Errors
+
+#### 2.1 useProfile queryFn Throws
+**File**: `src/hooks/useProfile.tsx:13-122`
+- **Line 27**: `throw error;` if profile fetch fails
+- **Error Type**: Supabase API errors
+- **Error Handling**: React Query catches and sets `error` state
+- **Component Usage**:
+  - `src/pages/Home.tsx` - Uses `profile` but doesn't check `error` ⚠️
+  - `src/pages/Profile.tsx:31` - Uses `profile` but doesn't check `error` ⚠️
+  - `src/pages/Pulse.tsx:27` - Uses `profile` but doesn't check `error` ⚠️
+- **User Impact**: If query fails, `profile` is `undefined`, components may throw when accessing `profile.property`
+
+**Risk Level**: **HIGH** - Components don't check error state, may throw during render when accessing undefined profile
+
+#### 2.2 useEvents queryFn Throws
+**File**: `src/hooks/useEvents.tsx:16-43`
+- **Line 36**: `throw error;` if events fetch fails
+- **Error Type**: Supabase API errors
+- **Error Handling**: React Query catches and sets `error` state
+- **Component Usage**:
+  - `src/pages/Home.tsx:60` - Uses `events` but doesn't check `error` ⚠️
+  - `src/pages/Profile.tsx:34` - Uses `events` but doesn't check `error` ⚠️
+  - `src/hooks/useContextualNudge.tsx:117` - Uses `events` but doesn't check `error` ⚠️
+- **User Impact**: If query fails, `events` is `undefined` or empty array, but components may throw when accessing `events[0]` or `events.length`
+
+**Risk Level**: **MEDIUM** - Components use `events || []` pattern, but may still throw if accessing properties on undefined
+
+#### 2.3 useStreak queryFn
+**File**: `src/hooks/useStreak.tsx:11-70`
+- **Line 25**: Returns `0` on error (does NOT throw) ✅
+- **Error Handling**: Graceful degradation
+
+**Risk Level**: **LOW** - Properly handled
+
+#### 2.4 useSubscription queryFn
+**File**: `src/hooks/useSubscription.tsx:28-62`
+- **Line 56**: Returns `null` on error (does NOT throw) ✅
+- **Error Handling**: Graceful degradation, creates subscription if missing
+
+**Risk Level**: **LOW** - Properly handled
+
+---
+
+### Category 3: React Query Mutation Errors
+
+#### 3.1 useProfile updateProfileMutation
+**File**: `src/hooks/useProfile.tsx:124-148`
+- **Line 126**: `throw new Error('Not authenticated')` if no user
+- **Line 139**: `throw error;` if update fails
+- **Error Handling**: React Query catches, but caller must handle rejection
+- **Call Sites**:
+  - ✅ `src/pages/EditProfile.tsx:60` - Wrapped in try-catch
+  - ✅ `src/pages/Onboarding.tsx:263` - Wrapped in try-catch (line 240-302)
+- **Risk Level**: **LOW** - All call sites handle errors
+
+#### 3.2 useEvents createEventMutation
+**File**: `src/hooks/useEvents.tsx:45-75`
+- **Line 47**: `throw new Error('Not authenticated')` if no user
+- **Line 66**: `throw error;` if create fails
+- **Error Handling**: React Query catches, but caller must handle rejection
+- **Call Sites**:
+  - ✅ `src/pages/Onboarding.tsx:274` - Wrapped in try-catch (line 240-302)
+  - Need to check other call sites (useStoicAnalyzer, etc.)
+
+**Risk Level**: **MEDIUM** - Need to verify all call sites
+
+---
+
+### Category 4: Async Function Errors
+
+#### 4.1 Auth.tsx handleSubmit
+**File**: `src/pages/Auth.tsx:58-96`
+- **Line 68**: `await signIn(email, password)` - in try-catch ✅
+- **Line 79**: `await signUp(email, password, displayName)` - in try-catch ✅
+- **Error Handling**: 
+  - ✅ Wrapped in try-catch
+  - ✅ Handles returned `{ error }` object
+  - ⚠️ BUT: If `signIn()` or `signUp()` throws (not returns error), it's caught by try-catch
+  - ⚠️ However, if error occurs in finally block or after navigation, it could propagate
+
+**Risk Level**: **LOW** - Properly wrapped, but edge cases possible
+
+#### 4.2 useAuth.tsx signIn
+**File**: `src/hooks/useAuth.tsx:173-199`
+- **Line 179**: `await supabase.auth.signInWithPassword()` - in try-catch ✅
+- **Line 194-197**: catch block returns `{ error }` ✅
+- **Error Handling**: Always returns `{ error }` object, never throws
+
+**Risk Level**: **LOW** - Properly handled
+
+#### 4.3 useAuth.tsx signUp
+**File**: `src/hooks/useAuth.tsx:112-152`
+- **Line 120**: `await supabase.auth.signUp()` - in try-catch ✅
+- **Line 147-150**: catch block returns `{ error }` ✅
+- **Error Handling**: Always returns `{ error }` object, never throws
+
+**Risk Level**: **LOW** - Properly handled
+
+#### 4.4 useAuth.tsx deleteAccount
+**File**: `src/hooks/useAuth.tsx:212-275`
+- **Line 231**: `throw new Error('VITE_SUPABASE_URL not configured')`
+- **Line 237**: `throw new Error('Invalid Supabase URL format')`
+- **Line 270-273**: catch block returns `{ error }` ✅
+- **Error Handling**: Throws are caught and returned as error object
+
+**Risk Level**: **LOW** - Properly handled
+
+#### 4.5 useStoicAnalyzer analyze
+**File**: `src/hooks/useStoicAnalyzer.tsx:145-517`
+- **Line 494-512**: Comprehensive try-catch ✅
+- **Error Handling**: 
+  - ✅ Catches all errors
+  - ✅ Handles AbortError (cancellation)
+  - ✅ Provides fallback response
+  - ✅ Calls onError callback
+  - ✅ Returns null on error
+
+**Risk Level**: **LOW** - Excellent error handling
+
+#### 4.6 Landing.tsx fetchStats
+**File**: `src/pages/Landing.tsx:95-109`
+- **Line 96-108**: useEffect with async function
+- **Line 97-107**: Wrapped in try-catch ✅
+- **Error Handling**: Silently fails (non-critical marketing data)
+
+**Risk Level**: **LOW** - Properly handled
+
+---
+
+### Category 5: useEffect Async Errors
+
+#### 5.1 useAuth.tsx useEffect
+**File**: `src/hooks/useAuth.tsx:30-110`
+- **Line 34-44**: validateSupabaseConfig() in try-catch ✅
+- **Line 48-88**: supabase.auth.onAuthStateChange() in try-catch ✅
+- **Line 91-103**: supabase.auth.getSession() with .catch() ✅
+- **Error Handling**: All async operations properly handled
+
+**Risk Level**: **LOW** - Properly handled
+
+---
+
+### Category 6: React Hooks Violations
+
+#### 6.1 ProtectedRoute
+**File**: `src/components/wellwell/ProtectedRoute.tsx`
+- **Status**: ✅ Fixed (hooks called before conditionals)
+- **Previous Issue**: Conditional rendering before hooks
+- **Current State**: All hooks called first, then conditionals
+
+**Risk Level**: **LOW** - Fixed
+
+#### 6.2 Home Component
+**File**: `src/pages/Home.tsx`
+- **Status**: ✅ Verified (all hooks called at top)
+- **Hook Order**: Consistent across renders
+- **Early Returns**: After all hooks called
+
+**Risk Level**: **LOW** - Compliant
+
+---
+
+## Error Propagation Map
+
+### Path 1: Configuration Errors
 ```
-User Action (Sign In)
+validateSupabaseConfig() throws
   ↓
-Auth.tsx:handleSubmit (line 58)
+useAuth.tsx:35 try-catch catches
   ↓
-useAuth.signIn (line 94-117)
+setConfigError(state)
   ↓
-supabase.auth.signInWithPassword (line 99)
-  ↓
-Supabase Client (src/integrations/supabase/client.ts:38)
-  ↓
-Supabase API (https://zioacippbtcbctexywgc.supabase.co/auth/v1/token)
+Auth.tsx:99 or ProtectedRoute.tsx:31 displays error UI
+  ✅ DOES NOT reach ErrorBoundary
 ```
+
+### Path 2: React Query queryFn Errors
+```
+queryFn throws error
+  ↓
+React Query catches
+  ↓
+Sets query.error state
+  ↓
+Component receives error from hook
+  ⚠️ Component may not handle error state
+  ⚠️ If component doesn't check error, user sees broken UI
+  ⚠️ If component throws during render based on error, reaches ErrorBoundary
+```
+
+### Path 3: React Query Mutation Errors
+```
+mutationFn throws error
+  ↓
+React Query catches
+  ↓
+Promise rejection
+  ↓
+Caller must handle with .catch() or try-catch
+  ⚠️ If caller doesn't handle, unhandled promise rejection
+  ⚠️ Unhandled promise rejections can trigger ErrorBoundary in some cases
+```
+
+### Path 4: Async Function Errors (Handled)
+```
+Async function throws
+  ↓
+try-catch catches
+  ↓
+Returns error object or calls onError callback
+  ✅ DOES NOT reach ErrorBoundary
+```
+
+### Path 5: React Render Errors
+```
+Component render throws
+  ↓
+ErrorBoundary catches
+  ↓
+Shows "Something went wrong" page
+  ⚠️ This is the main error path we see
+```
+
+---
 
 ## Architecture Map
 
+### Error Boundary Coverage
 ```
-┌─────────────────┐
-│   Auth.tsx       │  User enters email/password
-│   (UI Layer)     │
-└────────┬─────────┘
-         │
-         ▼
-┌─────────────────┐
-│   useAuth Hook   │  signIn() function
-│   (Logic Layer)  │
-└────────┬─────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Supabase Client│  createClient() with URL + Key
-│  (Integration)  │
-└────────┬─────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Supabase API   │  /auth/v1/token endpoint
-│  (Backend)      │
-└─────────────────┘
+App.tsx:52
+  ↓
+<ErrorBoundary> (wraps entire app)
+  ↓
+HelmetProvider
+  ↓
+QueryClientProvider
+  ↓
+AuthProvider
+  ↓
+BrowserRouter
+  ↓
+Routes
+  ↓
+Components
 ```
 
-## File + Line References
+**ErrorBoundary CAN catch**:
+- ✅ Component render errors
+- ✅ Lifecycle method errors
+- ✅ Constructor errors
 
-### Core Authentication Files:
-1. **src/pages/Auth.tsx** (lines 15-204)
-   - Form submission handler (line 58)
-   - signIn call (line 68)
-   - Error handling (lines 69-77)
+**ErrorBoundary CANNOT catch**:
+- ❌ Errors in event handlers (unless wrapped)
+- ❌ Errors in async code (unless handled)
+- ❌ Errors during module evaluation
+- ❌ Unhandled promise rejections (in some React versions)
 
-2. **src/hooks/useAuth.tsx** (lines 1-168)
-   - signIn function (lines 94-117)
-   - AuthProvider initialization (lines 23-59)
-   - Session management (lines 27-54)
-
-3. **src/integrations/supabase/client.ts** (lines 1-44)
-   - Client initialization (line 38)
-   - Environment variable validation (lines 10-22)
-   - **CRITICAL**: Key format validation missing
-
-4. **src/components/wellwell/ProtectedRoute.tsx** (lines 1-24)
-   - Auth state check (line 9)
-   - Redirect logic (line 20)
-
-### Configuration Files:
-5. **.env** (root directory)
-   - `VITE_SUPABASE_URL=https://zioacippbtcbctexywgc.supabase.co`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO` ⚠️
-
-6. **supabase/config.toml** (line 1)
-   - `project_id = "zioacippbtcbctexywgc"`
-
-## Observed Errors
-
-### Expected Error Pattern:
-When authentication fails, the following errors may occur:
-
-1. **Supabase Client Initialization Error** (if key format is invalid):
-   - Error: "Invalid API key format"
-   - Location: `src/integrations/supabase/client.ts:38`
-   - Impact: App may not start or client fails silently
-
-2. **Authentication API Error**:
-   - Error: "Invalid login credentials" or "Invalid API key"
-   - Location: `src/hooks/useAuth.tsx:104`
-   - Impact: Sign in fails even with correct credentials
-
-3. **Network Error**:
-   - Error: 401 Unauthorized or 400 Bad Request
-   - Location: Network tab → Supabase auth endpoint
-   - Impact: Request rejected by Supabase API
+---
 
 ## Conditional Rendering Branches
 
-1. **Auth.tsx** (line 101-107):
-   - If `loading === true` → Show loading spinner
-   - If `loading === false` → Show auth form
+### Critical Branches That Could Cause Errors
 
-2. **Auth.tsx** (line 28-33):
-   - If `user && !loading` → Redirect to `/`
+1. **ProtectedRoute.tsx**
+   - ✅ Hooks called before conditionals
+   - ✅ Children always rendered (with loading overlay)
 
-3. **ProtectedRoute.tsx** (lines 11-23):
-   - If `loading === true` → Show loading spinner
-   - If `!user` → Redirect to `/landing`
-   - If `user` → Render children
+2. **Home.tsx**
+   - ✅ Hooks called at top
+   - ✅ Early returns after hooks
+   - ✅ Conditional rendering based on state
 
-4. **useAuth.tsx** (lines 104-106):
-   - If `error` exists → Return error object
-   - If no error → Return `{ error: null }`
+3. **Auth.tsx**
+   - ✅ No hooks in conditionals
+   - ✅ Error handling in try-catch
 
-## Environment Variables Status
+---
 
-### Current .env Values:
-```
-VITE_SUPABASE_URL=https://zioacippbtcbctexywgc.supabase.co ✅ (Valid format)
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO ⚠️ (INVALID FORMAT)
-```
+## Files Involved
 
-### Expected Format:
-- Supabase anon keys are JWT tokens starting with `eyJ...`
-- Format: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inppb2FjaXBwYnRjYmN0ZXh5d2djIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1MDA5MTMsImV4cCI6MjA4MTA3NjkxM30.xxxxx`
+### Core Error Sources
+1. `src/integrations/supabase/client.ts` - Configuration validation
+2. `src/hooks/useAuth.tsx` - Auth operations
+3. `src/hooks/useProfile.tsx` - Profile queries/mutations
+4. `src/hooks/useEvents.tsx` - Event queries/mutations
+5. `src/hooks/useStoicAnalyzer.tsx` - AI analysis
+6. `src/pages/Auth.tsx` - Login/signup form
+7. `src/components/wellwell/ProtectedRoute.tsx` - Route protection
+8. `src/components/wellwell/ErrorBoundary.tsx` - Error catching
 
-## Network Trace Points
+### Components Using Hooks
+1. `src/pages/Home.tsx` - Main page with many hooks
+2. `src/pages/Landing.tsx` - Landing page
+3. All pages using useProfile, useEvents, useStreak, etc.
 
-### Expected Network Requests:
-1. **GET** `/auth/v1/user` - Check existing session
-2. **POST** `/auth/v1/token?grant_type=password` - Sign in request
-   - Headers: `apikey: <PUBLISHABLE_KEY>`
-   - Body: `{ email, password }`
+---
 
-### Failure Indicators:
-- 401 Unauthorized → Invalid API key
-- 400 Bad Request → Invalid credentials or key format
-- Network error → Client configuration issue
+## Error Categories Summary
 
-## Root Cause Hypothesis
+### Configuration Errors
+- **Count**: 3 throw statements
+- **Handled**: ✅ Yes (in useAuth.tsx)
+- **Reaches ErrorBoundary**: ❌ No
 
-**PRIMARY SUSPECT**: Invalid Supabase publishable key format
+### React Query queryFn Errors
+- **Count**: 2 throw statements (useProfile, useEvents)
+- **Handled**: ⚠️ Partially (React Query catches, but components may not handle)
+- **Reaches ErrorBoundary**: ⚠️ Possibly (if component throws during render)
 
-The key `sb_publishable_PzNwPfmzOwwJpdh2A6_ufw_liFByjVO` does not match the expected JWT format for Supabase anon keys. This would cause:
-1. Client initialization to fail silently or with invalid key error
-2. All auth API calls to be rejected with 401/400 errors
-3. Authentication to fail regardless of correct credentials
+### React Query Mutation Errors
+- **Count**: 4 throw statements (useProfile, useEvents mutations)
+- **Handled**: ⚠️ Partially (React Query catches, but callers must handle)
+- **Reaches ErrorBoundary**: ⚠️ Possibly (unhandled promise rejections)
 
-## Next Steps
+### Async Function Errors
+- **Count**: Multiple async functions
+- **Handled**: ✅ Yes (all wrapped in try-catch)
+- **Reaches ErrorBoundary**: ❌ No
 
-1. Verify actual Supabase anon key from dashboard
-2. Check browser console for specific error messages
-3. Check network tab for failed API requests
-4. Validate key format matches JWT structure
-5. Update .env with correct key
-6. Restart dev server
-7. Test authentication flow
+### React Hooks Violations
+- **Count**: 0 (fixed)
+- **Handled**: ✅ Yes
+- **Reaches ErrorBoundary**: ❌ No
 
+---
 
+## Next Steps for Root Cause Investigation
 
+1. **Verify React Query error handling in components**
+   - Check if components check `error` state from hooks
+   - Verify components don't throw during render when error exists
 
+2. **Verify mutation error handling**
+   - Check all callers of `updateProfile` and `createEvent`
+   - Verify they handle promise rejections
 
+3. **Test error scenarios**
+   - Network failures
+   - API errors
+   - Invalid responses
+   - Missing data
 
+4. **Add error boundary logging**
+   - Log what errors actually reach ErrorBoundary
+   - Capture error stack traces
+   - Identify which components throw
 
+---
 
+## Verification Checklist
 
-
-
-
-
-
-
-
-
-
-
-
-
+- [x] All throw statements identified
+- [x] All async functions checked for try-catch
+- [x] All React Query queryFn checked
+- [x] All React Query mutations checked
+- [x] All useEffect hooks checked
+- [x] All event handlers checked
+- [x] Error propagation paths mapped
+- [x] Conditional rendering branches identified
+- [ ] Components handling React Query errors verified
+- [ ] Mutation callers handling errors verified
+- [ ] Error scenarios tested

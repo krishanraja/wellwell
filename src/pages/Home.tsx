@@ -51,6 +51,7 @@ export default function Home() {
     isReturningUser,
     hasCompletedPulseToday,
     hasCompletedDebriefToday,
+    daysSinceLastUse,
   } = useContextualNudge();
   
   const { showError, ErrorModal } = useErrorModal();
@@ -72,13 +73,30 @@ export default function Home() {
     if (!eventsLoading && isFirstLoad) {
       if (events.length === 0) {
         setShowWelcome(false);
+      } else {
+        // Show welcome for:
+        // - Weekly+ returning users (daysSinceLastUse >= 7)
+        // - Or first visit of day for active users (current behavior)
+        if (daysSinceLastUse >= 7) {
+          setShowWelcome(true);
+        } else {
+          // For daily users, check if welcome was already shown today
+          const lastWelcomeDate = localStorage.getItem('wellwell_welcome_date');
+          const today = new Date().toDateString();
+          if (lastWelcomeDate !== today) {
+            setShowWelcome(true);
+          } else {
+            setShowWelcome(false);
+          }
+        }
       }
       setIsFirstLoad(false);
     }
-  }, [eventsLoading, events.length, isFirstLoad]);
+  }, [eventsLoading, events.length, isFirstLoad, daysSinceLastUse]);
 
   const handleWelcomeComplete = () => {
     localStorage.setItem(WELCOME_SHOWN_KEY, 'true');
+    localStorage.setItem('wellwell_welcome_date', new Date().toDateString());
     setShowWelcome(false);
   };
 
@@ -125,7 +143,10 @@ export default function Home() {
     return (
       <>
         {ErrorModal}
-        <WelcomeBackScreen onComplete={handleWelcomeComplete} />
+        <WelcomeBackScreen 
+          onComplete={handleWelcomeComplete} 
+          daysSinceLastUse={daysSinceLastUse}
+        />
       </>
     );
   }

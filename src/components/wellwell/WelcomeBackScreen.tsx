@@ -3,23 +3,30 @@ import { useProfile } from "@/hooks/useProfile";
 import { useStreak } from "@/hooks/useStreak";
 import { useTimeOfDay } from "@/hooks/useTimeOfDay";
 import { useEvents } from "@/hooks/useEvents";
+import { useNavigate } from "react-router-dom";
 import wellwellIcon from "@/assets/wellwell-icon.png";
-import { Flame, Sunrise, Sun, Moon } from "lucide-react";
+import { Flame, Sunrise, Sun, Moon, ArrowRight, Sparkles, Target, Compass } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface WelcomeBackScreenProps {
   onComplete: () => void;
+  daysSinceLastUse?: number;
 }
 
-const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
+const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScreenProps) => {
   const { profile, isLoading: profileLoading } = useProfile();
   const { streak, isLoading: streakLoading } = useStreak();
   const { events, isLoading: eventsLoading } = useEvents();
   const { period, greeting } = useTimeOfDay();
+  const navigate = useNavigate();
   
-  const [phase, setPhase] = useState<'loading' | 'enter' | 'message' | 'exit'>('loading');
+  const [phase, setPhase] = useState<'loading' | 'enter' | 'message' | 'onboarding' | 'ready'>('loading');
+  const [showOnboarding, setShowOnboarding] = useState(false);
   
   const isLoading = profileLoading || streakLoading || eventsLoading;
   const isReturningUser = events.length > 0;
+  const needsReOnboarding = daysSinceLastUse >= 21; // 3+ weeks
+  const isWeeklyReturn = daysSinceLastUse >= 7 && daysSinceLastUse < 21;
 
   // Personalized greeting
   const displayName = profile?.display_name;
@@ -29,6 +36,18 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
 
   // Context-aware message
   const getContextMessage = () => {
+    // Special messages for long-returning users
+    if (needsReOnboarding) {
+      if (daysSinceLastUse >= 30) {
+        return "It's been a while. Let's reconnect with clarity.";
+      }
+      return "Welcome back. Here's what you can do.";
+    }
+    
+    if (isWeeklyReturn) {
+      return "Good to see you again. Pick up where you left off.";
+    }
+    
     const hour = new Date().getHours();
     
     // Check today's activity
@@ -75,6 +94,15 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
     // Night
     return "Take a moment before rest.";
   };
+  
+  const handleContinue = () => {
+    onComplete();
+  };
+  
+  const handleQuickAction = (route: string) => {
+    onComplete();
+    navigate(route);
+  };
 
   // Get time-appropriate icon
   const TimeIcon = period === 'morning' ? Sunrise : period === 'afternoon' ? Sun : Moon;
@@ -86,16 +114,24 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
     // Start animation sequence
     setPhase('enter');
     
-    const messageTimer = setTimeout(() => setPhase('message'), 400);
-    const exitTimer = setTimeout(() => setPhase('exit'), 2200);
-    const completeTimer = setTimeout(onComplete, 2700);
+    const messageTimer = setTimeout(() => {
+      setPhase('message');
+      // For 3+ week users, show onboarding after message
+      if (needsReOnboarding) {
+        setTimeout(() => {
+          setPhase('onboarding');
+          setShowOnboarding(true);
+        }, 1500);
+      } else {
+        // For others, show ready state (tap to continue)
+        setTimeout(() => setPhase('ready'), 1500);
+      }
+    }, 400);
     
     return () => {
       clearTimeout(messageTimer);
-      clearTimeout(exitTimer);
-      clearTimeout(completeTimer);
     };
-  }, [isLoading, onComplete]);
+  }, [isLoading, needsReOnboarding]);
 
   // Show minimal loader while fetching
   if (isLoading) {
@@ -122,6 +158,7 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
 
   return (
     <div 
+      onClick={phase === 'ready' && !needsReOnboarding ? handleContinue : undefined}
       style={{
         position: 'fixed',
         inset: 0,
@@ -132,8 +169,9 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
-        opacity: phase === 'exit' ? 0 : 1,
+        opacity: 1,
         transition: 'opacity 500ms ease-out',
+        cursor: phase === 'ready' && !needsReOnboarding ? 'pointer' : 'default',
       }}
     >
       {/* Subtle glow */}
@@ -195,8 +233,8 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
           color: 'hsl(210 40% 98%)',
           textAlign: 'center',
           marginBottom: 8,
-          opacity: phase === 'message' || phase === 'exit' ? 1 : 0,
-          transform: phase === 'message' || phase === 'exit' ? 'translateY(0)' : 'translateY(8px)',
+          opacity: phase !== 'loading' ? 1 : 0,
+          transform: phase !== 'loading' ? 'translateY(0)' : 'translateY(8px)',
           transition: 'opacity 400ms ease-out, transform 400ms ease-out',
         }}
       >
@@ -211,8 +249,8 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
           textAlign: 'center',
           maxWidth: 280,
           lineHeight: 1.5,
-          opacity: phase === 'message' || phase === 'exit' ? 1 : 0,
-          transform: phase === 'message' || phase === 'exit' ? 'translateY(0)' : 'translateY(8px)',
+          opacity: phase !== 'loading' ? 1 : 0,
+          transform: phase !== 'loading' ? 'translateY(0)' : 'translateY(8px)',
           transition: 'opacity 400ms ease-out 100ms, transform 400ms ease-out 100ms',
         }}
       >
@@ -220,7 +258,7 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
       </p>
 
       {/* Streak badge */}
-      {streak >= 2 && (
+      {streak >= 2 && phase !== 'onboarding' && (
         <div 
           style={{
             display: 'inline-flex',
@@ -230,8 +268,8 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
             padding: '8px 16px',
             background: 'hsl(8 100% 65% / 0.15)',
             borderRadius: 20,
-            opacity: phase === 'message' || phase === 'exit' ? 1 : 0,
-            transform: phase === 'message' || phase === 'exit' ? 'translateY(0)' : 'translateY(8px)',
+            opacity: phase !== 'loading' && phase !== 'onboarding' ? 1 : 0,
+            transform: phase !== 'loading' && phase !== 'onboarding' ? 'translateY(0)' : 'translateY(8px)',
             transition: 'opacity 400ms ease-out 200ms, transform 400ms ease-out 200ms',
           }}
         >
@@ -240,6 +278,118 @@ const WelcomeBackScreen = ({ onComplete }: WelcomeBackScreenProps) => {
             {streak} day streak
           </span>
         </div>
+      )}
+
+      {/* Mini Onboarding for 3+ week users */}
+      {showOnboarding && phase === 'onboarding' && (
+        <div
+          style={{
+            marginTop: 32,
+            width: '100%',
+            maxWidth: 320,
+            opacity: showOnboarding ? 1 : 0,
+            transform: showOnboarding ? 'translateY(0)' : 'translateY(8px)',
+            transition: 'opacity 400ms ease-out, transform 400ms ease-out',
+          }}
+        >
+          <p 
+            style={{
+              fontSize: '14px',
+              color: 'hsl(215 20% 75%)',
+              textAlign: 'center',
+              marginBottom: 20,
+            }}
+          >
+            Here's what you can do:
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Button
+              variant="outline"
+              onClick={() => handleQuickAction('/pulse')}
+              className="w-full justify-start gap-3 h-auto py-3"
+              style={{
+                backgroundColor: 'hsl(220 25% 12%)',
+                borderColor: 'hsl(215 20% 25%)',
+                color: 'hsl(210 40% 95%)',
+              }}
+            >
+              <Sunrise className="w-5 h-5" style={{ color: 'hsl(45 100% 60%)' }} />
+              <div style={{ textAlign: 'left', flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: 600 }}>Morning Pulse</div>
+                <div style={{ fontSize: '12px', color: 'hsl(215 20% 65%)' }}>Set your stance for today</div>
+              </div>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => handleQuickAction('/')}
+              className="w-full justify-start gap-3 h-auto py-3"
+              style={{
+                backgroundColor: 'hsl(220 25% 12%)',
+                borderColor: 'hsl(215 20% 25%)',
+                color: 'hsl(210 40% 95%)',
+              }}
+            >
+              <Sparkles className="w-5 h-5" style={{ color: 'hsl(166 100% 50%)' }} />
+              <div style={{ textAlign: 'left', flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: 600 }}>Freeform Input</div>
+                <div style={{ fontSize: '12px', color: 'hsl(215 20% 65%)' }}>Ask anything, get clarity</div>
+              </div>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => handleQuickAction('/debrief')}
+              className="w-full justify-start gap-3 h-auto py-3"
+              style={{
+                backgroundColor: 'hsl(220 25% 12%)',
+                borderColor: 'hsl(215 20% 25%)',
+                color: 'hsl(210 40% 95%)',
+              }}
+            >
+              <Moon className="w-5 h-5" style={{ color: 'hsl(260 80% 65%)' }} />
+              <div style={{ textAlign: 'left', flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: 600 }}>Evening Debrief</div>
+                <div style={{ fontSize: '12px', color: 'hsl(215 20% 65%)' }}>Reflect on your day</div>
+              </div>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Tap to continue hint for non-onboarding users */}
+      {phase === 'ready' && !needsReOnboarding && (
+        <p
+          style={{
+            fontSize: '14px',
+            color: 'hsl(215 20% 55%)',
+            textAlign: 'center',
+            marginTop: 24,
+            opacity: 1,
+            animation: 'pulse 2s ease-in-out infinite',
+          }}
+        >
+          Tap anywhere to continue
+        </p>
+      )}
+
+      {/* Continue button for onboarding users */}
+      {phase === 'onboarding' && (
+        <Button
+          variant="outline"
+          onClick={handleContinue}
+          className="mt-6"
+          style={{
+            backgroundColor: 'hsl(220 25% 12%)',
+            borderColor: 'hsl(215 20% 25%)',
+            color: 'hsl(210 40% 95%)',
+          }}
+        >
+          Continue to Home
+        </Button>
       )}
     </div>
   );

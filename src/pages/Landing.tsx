@@ -2,34 +2,25 @@ import { forwardRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogoFull } from "@/components/wellwell/Header";
-import { ArrowRight, Shield, Zap, Brain, Sparkles, Quote, Users, Mail, Loader2, Check } from "lucide-react";
+import { ArrowRight, Quote, Users, Mail, Loader2, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import SplashScreen from "@/components/wellwell/SplashScreen";
 import { logger } from "@/lib/logger";
 
-const testimonials = [
-  {
-    quote: "Finally, philosophy that actually works in the moment.",
-    author: "Product Manager",
-  },
-  {
-    quote: "60 seconds to clarity. It's become my morning ritual.",
-    author: "Startup Founder",
-  },
-  {
-    quote: "The Intervene feature has saved me from countless reactive emails.",
-    author: "Team Lead",
-  },
-];
+// Single testimonial - no carousel
+const testimonial = {
+  quote: "60 seconds to clarity. It's become my morning ritual.",
+  author: "Startup Founder",
+};
 
 const Landing = forwardRef<HTMLDivElement>((_, ref) => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [insightsCount, setInsightsCount] = useState<number>(0);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [showSplash, setShowSplash] = useState(true);
+  const [showTestimonial, setShowTestimonial] = useState(false);
   
   // Waitlist form state
   const [waitlistEmail, setWaitlistEmail] = useState("");
@@ -117,11 +108,12 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
     fetchStats();
   }, []);
 
+  // Progressive disclosure: show testimonial after 2 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
+    const timer = setTimeout(() => {
+      setShowTestimonial(true);
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
@@ -131,13 +123,6 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
       </div>
     );
   }
-
-  const features = [
-    { icon: Zap, title: "60 seconds", desc: "to clarity" },
-    { icon: Brain, title: "Stoicism,", desc: "AI'd for you" },
-    { icon: Shield, title: "Track", desc: "4 virtues" },
-    { icon: Sparkles, title: "Personalized", desc: "insights" },
-  ];
 
   return (
     <>
@@ -172,8 +157,8 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
 
         {/* Content - fixed height, no scroll */}
         <div className="flex-1 flex flex-col px-6 py-6 safe-area-top safe-area-bottom bg-[hsl(165_20%_13%/0.75)] backdrop-blur-md overflow-hidden">
-          {/* Hero Section */}
-          <div className="flex flex-col items-center text-center">
+          {/* Hero Section - Primary Focus */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center">
             <div className="animate-fade-up">
               <LogoFull className="h-40 sm:h-48 mx-auto mb-2" />
             </div>
@@ -199,7 +184,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
               </div>
             )}
 
-            <div className="mt-3 animate-fade-up" style={{ animationDelay: "200ms" }}>
+            <div className="mt-6 animate-fade-up" style={{ animationDelay: "200ms" }}>
               <Button
                 variant="brand"
                 size="lg"
@@ -211,107 +196,72 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
             </div>
           </div>
 
-          {/* Features Grid */}
-          <div className="mt-4">
-            <div className="grid grid-cols-4 gap-2 animate-fade-up" style={{ animationDelay: "300ms" }}>
-              {features.map((feature, index) => (
-                <div
-                  key={feature.title}
-                  className="flex flex-col items-center text-center p-2"
-                  style={{ animationDelay: `${350 + index * 50}ms` }}
-                >
-                  <div className="p-2 rounded-xl bg-primary/10 mb-1">
-                    <feature.icon className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-[10px] font-medium text-[hsl(160_20%_95%)] leading-tight">
-                    {feature.title}
-                  </span>
-                  <span className="text-[10px] text-[hsl(160_15%_70%)]">
-                    {feature.desc}
-                  </span>
-                </div>
-              ))}
+          {/* Testimonial - Progressive Disclosure */}
+          {showTestimonial && (
+            <div className="mt-4 animate-fade-up">
+              <div className="text-center">
+                <Quote className="w-4 h-4 text-primary/50 mx-auto mb-1" />
+                <p className="text-sm text-[hsl(160_20%_95%)] italic">
+                  "{testimonial.quote}"
+                </p>
+                <p className="text-xs text-primary mt-1">
+                  — {testimonial.author}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Testimonial Carousel */}
-          <div className="mt-4 animate-fade-up" style={{ animationDelay: "400ms" }}>
-            <div className="text-center">
-              <Quote className="w-4 h-4 text-primary/50 mx-auto mb-1" />
-              <p className="text-sm text-[hsl(160_20%_95%)] italic">
-                "{testimonials[currentTestimonial].quote}"
-              </p>
-              <p className="text-xs text-primary mt-1">
-                — {testimonials[currentTestimonial].author}
-              </p>
-            </div>
-            <div className="flex justify-center gap-1.5 mt-2">
-              {testimonials.map((_, i) => (
-                <div 
-                  key={i} 
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    i === currentTestimonial ? 'bg-primary' : 'bg-muted'
-                  }`} 
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Email Waitlist Form */}
-          <div className="mt-4 animate-fade-up" style={{ animationDelay: "450ms" }}>
-            <div className="max-w-sm mx-auto">
-              {waitlistSuccess ? (
-                <div className="flex items-center justify-center gap-2 py-3 px-4 bg-primary/10 rounded-xl border border-primary/20">
-                  <Check className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-primary font-medium">You're on the list! We'll be in touch.</span>
-                </div>
-              ) : (
-                <form onSubmit={handleWaitlistSubmit} className="space-y-2">
-                  <p className="text-xs text-center text-[hsl(160_15%_70%)] mb-2">
-                    Not ready to sign up? Get Stoic wisdom in your inbox.
-                  </p>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(160_15%_50%)]" />
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        value={waitlistEmail}
-                        onChange={(e) => {
-                          setWaitlistEmail(e.target.value);
-                          if (waitlistError) setWaitlistError("");
-                        }}
-                        className="pl-10 bg-[hsl(165_20%_18%)] border-[hsl(160_15%_25%)] text-[hsl(160_20%_95%)] placeholder:text-[hsl(160_15%_50%)] focus:border-primary"
-                        disabled={waitlistLoading}
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      variant="brand"
-                      size="default"
-                      disabled={waitlistLoading || !waitlistEmail.trim()}
-                      className="shrink-0"
-                    >
-                      {waitlistLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        "Join"
-                      )}
-                    </Button>
-                  </div>
-                  {waitlistError && (
-                    <p className="text-xs text-red-400 text-center">{waitlistError}</p>
-                  )}
-                </form>
-              )}
-            </div>
-          </div>
-
-          {/* Footer - pushed to bottom */}
-          <div className="mt-auto pt-4 text-center animate-fade-up" style={{ animationDelay: "500ms" }}>
-            <p className="text-xs text-[hsl(160_15%_75%)] mb-2">
+          {/* Footer - Secondary Actions */}
+          <div className="mt-auto pt-4 text-center">
+            <p className="text-xs text-[hsl(160_15%_75%)] mb-3">
               Free to start. No credit card required.
             </p>
+            
+            {/* Simplified Email Form - Secondary Action */}
+            {!waitlistSuccess && (
+              <form onSubmit={handleWaitlistSubmit} className="mb-3">
+                <div className="flex gap-2 max-w-xs mx-auto">
+                  <div className="relative flex-1">
+                    <Mail className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(160_15%_50%)]" />
+                    <Input
+                      type="email"
+                      placeholder="Email for updates"
+                      value={waitlistEmail}
+                      onChange={(e) => {
+                        setWaitlistEmail(e.target.value);
+                        if (waitlistError) setWaitlistError("");
+                      }}
+                      className="pl-8 h-9 text-xs bg-[hsl(165_20%_18%)] border-[hsl(160_15%_25%)] text-[hsl(160_20%_95%)] placeholder:text-[hsl(160_15%_50%)] focus:border-primary"
+                      disabled={waitlistLoading}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    size="sm"
+                    disabled={waitlistLoading || !waitlistEmail.trim()}
+                    className="shrink-0 h-9 text-xs"
+                  >
+                    {waitlistLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      "Join"
+                    )}
+                  </Button>
+                </div>
+                {waitlistError && (
+                  <p className="text-xs text-red-400 text-center mt-1">{waitlistError}</p>
+                )}
+              </form>
+            )}
+            
+            {waitlistSuccess && (
+              <div className="flex items-center justify-center gap-2 py-2 px-3 bg-primary/10 rounded-lg border border-primary/20 mb-3 max-w-xs mx-auto">
+                <Check className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs text-primary font-medium">You're on the list!</span>
+              </div>
+            )}
+
             <button
               onClick={() => navigate("/auth")}
               className="text-xs text-primary font-medium hover:underline mb-3"

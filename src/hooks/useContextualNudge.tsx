@@ -127,20 +127,20 @@ export function useContextualNudge(): ContextualState {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     
-    const todayEvents = events.filter(e => new Date(e.created_at) >= todayStart);
+    const todayEvents = (events || []).filter(e => new Date(e.created_at) >= todayStart);
     const hasCompletedPulseToday = todayEvents.some(e => e.tool_name === 'pulse');
     const hasCompletedDebriefToday = todayEvents.some(e => e.tool_name === 'debrief');
     const hasUsedInterveneToday = todayEvents.some(e => e.tool_name === 'intervene');
     
     // Calculate days since last use
     let daysSinceLastUse = 0;
-    if (events.length > 0) {
+    if (events && events.length > 0) {
       const lastEvent = new Date(events[0].created_at);
       const diffTime = Math.abs(now.getTime() - lastEvent.getTime());
       daysSinceLastUse = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     }
     
-    const isReturningUser = events.length > 0;
+    const isReturningUser = events && events.length > 0;
     const isNewUser = events.length === 0;
     
     // Determine greeting and context message
