@@ -78,18 +78,7 @@ export default function Home() {
   
   const [showTimeModal, setShowTimeModal] = useState(false);
   
-  // Loading guard: Don't render content until user is fully available
-  // This prevents hooks violations during auth state transitions
-  if (authLoading || !user) {
-    return (
-      <Layout showGreeting={false}>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      </Layout>
-    );
-  }
-
+  // Effect for welcome screen logic - MUST be before any early returns
   useEffect(() => {
     if (!eventsLoading && isFirstLoad) {
       if (events.length === 0) {
@@ -114,6 +103,24 @@ export default function Home() {
       setIsFirstLoad(false);
     }
   }, [eventsLoading, events.length, isFirstLoad, daysSinceLastUse]);
+  
+  // Get daily quote based on date - MUST be before any early returns
+  const dailyQuote = useMemo(() => {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+    return stoicQuotes[dayOfYear % stoicQuotes.length];
+  }, []);
+  
+  // Loading guard: Don't render content until user is fully available
+  // This prevents hooks violations during auth state transitions
+  if (authLoading || !user) {
+    return (
+      <Layout showGreeting={false}>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </Layout>
+    );
+  }
 
   const handleWelcomeComplete = () => {
     localStorage.setItem(WELCOME_SHOWN_KEY, 'true');
@@ -305,12 +312,6 @@ export default function Home() {
       </Layout>
     );
   }
-
-  // Get daily quote based on date
-  const dailyQuote = useMemo(() => {
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    return stoicQuotes[dayOfYear % stoicQuotes.length];
-  }, []);
 
   // Main home view
   return (
