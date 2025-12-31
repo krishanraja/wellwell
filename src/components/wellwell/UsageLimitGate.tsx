@@ -16,11 +16,20 @@ export function UsageLimitGate({ toolName, children, onLimitReached }: UsageLimi
 
   const isLoading = usageLoading || subLoading;
 
+  // CRITICAL: Always render children to ensure hooks are called consistently
+  // This prevents React hooks violations when loading state changes
+  // Use overlay pattern for loading state instead of conditional rendering
+
+  // While loading, always render children with loading overlay
+  // This ensures hooks are called even during loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
+      <>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+        {children}
+      </>
     );
   }
 
@@ -34,7 +43,9 @@ export function UsageLimitGate({ toolName, children, onLimitReached }: UsageLimi
     return <>{children}</>;
   }
 
-  // Free users who hit the limit
+  // Free users who hit the limit - show upgrade prompt
+  // Note: We don't render children here since they've hit the limit
+  // This is fine because it's not a transient loading state
   return (
     <div className="flex-1 flex flex-col justify-center p-4">
       <UpgradePrompt 

@@ -2,6 +2,28 @@
 
 ## Authentication Issues
 
+### Issue: "Configuration Problem" error after login (React Error #300)
+
+**Status**: ✅ Resolved (2025-01-XX)
+
+**Symptoms**: 
+- User sees "Configuration Problem" error page after successful login
+- Error occurs when navigating to home page
+- Login itself succeeds (authentication works)
+
+**Root Cause**: 
+- React hooks violation caused by conditional rendering in `UsageLimitGate`
+- ErrorBoundary mis-categorized hooks violations as configuration errors
+
+**Solution**: 
+- Fixed `UsageLimitGate` to always render children (use overlay for loading)
+- Fixed ErrorBoundary to detect hooks violations before config errors
+- Enhanced error logging for better debugging
+
+**Full Details**: See [Issue History: Login Hooks Violation](./ISSUE_HISTORY_LOGIN_HOOKS_VIOLATION.md)
+
+---
+
 ### Issue: User can't sign up
 **Symptoms**: Sign up button doesn't respond or shows error
 

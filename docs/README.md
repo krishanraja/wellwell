@@ -72,6 +72,7 @@ docs/                 # Project documentation
 - [Adversarial Audit](./ADVERSARIAL_AUDIT.md) - **Comprehensive full-stack audit: state management, UX, data pipeline, AI systems**
 - [Common Issues](./COMMON_ISSUES.md) - Troubleshooting guide
 - [Decisions Log](./DECISIONS_LOG.md) - Architectural decisions
+- [Issue History: Login Hooks Violation](./ISSUE_HISTORY_LOGIN_HOOKS_VIOLATION.md) - Complete history of React Error #300 fix
 
 ## Contributing
 
