@@ -46,6 +46,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
     const errorMessage = error.message.toLowerCase();
     const errorStack = error.stack?.toLowerCase() || '';
+    const errorString = error.toString().toLowerCase();
 
     // Network errors
     if (
@@ -66,6 +67,43 @@ export class ErrorBoundary extends Component<Props, State> {
           'If using a VPN, try disabling it',
         ],
         icon: WifiOff,
+      };
+    }
+
+    // React Hooks violations - MUST be checked BEFORE config errors to prevent mis-categorization
+    // React error #300: "Rendered fewer hooks than during the previous render"
+    // Check multiple sources: message, stack, toString, and URL patterns
+    const hasHooksViolationPattern = 
+      errorMessage.includes('300') ||
+      errorMessage.includes('rendered fewer hooks') ||
+      errorMessage.includes('rendered more hooks') ||
+      errorMessage.includes('rules of hooks') ||
+      errorMessage.includes('minified react error #300') ||
+      errorMessage.includes('react error #300') ||
+      errorMessage.includes('invariant=300') ||
+      errorStack.includes('invariant=300') ||
+      errorStack.includes('react error #300') ||
+      errorStack.includes('error #300') ||
+      errorStack.includes('rendered fewer') ||
+      errorStack.includes('rendered more') ||
+      errorString.includes('300') ||
+      errorString.includes('invariant=300') ||
+      // Check for URL patterns in error message (React error decoder links)
+      (errorMessage.includes('error-decoder') && errorMessage.includes('invariant=300')) ||
+      (errorMessage.includes('reactjs.org') && errorMessage.includes('300'));
+
+    if (hasHooksViolationPattern) {
+      return {
+        category: 'component',
+        title: 'Component Error',
+        message: 'A React hooks violation occurred. This usually happens when components conditionally call hooks. The error has been logged for investigation.',
+        recoveryActions: [
+          'Try reloading the page',
+          'Clear your browser cache',
+          'Go back to home and try again',
+          'Contact support if this keeps happening',
+        ],
+        icon: Code,
       };
     }
 
@@ -172,9 +210,33 @@ export class ErrorBoundary extends Component<Props, State> {
       // Ignore parse errors
     }
     
-    // Log full component stack for hooks violations
-    const isHooksError = error?.message?.includes('hooks') || error?.message?.includes('Rendered');
+    // Enhanced hooks violation detection - match the same patterns as categorizeError
+    const errorMessageLower = error?.message?.toLowerCase() || '';
+    const errorStackLower = error?.stack?.toLowerCase() || '';
+    const errorStringLower = error?.toString()?.toLowerCase() || '';
     
+    const isHooksError = 
+      errorMessageLower.includes('hooks') || 
+      errorMessageLower.includes('rendered') ||
+      errorMessageLower.includes('300') ||
+      errorMessageLower.includes('rules of hooks') ||
+      errorMessageLower.includes('minified react error #300') ||
+      errorMessageLower.includes('react error #300') ||
+      errorMessageLower.includes('invariant=300') ||
+      errorStackLower.includes('invariant=300') ||
+      errorStackLower.includes('react error #300') ||
+      errorStackLower.includes('error #300') ||
+      errorStackLower.includes('rendered fewer') ||
+      errorStackLower.includes('rendered more') ||
+      errorStringLower.includes('300') ||
+      errorStringLower.includes('invariant=300') ||
+      (errorMessageLower.includes('error-decoder') && errorMessageLower.includes('invariant=300')) ||
+      (errorMessageLower.includes('reactjs.org') && errorMessageLower.includes('300'));
+    
+    // Determine error category for logging
+    const errorContext = this.categorizeError(error);
+    
+    // Comprehensive diagnostic logging
     logger.critical("Uncaught error in React component tree", {
       error: error?.message || 'NO ERROR MESSAGE',
       errorName: error?.name || 'NO ERROR NAME',
@@ -184,16 +246,56 @@ export class ErrorBoundary extends Component<Props, State> {
       componentName: componentName,
       allComponentNames: allComponentNames,
       isHooksError: isHooksError,
-      // For hooks errors, log the full stack
-      ...(isHooksError && { fullComponentStack: errorInfo.componentStack }),
+      categorizedAs: errorContext.category,
+      errorTitle: errorContext.title,
+      // Diagnostic: log what patterns matched
+      patternMatches: {
+        messageHas300: errorMessageLower.includes('300'),
+        messageHasHooks: errorMessageLower.includes('hooks'),
+        messageHasRendered: errorMessageLower.includes('rendered'),
+        stackHasInvariant300: errorStackLower.includes('invariant=300'),
+        stackHasReact300: errorStackLower.includes('react error #300'),
+        stringHas300: errorStringLower.includes('300'),
+        messageHasConfig: errorMessageLower.includes('config'),
+        messageHasConfiguration: errorMessageLower.includes('configuration'),
+      },
+      // For hooks errors, log the full stack with enhanced details
+      ...(isHooksError && { 
+        fullComponentStack: errorInfo.componentStack,
+        hooksViolationDetails: {
+          errorCode: errorMessageLower.includes('300') ? '300' : 'unknown',
+          errorType: errorMessageLower.includes('fewer') ? 'fewer_hooks' : 
+                    errorMessageLower.includes('more') ? 'more_hooks' : 'unknown',
+          componentNames: allComponentNames,
+          stackTrace: error?.stack,
+        }
+      }),
     });
     
     // Also log to console in dev mode for easier debugging
     if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught error:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error stack:', error?.stack);
+      console.error('Error toString:', error?.toString());
       console.error('Component stack:', errorInfo.componentStack);
+      console.error('Categorized as:', errorContext.category, '-', errorContext.title);
+      console.error('Pattern matches:', {
+        messageHas300: errorMessageLower.includes('300'),
+        messageHasHooks: errorMessageLower.includes('hooks'),
+        messageHasRendered: errorMessageLower.includes('rendered'),
+        stackHasInvariant300: errorStackLower.includes('invariant=300'),
+        stackHasReact300: errorStackLower.includes('react error #300'),
+        stringHas300: errorStringLower.includes('300'),
+        messageHasConfig: errorMessageLower.includes('config'),
+      });
       if (isHooksError) {
-        console.error('HOOKS VIOLATION DETECTED - Component names in stack:', allComponentNames);
+        console.error('🚨 HOOKS VIOLATION DETECTED 🚨');
+        console.error('Error Code: React #300 (Hooks Order Violation)');
+        console.error('Component names in stack:', allComponentNames);
+        console.error('Full component stack:', errorInfo.componentStack);
+        console.error('This usually means a component is conditionally calling hooks.');
+        console.error('Check components:', allComponentNames.join(', '));
       }
     }
   }

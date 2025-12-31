@@ -17,6 +17,7 @@ import { useStoicAnalyzer } from "@/hooks/useStoicAnalyzer";
 import { useEvents } from "@/hooks/useEvents";
 import { useStreak } from "@/hooks/useStreak";
 import { usePendingActions } from "@/hooks/usePendingActions";
+import { useAuth } from "@/hooks/useAuth";
 import { RotateCcw, Target, Shield, Compass, Flame, X, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -36,6 +37,13 @@ const stoicQuotes = [
 const WELCOME_SHOWN_KEY = 'wellwell_welcome_shown';
 
 export default function Home() {
+  // ALL HOOKS CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
+  // This ensures hooks are always called in the same order, preventing React Error #300
+  
+  // Auth state - used for loading guard
+  const { user, loading: authLoading } = useAuth();
+  
+  // State hooks
   const [input, setInput] = useState("");
   const [voiceInputKey, setVoiceInputKey] = useState(0);
   const [hasCommitted, setHasCommitted] = useState(false);
@@ -45,6 +53,7 @@ export default function Home() {
   });
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   
+  // Data hooks - all called unconditionally
   const { 
     primaryNudge, 
     greeting, 
@@ -68,6 +77,18 @@ export default function Home() {
   } = usePendingActions();
   
   const [showTimeModal, setShowTimeModal] = useState(false);
+  
+  // Loading guard: Don't render content until user is fully available
+  // This prevents hooks violations during auth state transitions
+  if (authLoading || !user) {
+    return (
+      <Layout showGreeting={false}>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </Layout>
+    );
+  }
 
   useEffect(() => {
     if (!eventsLoading && isFirstLoad) {
