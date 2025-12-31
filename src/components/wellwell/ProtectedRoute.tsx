@@ -33,8 +33,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [loading, user]);
 
-  // NOW handle conditional rendering (no hooks after this point)
-  // Show configuration error if present
+  // CRITICAL: Always render children to ensure hooks are called consistently
+  // This prevents React hooks violations when loading/auth state changes
+  // Use overlay pattern for loading states instead of conditional rendering
+
+  // Show configuration error if present (this is a true error state, so we don't render children)
   if (configError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -55,22 +58,31 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // Show loading state while auth is initializing or not ready
-  // This prevents children from rendering during auth state transitions
+  // Show loading overlay while auth is initializing or not ready
+  // ALWAYS render children underneath to ensure hooks are called consistently
   if (loading || !isReady) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
+      <>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+        {children}
+      </>
     );
   }
 
-  // Only redirect if we're certain there's no user (after loading completes and ready)
+  // If no user, render children (Home has its own loading guard) and redirect
+  // Navigate doesn't prevent rendering, so children will mount and call hooks before redirect
   if (!user) {
-    return <Navigate to="/landing" replace />;
+    return (
+      <>
+        {children}
+        <Navigate to="/landing" replace />
+      </>
+    );
   }
 
-  // User is available and state is settled - safe to render children
+  // User is available and state is settled - render children normally
   // All hooks in children will be called with consistent user state
   return <>{children}</>;
 }
