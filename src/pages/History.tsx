@@ -115,7 +115,7 @@ export default function History() {
                   "flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all shrink-0",
                   activeTab === tab.key
                     ? "bg-primary text-primary-foreground"
-                    : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 )}
               >
                 {tab.label}
@@ -123,7 +123,7 @@ export default function History() {
                   "px-1.5 py-0.5 rounded-md text-xs",
                   activeTab === tab.key 
                     ? "bg-black/20" 
-                    : "bg-white/10"
+                    : "bg-foreground/10"
                 )}>
                   {tab.count}
                 </span>
@@ -144,7 +144,7 @@ export default function History() {
                     "px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0",
                     filter === option.key
                       ? "bg-primary/20 text-primary border border-primary/30"
-                      : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
                   )}
                 >
                   {option.label}
@@ -296,6 +296,24 @@ function EventCard({
   };
   const Icon = config.icon;
 
+  // Get descriptive context based on tool type
+  const getToolContext = () => {
+    switch (event.tool_name) {
+      case 'pulse':
+        return 'Morning intention setting';
+      case 'debrief':
+        return 'Evening reflection';
+      case 'intervene':
+        return 'In-the-moment guidance';
+      case 'decision':
+        return 'Decision analysis';
+      case 'conflict':
+        return 'Conflict navigation';
+      default:
+        return 'Practice session';
+    }
+  };
+
   return (
     <motion.div layout>
       <StoicCard variant="glass">
@@ -317,7 +335,7 @@ function EventCard({
               <div className="flex items-center justify-between mb-1">
                 <p className="font-semibold text-foreground">{config.label}</p>
                 {showScoreImpact && config.scoreImpact > 0 && (
-                  <span className="text-xs font-medium text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full">
                     +{config.scoreImpact}
                   </span>
                 )}
@@ -342,6 +360,39 @@ function EventCard({
             />
           </div>
         </button>
+
+        {/* Expanded Content */}
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 pt-0">
+                <div className="border-t border-border/50 pt-4 space-y-3">
+                  {/* Full input text */}
+                  <div className="p-3 rounded-xl bg-muted/50">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                      Your Input
+                    </p>
+                    <p className="text-sm text-foreground leading-relaxed">
+                      {formatRawInputForDisplay(event.raw_input)}
+                    </p>
+                  </div>
+                  
+                  {/* Context info */}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{getToolContext()}</span>
+                    <span>{formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </StoicCard>
     </motion.div>
   );
@@ -388,7 +439,7 @@ function CheckinCard({ checkin }: { checkin: { id: string; activity_type: string
             <div className="flex items-center justify-between mb-1">
               <p className="font-semibold text-foreground">{config.label}</p>
               {checkin.score_impact > 0 && (
-                <span className="text-xs font-medium text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full">
                   +{checkin.score_impact}
                 </span>
               )}
@@ -433,8 +484,8 @@ function CommitmentCard({
             className={cn(
               "mt-0.5 w-6 h-6 rounded-lg border-2 shrink-0 flex items-center justify-center transition-all",
               commitment.completed 
-                ? "bg-green-500 border-green-500" 
-                : "border-white/30 hover:border-primary hover:bg-primary/10"
+                ? "bg-emerald-500 border-emerald-500" 
+                : "border-border hover:border-primary hover:bg-primary/10"
             )}
           >
             {commitment.completed && <CheckCircle className="w-4 h-4 text-white" />}
@@ -460,7 +511,7 @@ function CommitmentCard({
 
           {/* Score impact */}
           {commitment.completed && (
-            <span className="text-xs font-medium text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full shrink-0">
+            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full shrink-0">
               +4
             </span>
           )}
@@ -482,8 +533,8 @@ function EmptyState({
 }) {
   return (
     <div className="text-center py-12">
-      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 flex items-center justify-center">
-        <Icon className="w-8 h-8 text-muted-foreground/50" />
+      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
+        <Icon className="w-8 h-8 text-muted-foreground" />
       </div>
       <h3 className="font-display text-lg font-semibold text-foreground mb-2">
         {title}

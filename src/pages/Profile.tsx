@@ -84,13 +84,13 @@ export default function Profile() {
       label: "Days", 
       value: daysOnWellWell || 1, 
       icon: Calendar, 
-      color: "text-blue-400" 
+      color: "text-sky-600 dark:text-sky-400" 
     },
     { 
       label: "Streak", 
       value: streak, 
       icon: Flame, 
-      color: "text-orange-400" 
+      color: "text-amber-600 dark:text-amber-400" 
     },
     { 
       label: "Sessions", 
@@ -102,7 +102,7 @@ export default function Profile() {
       label: "Commits", 
       value: `${completionRate}%`, 
       icon: CheckCircle, 
-      color: "text-green-400" 
+      color: "text-emerald-600 dark:text-emerald-400" 
     },
   ];
 
@@ -134,8 +134,8 @@ export default function Profile() {
               </h1>
               {streak > 0 && (
                 <div className="inline-flex items-center gap-1">
-                  <Flame className="w-4 h-4 text-orange-400 animate-pulse" />
-                  <span className="text-sm font-semibold text-orange-400">{streak} day streak</span>
+                  <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
+                  <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">{streak} day streak</span>
                 </div>
               )}
             </div>
@@ -185,16 +185,16 @@ export default function Profile() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="shrink-0 mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20"
+            className="shrink-0 mb-4 p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/25"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-400" />
-                <span className="text-sm text-green-400 font-medium">
+                <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
                   Today: +{todayProgress} points
                 </span>
               </div>
-              <span className="text-xs text-green-400/70">
+              <span className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
                 {todayCheckins.length} check-ins
               </span>
             </div>
@@ -220,9 +220,9 @@ export default function Profile() {
               {activeCommitments.slice(0, 2).map((commitment) => (
                 <div 
                   key={commitment.id}
-                  className="flex items-center gap-2 p-2 rounded-lg bg-white/5"
+                  className="flex items-center gap-2 p-2 rounded-lg bg-muted/50"
                 >
-                  <div className="w-4 h-4 rounded border border-white/30 shrink-0" />
+                  <div className="w-4 h-4 rounded border border-border shrink-0" />
                   <span className="text-sm text-muted-foreground line-clamp-1 flex-1">
                     {commitment.commitment_text}
                   </span>
@@ -297,8 +297,8 @@ export default function Profile() {
             className="w-full flex items-center justify-between p-4 rounded-xl bg-card hover:bg-muted/50 border border-border/50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/10">
-                <Clock className="w-4 h-4 text-purple-400" />
+              <div className="p-2 rounded-lg bg-violet-500/15">
+                <Clock className="w-4 h-4 text-violet-600 dark:text-violet-400" />
               </div>
               <span className="text-sm font-medium text-foreground">View Full History</span>
             </div>

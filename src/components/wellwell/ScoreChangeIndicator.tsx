@@ -70,12 +70,12 @@ export function ScoreChangeIndicator({ change, show, onComplete }: ScoreChangeIn
             transition={{ delay: 0.1, type: "spring" }}
             className={cn(
               "p-2 rounded-xl",
-              isPositive ? "bg-green-500/30" : "bg-red-500/30"
+              isPositive ? "bg-emerald-500/30" : "bg-red-500/30"
             )}
           >
             <Icon className={cn(
               "w-5 h-5",
-              isPositive ? "text-green-400" : "text-red-400"
+              isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
             )} />
           </motion.div>
 
@@ -89,7 +89,7 @@ export function ScoreChangeIndicator({ change, show, onComplete }: ScoreChangeIn
             >
               <span className={cn(
                 "font-semibold",
-                isPositive ? "text-green-400" : "text-red-400"
+                isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
               )}>
                 {isPositive ? '+' : ''}{change.delta} points
               </span>
@@ -115,7 +115,7 @@ export function ScoreChangeIndicator({ change, show, onComplete }: ScoreChangeIn
               {[...Array(3)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute w-1 h-1 bg-green-400 rounded-full"
+                  className="absolute w-1 h-1 bg-emerald-400 rounded-full"
                   initial={{ 
                     x: '50%', 
                     y: '50%', 
@@ -262,12 +262,12 @@ export function ScoreBreakdown({ changes, currentScore }: ScoreBreakdownProps) {
               return (
                 <div 
                   key={i}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/5"
+                  className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
                 >
                   <span className="text-sm text-foreground">{change.source}</span>
                   <span className={cn(
                     "text-sm font-semibold",
-                    isPositive ? "text-green-400" : "text-red-400"
+                    isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
                   )}>
                     {isPositive ? '+' : ''}{change.delta}
                   </span>
@@ -279,7 +279,7 @@ export function ScoreBreakdown({ changes, currentScore }: ScoreBreakdownProps) {
       </div>
 
       {/* How scoring works */}
-      <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+      <div className="p-4 rounded-xl bg-muted/50 border border-border">
         <h4 className="text-sm font-medium text-foreground mb-2">How Scoring Works</h4>
         <ul className="space-y-1 text-xs text-muted-foreground">
           <li>• Morning Pulse: +5 points</li>

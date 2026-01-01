@@ -20,9 +20,9 @@ export function PatternInsight({ pattern, onComplete, onSkip }: PatternInsightPr
   const [reflection, setReflection] = useState("");
 
   const patternColors = {
-    positive: { bg: "from-green-500/20 to-emerald-500/10", border: "border-green-500/20", text: "text-green-400" },
-    neutral: { bg: "from-blue-500/20 to-cyan-500/10", border: "border-blue-500/20", text: "text-blue-400" },
-    growth: { bg: "from-amber-500/20 to-orange-500/10", border: "border-amber-500/20", text: "text-amber-400" },
+    positive: { bg: "from-emerald-500/20 to-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-600 dark:text-emerald-400" },
+    neutral: { bg: "from-sky-500/20 to-cyan-500/10", border: "border-sky-500/20", text: "text-sky-600 dark:text-sky-400" },
+    growth: { bg: "from-amber-500/20 to-orange-500/10", border: "border-amber-500/20", text: "text-amber-600 dark:text-amber-400" },
   };
 
   const colors = patternColors[pattern.type];
@@ -90,12 +90,12 @@ export function PatternInsight({ pattern, onComplete, onSkip }: PatternInsightPr
 
         {/* Data Points */}
         {pattern.dataPoints && pattern.dataPoints.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-white/10">
+          <div className="mt-4 pt-4 border-t border-border/50">
             <div className="flex flex-wrap gap-2 justify-center">
               {pattern.dataPoints.map((point, i) => (
                 <span 
                   key={i}
-                  className="px-2 py-1 rounded-full text-xs bg-black/20 text-muted-foreground"
+                  className="px-2 py-1 rounded-full text-xs bg-foreground/10 text-muted-foreground"
                 >
                   {point}
                 </span>
@@ -106,7 +106,7 @@ export function PatternInsight({ pattern, onComplete, onSkip }: PatternInsightPr
 
         {/* Suggestion */}
         {pattern.suggestion && (
-          <div className="mt-4 p-3 rounded-xl bg-black/20">
+          <div className="mt-4 p-3 rounded-xl bg-foreground/10">
             <p className="text-sm text-muted-foreground text-center italic">
               💡 {pattern.suggestion}
             </p>
@@ -141,7 +141,7 @@ export function PatternInsight({ pattern, onComplete, onSkip }: PatternInsightPr
             onChange={(e) => setReflection(e.target.value)}
             placeholder="What does this pattern mean to you?"
             rows={2}
-            className="w-full bg-white/5 rounded-xl p-3 text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-1 focus:ring-primary/50"
+            className="w-full bg-muted/50 rounded-xl p-3 text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-1 focus:ring-primary/50"
           />
         </motion.div>
       )}

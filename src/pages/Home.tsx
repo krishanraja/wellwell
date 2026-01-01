@@ -382,26 +382,26 @@ export default function Home() {
               )}
             </div>
 
-            {/* Bottom Section: Philosophy credential + toolbar */}
+            {/* Bottom Section: Philosophy credential + ritual indicators */}
             <div className="shrink-0 py-3 border-t border-border/30">
               {/* Philosophy credential */}
               <p className="text-[10px] text-center text-muted-foreground/60 mb-2">
                 Trained on 2000 years of Stoic philosophy • Tuned for modern challenges
               </p>
               
-              <div className="flex items-center justify-center gap-2 flex-wrap">
+              <div className="flex items-center justify-center">
                 {/* Ritual chips */}
                 <RitualTimeIndicator
                   hasCompletedPulseToday={hasCompletedPulseToday}
                   hasCompletedDebriefToday={hasCompletedDebriefToday}
                   onSetTimeClick={() => setShowTimeModal(true)}
                 />
-                
-                <span className="text-muted-foreground/30">•</span>
-                
-                {/* Quick Tools */}
-                <QuickToolsSheet />
               </div>
+            </div>
+            
+            {/* Quick Tools - Left side floating trigger */}
+            <div className="fixed left-4 top-1/2 -translate-y-1/2 z-40">
+              <QuickToolsSheet />
             </div>
             
             {/* Check-in Time Modal */}
