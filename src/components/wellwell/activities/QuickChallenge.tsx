@@ -43,7 +43,7 @@ export function QuickChallenge({ challenge, onComplete, onSkip, isSubmitting }: 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="flex flex-col gap-5"
+      className="relative flex flex-col gap-5"
     >
       {/* Icon */}
       <motion.div 
