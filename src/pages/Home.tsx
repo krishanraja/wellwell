@@ -9,6 +9,7 @@ import WelcomeBackScreen from "@/components/wellwell/WelcomeBackScreen";
 import { RitualTimeIndicator } from "@/components/wellwell/RitualTimeIndicator";
 import { CheckInTimeModal } from "@/components/wellwell/CheckInTimeModal";
 import { QuickToolsSheet } from "@/components/wellwell/QuickToolsSheet";
+import { ProfileHubSheet } from "@/components/wellwell/ProfileHubSheet";
 import { ActionFollowUp } from "@/components/wellwell/ActionFollowUp";
 import { useErrorModal } from "@/components/wellwell/ErrorModal";
 import { useContextualNudge } from "@/hooks/useContextualNudge";
@@ -399,10 +400,9 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Quick Tools - Left side floating trigger */}
-            <div className="fixed left-4 top-1/2 -translate-y-1/2 z-40">
-              <QuickToolsSheet />
-            </div>
+            {/* Side Panel Triggers */}
+            <QuickToolsSheet />
+            <ProfileHubSheet />
             
             {/* Check-in Time Modal */}
             <CheckInTimeModal 

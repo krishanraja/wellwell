@@ -13,7 +13,7 @@ import Auth from "./pages/Auth";
 import Pulse from "./pages/Pulse";
 import Intervene from "./pages/Intervene";
 import Debrief from "./pages/Debrief";
-import More from "./pages/More";
+// More page removed - functionality moved to ProfileHubSheet
 import Profile from "./pages/Profile";
 import Onboarding from "./pages/Onboarding";
 import Decision from "./pages/Decision";
@@ -71,7 +71,7 @@ const App = () => (
                 <Route path="/pulse" element={<ProtectedRoute><Pulse /></ProtectedRoute>} />
                 <Route path="/intervene" element={<ProtectedRoute><Intervene /></ProtectedRoute>} />
                 <Route path="/debrief" element={<ProtectedRoute><Debrief /></ProtectedRoute>} />
-                <Route path="/more" element={<ProtectedRoute><More /></ProtectedRoute>} />
+                {/* /more route removed - now accessible via right side ProfileHubSheet */}
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/trends" element={<ProtectedRoute><Trends /></ProtectedRoute>} />
                 <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />

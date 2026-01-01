@@ -418,3 +418,18 @@
   50% { opacity: 1; transform: scale(1.02); }
   75% { opacity: 0.95; transform: scale(0.99); }
 }
+
+@keyframes sideTabPulse {
+  0%, 100% { 
+    box-shadow: 0 4px 20px hsl(187 100% 60% / 0.4), 0 0 30px hsl(90 100% 79% / 0.3);
+    transform: translateY(-50%);
+  }
+  50% { 
+    box-shadow: 0 4px 30px hsl(187 100% 60% / 0.6), 0 0 50px hsl(90 100% 79% / 0.5);
+    transform: translateY(-50%) scale(1.02);
+  }
+}
+
+.animate-side-tab-pulse {
+  animation: sideTabPulse 3s ease-in-out infinite;
+}
