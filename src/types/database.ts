@@ -11,6 +11,25 @@ export type ToolName = 'pulse' | 'intervene' | 'debrief' | 'decision' | 'conflic
 export type Virtue = 'courage' | 'temperance' | 'justice' | 'wisdom';
 export type Dimension = 'courage' | 'temperance' | 'justice' | 'wisdom' | 'composure' | 'clarity' | 'resilience' | 'focus';
 
+// Activity types for welcome experience
+export type ActivityType = 
+  | 'reflection_prompt'
+  | 'quick_challenge'
+  | 'wisdom_card'
+  | 'energy_checkin'
+  | 'micro_commitment'
+  | 'pattern_insight'
+  | 'streak_celebration';
+
+// Practice score source types
+export type PracticeScoreSource = 
+  | 'morning_pulse'
+  | 'evening_debrief'
+  | 'daily_checkin'
+  | 'micro_commitment'
+  | 'streak_bonus'
+  | 'inactivity_decay';
+
 // Profile table
 export interface Profile {
   id: string;
@@ -22,6 +41,15 @@ export interface Profile {
   baseline_moment: string | null;
   morning_pulse_time: string | null; // TIME stored as HH:MM:SS string
   evening_debrief_time: string | null; // TIME stored as HH:MM:SS string
+  // New fields for experience system
+  preferred_activities: Record<string, number>; // activity type -> engagement count
+  energy_patterns: Record<string, unknown>; // historical energy data
+  commitment_completion_rate: number;
+  last_welcome_activity: ActivityType | null;
+  total_checkins: number;
+  current_streak: number;
+  longest_streak: number;
+  last_active_date: string | null; // DATE as YYYY-MM-DD string
   created_at: string;
   updated_at: string;
 }
@@ -203,4 +231,95 @@ export interface DebriefRequest {
     challenges: string[];
     goals: string[];
   };
+}
+
+// Daily Check-in table
+export interface DailyCheckin {
+  id: string;
+  profile_id: string;
+  activity_type: ActivityType;
+  prompt: string | null;
+  response_data: Record<string, unknown>;
+  completed: boolean;
+  score_impact: number;
+  created_at: string;
+}
+
+export interface DailyCheckinInsert {
+  id?: string;
+  profile_id: string;
+  activity_type: ActivityType;
+  prompt?: string | null;
+  response_data?: Record<string, unknown>;
+  completed?: boolean;
+  score_impact?: number;
+}
+
+// Commitment table
+export interface Commitment {
+  id: string;
+  profile_id: string;
+  checkin_id: string | null;
+  commitment_text: string;
+  completed: boolean;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface CommitmentInsert {
+  id?: string;
+  profile_id: string;
+  checkin_id?: string | null;
+  commitment_text: string;
+  completed?: boolean;
+  completed_at?: string | null;
+}
+
+// Practice Score table
+export interface PracticeScore {
+  id: string;
+  profile_id: string;
+  score: number;
+  delta: number;
+  source: string;
+  source_type: PracticeScoreSource;
+  recorded_at: string;
+}
+
+export interface PracticeScoreInsert {
+  id?: string;
+  profile_id: string;
+  score: number;
+  delta?: number;
+  source: string;
+  source_type: PracticeScoreSource;
+}
+
+// Activity configuration for welcome experience
+export interface ActivityConfig {
+  type: ActivityType;
+  title: string;
+  prompt: string;
+  icon: string;
+  color: string;
+  scoreImpact: number;
+}
+
+// Energy check-in response structure
+export interface EnergyCheckinResponse {
+  mood: number; // 1-5
+  energy: number; // 1-5
+  clarity: number; // 1-5
+}
+
+// Reflection response structure
+export interface ReflectionResponse {
+  text: string;
+  wordCount: number;
+}
+
+// Commitment response structure
+export interface CommitmentResponse {
+  commitment: string;
+  timeframe: 'today' | 'this_week' | 'ongoing';
 }

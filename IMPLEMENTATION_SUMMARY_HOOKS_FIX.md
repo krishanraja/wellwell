@@ -126,3 +126,4 @@ See `TESTING_CHECKLIST_HOOKS_FIX.md` for detailed testing steps.
 - Home component has its own loading guard, so it handles the no-user case gracefully
 - Navigate component doesn't prevent rendering, so children mount and call hooks before redirect
 
+

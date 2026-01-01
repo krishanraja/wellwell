@@ -117,3 +117,4 @@ Before deploying to production:
 - [ ] Monitor error logs for hooks violations
 - [ ] Verify ErrorBoundary doesn't trigger
 
+

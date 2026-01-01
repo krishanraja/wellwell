@@ -1,12 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useStreak } from "@/hooks/useStreak";
 import { useTimeOfDay } from "@/hooks/useTimeOfDay";
 import { useEvents } from "@/hooks/useEvents";
+import { useDailyCheckins } from "@/hooks/useDailyCheckins";
 import { useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import wellwellIcon from "@/assets/wellwell-icon.png";
-import { Flame, Sunrise, Sun, Moon, ArrowRight, Sparkles, Target, Compass } from "lucide-react";
+import { Flame, Sunrise, Sun, Moon, ArrowRight, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { ActivityType } from "@/types/database";
+
+// Activity components
+import { 
+  ReflectionPrompt, 
+  QuickChallenge, 
+  WisdomCard, 
+  EnergyCheckin, 
+  MicroCommitment, 
+  PatternInsight, 
+  StreakCelebration 
+} from "@/components/wellwell/activities";
 
 interface WelcomeBackScreenProps {
   onComplete: () => void;
@@ -19,11 +34,22 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   const { events, isLoading: eventsLoading } = useEvents();
   const { period, greeting } = useTimeOfDay();
   const navigate = useNavigate();
+  const { 
+    todayCheckins, 
+    createCheckin, 
+    isCreating,
+    WISDOM_CARDS, 
+    REFLECTION_PROMPTS, 
+    QUICK_CHALLENGES, 
+    COMMITMENT_PROMPTS,
+  } = useDailyCheckins();
   
-  const [phase, setPhase] = useState<'loading' | 'ready'>('loading');
+  const [phase, setPhase] = useState<'loading' | 'activity' | 'complete'>('loading');
+  const [currentActivity, setCurrentActivity] = useState<ActivityType | null>(null);
+  const [activityComplete, setActivityComplete] = useState(false);
+  const [wisdomIndex, setWisdomIndex] = useState(0);
   
   const isLoading = profileLoading || streakLoading || eventsLoading;
-  const isReturningUser = events.length > 0;
   const needsReOnboarding = daysSinceLastUse >= 21; // 3+ weeks
   const isWeeklyReturn = daysSinceLastUse >= 7 && daysSinceLastUse < 21;
 
@@ -33,383 +59,367 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     ? `${greeting}, ${displayName}` 
     : greeting;
 
-  // Determine primary action based on time of day
-  const getPrimaryAction = () => {
+  // Determine time period for prompts
+  const timePeriod = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) {
-      return { route: '/pulse', label: 'Morning Pulse', description: 'Set your stance for today', icon: Sunrise, color: 'hsl(45 100% 60%)' };
-    } else if (hour >= 17 && hour < 22) {
-      return { route: '/debrief', label: 'Evening Debrief', description: 'Reflect on your day', icon: Moon, color: 'hsl(260 80% 65%)' };
-    } else {
-      return { route: '/', label: 'Freeform Input', description: 'Ask anything, get clarity', icon: Sparkles, color: 'hsl(166 100% 50%)' };
+    if (hour >= 5 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 17) return 'afternoon';
+    return 'evening';
+  }, []);
+
+  // Check for streak milestones
+  const streakMilestone = useMemo(() => {
+    const milestones = [90, 60, 30, 14, 7];
+    return milestones.find(m => streak === m) || null;
+  }, [streak]);
+
+  // Select which activity to show
+  const selectActivity = (): ActivityType => {
+    // Check which activities have been completed today
+    const completedTypes = new Set(todayCheckins.map(c => c.activity_type));
+    
+    // If streak milestone, always celebrate first
+    if (streakMilestone && !completedTypes.has('streak_celebration')) {
+      return 'streak_celebration';
     }
-  };
 
-  const primaryAction = getPrimaryAction();
-
-  // Context-aware message
-  const getContextMessage = () => {
-    // Special messages for long-returning users
+    // Long-returning users get energy check-in or pattern insight
     if (needsReOnboarding) {
-      if (daysSinceLastUse >= 30) {
-        return "It's been a while. Let's reconnect with clarity.";
+      if (!completedTypes.has('energy_checkin')) return 'energy_checkin';
+      if (!completedTypes.has('pattern_insight')) return 'pattern_insight';
+      if (!completedTypes.has('micro_commitment')) return 'micro_commitment';
+    }
+
+    // Time-based activity selection
+    const activities: ActivityType[] = timePeriod === 'morning'
+      ? ['reflection_prompt', 'energy_checkin', 'micro_commitment', 'wisdom_card']
+      : timePeriod === 'afternoon'
+      ? ['quick_challenge', 'wisdom_card', 'reflection_prompt']
+      : ['reflection_prompt', 'wisdom_card', 'energy_checkin'];
+
+    // Find first activity not completed today
+    for (const activity of activities) {
+      if (!completedTypes.has(activity)) {
+        return activity;
       }
-      return "Welcome back. Here's what you can do.";
     }
-    
-    if (isWeeklyReturn) {
-      return "Good to see you again. Pick up where you left off.";
-    }
-    
-    const hour = new Date().getHours();
-    
-    // Check today's activity
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEvents = (events || []).filter(e => new Date(e.created_at) >= todayStart);
-    const hasPulseToday = todayEvents.some(e => e.tool_name === 'pulse');
-    const hasDebriefToday = todayEvents.some(e => e.tool_name === 'debrief');
-    
-    // Streak-based messages
-    if (streak >= 30) {
-      return "A month of practice. You're a Stoic now.";
-    }
-    if (streak >= 14) {
-      return "Two weeks strong. This is who you are.";
-    }
-    if (streak >= 7) {
-      return "One week of growth. Keep building.";
-    }
-    
-    // Time-based messages
-    if (hour >= 5 && hour < 12) {
-      if (hasPulseToday) {
-        return "You've set your stance. Stay composed.";
-      }
-      return "Let's prepare your mind for today.";
-    }
-    if (hour >= 12 && hour < 17) {
-      if (hasPulseToday) {
-        return "Your stance is set. I'm here if you need me.";
-      }
-      return "How can I help you stay composed?";
-    }
-    if (hour >= 17 && hour < 21) {
-      if (hasDebriefToday) {
-        return "Day complete. Rest well.";
-      }
-      if (hasPulseToday) {
-        return "Time to reflect on your day.";
-      }
-      return "How did today challenge you?";
-    }
-    
-    // Night
-    return "Take a moment before rest.";
+
+    // All done? Show wisdom card (always fresh)
+    return 'wisdom_card';
   };
-  
-  const handleContinue = () => {
-    onComplete();
+
+  // Get random prompt based on activity type
+  const getActivityPrompt = (type: ActivityType): string => {
+    switch (type) {
+      case 'reflection_prompt':
+        const prompts = REFLECTION_PROMPTS[timePeriod] || REFLECTION_PROMPTS.morning;
+        return prompts[Math.floor(Math.random() * prompts.length)];
+      case 'quick_challenge':
+        return QUICK_CHALLENGES[Math.floor(Math.random() * QUICK_CHALLENGES.length)].challenge;
+      case 'micro_commitment':
+        return COMMITMENT_PROMPTS[Math.floor(Math.random() * COMMITMENT_PROMPTS.length)];
+      case 'wisdom_card':
+        return WISDOM_CARDS[wisdomIndex].quote;
+      default:
+        return '';
+    }
   };
-  
+
+  // Handle activity completion
+  const handleActivityComplete = async (type: ActivityType, responseData: Record<string, unknown>) => {
+    setActivityComplete(true);
+    
+    try {
+      await createCheckin({
+        profile_id: profile?.id || '',
+        activity_type: type,
+        prompt: getActivityPrompt(type),
+        response_data: responseData,
+        completed: true,
+        score_impact: getScoreImpact(type),
+      });
+    } catch (error) {
+      console.error('Failed to save checkin:', error);
+    }
+    
+    // Brief celebration before transitioning
+    setTimeout(() => {
+      setPhase('complete');
+    }, 500);
+  };
+
+  // Handle skip
+  const handleSkip = () => {
+    setPhase('complete');
+  };
+
+  // Get score impact for activity
+  const getScoreImpact = (type: ActivityType): number => {
+    const impacts: Record<ActivityType, number> = {
+      reflection_prompt: 3,
+      quick_challenge: 3,
+      wisdom_card: 2,
+      energy_checkin: 3,
+      micro_commitment: 4,
+      pattern_insight: 2,
+      streak_celebration: 5,
+    };
+    return impacts[type] || 2;
+  };
+
+  // Handle direct action navigation
   const handleQuickAction = (route: string) => {
     onComplete();
     navigate(route);
   };
 
-  // Get time-appropriate icon
-  const TimeIcon = period === 'morning' ? Sunrise : period === 'afternoon' ? Sun : Moon;
+  // Refresh wisdom card
+  const handleRefreshWisdom = () => {
+    setWisdomIndex((prev) => (prev + 1) % WISDOM_CARDS.length);
+  };
+
+  // Generate pattern insight based on user data
+  const getPatternInsight = () => {
+    // Default pattern if no data
+    const basePattern = {
+      type: 'growth' as const,
+      title: 'Starting Fresh',
+      description: 'Every new beginning is a chance to practice wisdom. Let\'s build your path together.',
+      suggestion: 'Try completing your first Morning Pulse to set the tone for your day.',
+    };
+
+    if (!events || events.length === 0) return basePattern;
+
+    // Analyze user's patterns
+    const eventsByTool = events.reduce((acc, e) => {
+      acc[e.tool_name] = (acc[e.tool_name] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const mostUsedTool = Object.entries(eventsByTool).sort((a, b) => b[1] - a[1])[0];
+
+    if (mostUsedTool) {
+      const toolPatterns: Record<string, { title: string; description: string; type: 'positive' | 'neutral' | 'growth' }> = {
+        pulse: {
+          type: 'positive',
+          title: 'Morning Mindset Builder',
+          description: 'You\'re most active with Morning Pulse. This shows you value intentional starts.',
+        },
+        debrief: {
+          type: 'positive',
+          title: 'Evening Reflector',
+          description: 'You favor Evening Debriefs. Reflection is how we learn and grow.',
+        },
+        intervene: {
+          type: 'growth',
+          title: 'Active Problem Solver',
+          description: 'You use Intervene often. You face challenges head-on—a Stoic quality.',
+        },
+      };
+
+      const pattern = toolPatterns[mostUsedTool[0]] || basePattern;
+      return {
+        ...pattern,
+        dataPoints: [`${mostUsedTool[1]} ${mostUsedTool[0]} sessions`],
+        suggestion: daysSinceLastUse > 7 
+          ? 'Pick up where you left off with consistency.' 
+          : 'Keep this momentum going!',
+      };
+    }
+
+    return basePattern;
+  };
 
   useEffect(() => {
-    // Wait for data to load
     if (isLoading) return;
     
-    // For interactive-first approach, show immediately (no delays)
-    setPhase('ready');
+    // Random wisdom index on mount
+    setWisdomIndex(Math.floor(Math.random() * WISDOM_CARDS.length));
+    
+    // Select activity and show it
+    const activity = selectActivity();
+    setCurrentActivity(activity);
+    setPhase('activity');
   }, [isLoading]);
 
-  // Show minimal loader while fetching
-  if (isLoading) {
+  // Handle completion phase
+  useEffect(() => {
+    if (phase === 'complete') {
+      setTimeout(() => {
+        onComplete();
+      }, 200);
+    }
+  }, [phase, onComplete]);
+
+  // Loading state
+  if (isLoading || phase === 'loading') {
     return (
       <div 
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          backgroundColor: 'hsl(220 25% 8%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center"
+        style={{ backgroundColor: 'hsl(220 25% 8%)' }}
       >
-        <img 
+        <motion.img 
           src={wellwellIcon} 
           alt="WellWell" 
-          style={{ width: 64, height: 64, opacity: 0.5 }}
+          className="w-16 h-16"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.5, scale: 1 }}
+          transition={{ duration: 0.3 }}
         />
       </div>
     );
   }
 
-  // For 3+ week users: Interactive-first layout (buttons first)
-  if (needsReOnboarding && phase === 'ready') {
-    const PrimaryIcon = primaryAction.icon;
-    const secondaryActions = [
-      { route: '/pulse', label: 'Morning Pulse', description: 'Set your stance', icon: Sunrise, color: 'hsl(45 100% 60%)' },
-      { route: '/', label: 'Freeform Input', description: 'Ask anything', icon: Sparkles, color: 'hsl(166 100% 50%)' },
-      { route: '/debrief', label: 'Evening Debrief', description: 'Reflect on your day', icon: Moon, color: 'hsl(260 80% 65%)' },
-    ].filter(action => action.route !== primaryAction.route);
+  // Activity phase - show the selected mini-activity
+  if (phase === 'activity' && currentActivity) {
+    const currentWisdom = WISDOM_CARDS[wisdomIndex];
 
     return (
-      <div 
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          background: 'linear-gradient(180deg, hsl(220 25% 10%) 0%, hsl(220 25% 6%) 100%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px',
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[9999] flex flex-col overflow-hidden"
+        style={{ 
+          background: 'linear-gradient(180deg, hsl(220 25% 10%) 0%, hsl(220 25% 6%) 100%)'
         }}
       >
-        {/* Minimal greeting at top */}
-        <div style={{ position: 'absolute', top: 40, textAlign: 'center' }}>
-          <h1 style={{ fontSize: '20px', fontWeight: 600, color: 'hsl(210 40% 98%)', marginBottom: 4 }}>
-            {personalGreeting}
-          </h1>
-          {daysSinceLastUse > 0 && (
-            <p style={{ fontSize: '12px', color: 'hsl(215 20% 55%)' }}>
-              Last used {daysSinceLastUse} {daysSinceLastUse === 1 ? 'day' : 'days'} ago
-            </p>
-          )}
-        </div>
-
-        {/* Primary Action Button - Large and Prominent */}
-        <div style={{ width: '100%', maxWidth: 360, marginTop: 80 }}>
-          <Button
-            onClick={() => handleQuickAction(primaryAction.route)}
-            className="w-full h-auto py-6 gap-4"
-            style={{
-              backgroundColor: primaryAction.color,
-              color: 'hsl(220 25% 8%)',
-              border: 'none',
-              fontSize: '18px',
-              fontWeight: 600,
-              boxShadow: `0 8px 24px ${primaryAction.color}40`,
-            }}
-          >
-            <PrimaryIcon className="w-6 h-6" />
-            <div style={{ textAlign: 'left', flex: 1 }}>
-              <div>{primaryAction.label}</div>
-              <div style={{ fontSize: '14px', fontWeight: 400, opacity: 0.8 }}>
-                {primaryAction.description}
-              </div>
+        {/* Header */}
+        <div className="shrink-0 flex items-center justify-between p-4 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <img src={wellwellIcon} alt="" className="w-8 h-8" />
+            <div>
+              <p className="text-sm font-medium text-foreground">{personalGreeting}</p>
+              {daysSinceLastUse > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {daysSinceLastUse === 1 ? 'Yesterday' : `${daysSinceLastUse} days ago`}
+                </p>
+              )}
             </div>
-            <ArrowRight className="w-5 h-5" />
-          </Button>
+          </div>
+          <button 
+            onClick={handleSkip}
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Secondary Actions - Smaller */}
-        <div style={{ width: '100%', maxWidth: 360, marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {secondaryActions.map((action) => {
-            const ActionIcon = action.icon;
-            return (
-              <Button
-                key={action.route}
-                variant="outline"
-                onClick={() => handleQuickAction(action.route)}
-                className="w-full justify-start gap-3 h-auto py-3"
-                style={{
-                  backgroundColor: 'hsl(220 25% 12%)',
-                  borderColor: 'hsl(215 20% 25%)',
-                  color: 'hsl(210 40% 95%)',
-                }}
-              >
-                <ActionIcon className="w-4 h-4" style={{ color: action.color }} />
-                <div style={{ textAlign: 'left', flex: 1 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600 }}>{action.label}</div>
-                  <div style={{ fontSize: '12px', color: 'hsl(215 20% 65%)' }}>{action.description}</div>
-                </div>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            );
-          })}
+        {/* Streak badge if applicable */}
+        {streak >= 2 && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="shrink-0 flex justify-center py-3"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/15 border border-orange-500/20">
+              <Flame className="w-4 h-4 text-orange-400" />
+              <span className="text-sm font-semibold text-orange-400">{streak} day streak</span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Activity content */}
+        <div className="flex-1 overflow-y-auto px-6 py-8">
+          <AnimatePresence mode="wait">
+            {currentActivity === 'reflection_prompt' && (
+              <ReflectionPrompt
+                prompt={getActivityPrompt('reflection_prompt')}
+                onSubmit={(text) => handleActivityComplete('reflection_prompt', { text, wordCount: text.split(/\s+/).length })}
+                onSkip={handleSkip}
+                isSubmitting={isCreating}
+              />
+            )}
+
+            {currentActivity === 'quick_challenge' && (
+              <QuickChallenge
+                challenge={getActivityPrompt('quick_challenge')}
+                onComplete={(response) => handleActivityComplete('quick_challenge', response)}
+                onSkip={handleSkip}
+                isSubmitting={isCreating}
+              />
+            )}
+
+            {currentActivity === 'wisdom_card' && (
+              <WisdomCard
+                quote={currentWisdom.quote}
+                author={currentWisdom.author}
+                onComplete={(response) => handleActivityComplete('wisdom_card', response)}
+                onSkip={handleSkip}
+                onRefresh={handleRefreshWisdom}
+              />
+            )}
+
+            {currentActivity === 'energy_checkin' && (
+              <EnergyCheckin
+                onComplete={(response) => handleActivityComplete('energy_checkin', response)}
+                onSkip={handleSkip}
+                isSubmitting={isCreating}
+              />
+            )}
+
+            {currentActivity === 'micro_commitment' && (
+              <MicroCommitment
+                prompt={getActivityPrompt('micro_commitment')}
+                onComplete={(response) => handleActivityComplete('micro_commitment', response)}
+                onSkip={handleSkip}
+                isSubmitting={isCreating}
+              />
+            )}
+
+            {currentActivity === 'pattern_insight' && (
+              <PatternInsight
+                pattern={getPatternInsight()}
+                onComplete={(response) => handleActivityComplete('pattern_insight', response)}
+                onSkip={handleSkip}
+              />
+            )}
+
+            {currentActivity === 'streak_celebration' && streakMilestone && (
+              <StreakCelebration
+                streakDays={streak}
+                milestone={streakMilestone}
+                onComplete={(response) => handleActivityComplete('streak_celebration', response)}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Skip option at bottom */}
-        <Button
-          variant="ghost"
-          onClick={handleContinue}
-          className="mt-8"
-          style={{
-            color: 'hsl(215 20% 55%)',
-            fontSize: '14px',
-          }}
-        >
-          Continue to Home
-        </Button>
-      </div>
+        {/* Quick actions at bottom */}
+        <div className="shrink-0 p-4 border-t border-white/5">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleQuickAction('/pulse')}
+              className="flex-1 gap-2 bg-white/5 border-white/10 hover:bg-white/10"
+            >
+              <Sunrise className="w-4 h-4 text-amber-400" />
+              <span className="text-xs">Pulse</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleQuickAction('/')}
+              className="flex-1 gap-2 bg-white/5 border-white/10 hover:bg-white/10"
+            >
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-xs">Freeform</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleQuickAction('/debrief')}
+              className="flex-1 gap-2 bg-white/5 border-white/10 hover:bg-white/10"
+            >
+              <Moon className="w-4 h-4 text-purple-400" />
+              <span className="text-xs">Debrief</span>
+            </Button>
+          </div>
+        </div>
+      </motion.div>
     );
   }
 
-  // For weekly returns: Simplified tap-to-continue
-  if (isWeeklyReturn && phase === 'ready') {
-    return (
-      <div 
-        onClick={handleContinue}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          background: 'linear-gradient(180deg, hsl(220 25% 10%) 0%, hsl(220 25% 6%) 100%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px',
-          cursor: 'pointer',
-        }}
-      >
-        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'hsl(210 40% 98%)', marginBottom: 8, textAlign: 'center' }}>
-          {personalGreeting}
-        </h1>
-        <p style={{ fontSize: '16px', color: 'hsl(215 20% 65%)', textAlign: 'center', maxWidth: 280, marginBottom: 32 }}>
-          {getContextMessage()}
-        </p>
-        <p style={{ fontSize: '14px', color: 'hsl(215 20% 55%)', textAlign: 'center', animation: 'pulse 2s ease-in-out infinite' }}>
-          Tap anywhere to continue
-        </p>
-      </div>
-    );
-  }
-
-  // For daily users: Original simplified flow
-  return (
-    <div 
-      onClick={phase === 'ready' ? handleContinue : undefined}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        background: 'linear-gradient(180deg, hsl(220 25% 10%) 0%, hsl(220 25% 6%) 100%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-        cursor: phase === 'ready' ? 'pointer' : 'default',
-      }}
-    >
-      {/* Icon with ring */}
-      <div 
-        style={{
-          position: 'relative',
-          width: 100,
-          height: 100,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 32,
-          opacity: phase === 'ready' ? 1 : 0,
-          transform: phase === 'ready' ? 'scale(1)' : 'scale(0.9)',
-          transition: 'opacity 400ms ease-out, transform 400ms ease-out',
-        }}
-      >
-        <div 
-          style={{
-            position: 'absolute',
-            inset: -4,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, hsl(166 100% 50% / 0.3), hsl(187 100% 50% / 0.3))',
-            filter: 'blur(12px)',
-          }}
-        />
-        <img 
-          src={wellwellIcon} 
-          alt="WellWell" 
-          style={{
-            width: 72,
-            height: 72,
-            position: 'relative',
-            zIndex: 10,
-          }}
-        />
-      </div>
-
-      {/* Greeting */}
-      <h1 
-        style={{
-          fontSize: '28px',
-          fontWeight: 700,
-          color: 'hsl(210 40% 98%)',
-          textAlign: 'center',
-          marginBottom: 8,
-          opacity: phase === 'ready' ? 1 : 0,
-          transform: phase === 'ready' ? 'translateY(0)' : 'translateY(8px)',
-          transition: 'opacity 400ms ease-out, transform 400ms ease-out',
-        }}
-      >
-        {personalGreeting}
-      </h1>
-
-      {/* Context message */}
-      <p 
-        style={{
-          fontSize: '16px',
-          color: 'hsl(215 20% 65%)',
-          textAlign: 'center',
-          maxWidth: 280,
-          lineHeight: 1.5,
-          opacity: phase === 'ready' ? 1 : 0,
-          transform: phase === 'ready' ? 'translateY(0)' : 'translateY(8px)',
-          transition: 'opacity 400ms ease-out 100ms, transform 400ms ease-out 100ms',
-        }}
-      >
-        {getContextMessage()}
-      </p>
-
-      {/* Streak badge */}
-      {streak >= 2 && phase === 'ready' && (
-        <div 
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            marginTop: 24,
-            padding: '8px 16px',
-            background: 'hsl(8 100% 65% / 0.15)',
-            borderRadius: 20,
-            opacity: phase === 'ready' ? 1 : 0,
-            transform: phase === 'ready' ? 'translateY(0)' : 'translateY(8px)',
-            transition: 'opacity 400ms ease-out 200ms, transform 400ms ease-out 200ms',
-          }}
-        >
-          <Flame style={{ width: 16, height: 16, color: 'hsl(8 100% 65%)' }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'hsl(8 100% 75%)' }}>
-            {streak} day streak
-          </span>
-        </div>
-      )}
-
-      {/* Tap to continue hint */}
-      {phase === 'ready' && (
-        <p
-          style={{
-            fontSize: '14px',
-            color: 'hsl(215 20% 55%)',
-            textAlign: 'center',
-            marginTop: 24,
-            opacity: 1,
-            animation: 'pulse 2s ease-in-out infinite',
-          }}
-        >
-          Tap anywhere to continue
-        </p>
-      )}
-    </div>
-  );
+  // Fallback / transition
+  return null;
 };
 
 export default WelcomeBackScreen;

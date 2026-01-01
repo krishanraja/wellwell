@@ -79,30 +79,23 @@ export default function Home() {
   const [showTimeModal, setShowTimeModal] = useState(false);
   
   // Effect for welcome screen logic - MUST be before any early returns
+  // Welcome screen shows on EVERY login (once per day) with rotating mini-activities
   useEffect(() => {
     if (!eventsLoading && isFirstLoad) {
-      if (events.length === 0) {
-        setShowWelcome(false);
+      // Check if welcome was already shown today
+      const lastWelcomeDate = localStorage.getItem('wellwell_welcome_date');
+      const today = new Date().toDateString();
+      
+      // Always show welcome on first visit of the day
+      if (lastWelcomeDate !== today) {
+        setShowWelcome(true);
       } else {
-        // Show welcome for:
-        // - Weekly+ returning users (daysSinceLastUse >= 7)
-        // - Or first visit of day for active users (current behavior)
-        if (daysSinceLastUse >= 7) {
-          setShowWelcome(true);
-        } else {
-          // For daily users, check if welcome was already shown today
-          const lastWelcomeDate = localStorage.getItem('wellwell_welcome_date');
-          const today = new Date().toDateString();
-          if (lastWelcomeDate !== today) {
-            setShowWelcome(true);
-          } else {
-            setShowWelcome(false);
-          }
-        }
+        setShowWelcome(false);
       }
+      
       setIsFirstLoad(false);
     }
-  }, [eventsLoading, events.length, isFirstLoad, daysSinceLastUse]);
+  }, [eventsLoading, isFirstLoad]);
   
   // Get daily quote based on date - MUST be before any early returns
   const dailyQuote = useMemo(() => {
@@ -166,8 +159,8 @@ export default function Home() {
     }
   };
 
-  // Welcome screen for returning users
-  if (showWelcome && isReturningUser) {
+  // Welcome screen with rotating mini-activities - shows daily
+  if (showWelcome) {
     return (
       <>
         {ErrorModal}
