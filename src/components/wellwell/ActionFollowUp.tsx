@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { CheckCircle2, XCircle, RotateCcw, Sparkles, X } from "lucide-react";
+import { CheckCircle2, XCircle, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import wellwellIcon from "@/assets/wellwell-icon.png";
 
 interface PendingAction {
   action: string;
@@ -78,7 +79,7 @@ export function ActionFollowUp({
           {/* Header */}
           <div className="flex items-center gap-3 mb-4 pr-8">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-primary" />
+              <img src={wellwellIcon} alt="" className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium text-foreground">
@@ -119,7 +120,7 @@ export function ActionFollowUp({
               onClick={handleYes}
             >
               <CheckCircle2 className="w-4 h-4 shrink-0" />
-              <span className="truncate">Yes, done</span>
+              <span className="truncate">Did it!</span>
             </Button>
           </div>
           

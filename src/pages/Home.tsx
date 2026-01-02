@@ -34,8 +34,8 @@ const stoicQuotes = [
   { text: "If an evil has been pondered beforehand, the blow is gentle when it comes.", author: "Seneca" },
 ];
 
-// Local storage key to track if welcome has been shown
-const WELCOME_SHOWN_KEY = 'wellwell_welcome_shown';
+// Session storage key to track if welcome has been shown this session
+const WELCOME_SESSION_SHOWN_KEY = 'wellwell_welcome_session_shown';
 
 export default function Home() {
   // ALL HOOKS CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
@@ -50,7 +50,7 @@ export default function Home() {
   const [hasCommitted, setHasCommitted] = useState(false);
   
   const [showWelcome, setShowWelcome] = useState(() => {
-    return localStorage.getItem(WELCOME_SHOWN_KEY) !== 'true';
+    return sessionStorage.getItem(WELCOME_SESSION_SHOWN_KEY) !== 'true';
   });
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   
@@ -80,15 +80,14 @@ export default function Home() {
   const [showTimeModal, setShowTimeModal] = useState(false);
   
   // Effect for welcome screen logic - MUST be before any early returns
-  // Welcome screen shows on EVERY login (once per day) with rotating mini-activities
+  // Welcome screen shows on EVERY new session (browser tab/app load) with rotating mini-activities
   useEffect(() => {
     if (!eventsLoading && isFirstLoad) {
-      // Check if welcome was already shown today
-      const lastWelcomeDate = localStorage.getItem('wellwell_welcome_date');
-      const today = new Date().toDateString();
+      // Check if welcome was already shown this session
+      const sessionShown = sessionStorage.getItem(WELCOME_SESSION_SHOWN_KEY);
       
-      // Always show welcome on first visit of the day
-      if (lastWelcomeDate !== today) {
+      // Show welcome if not shown this session
+      if (sessionShown !== 'true') {
         setShowWelcome(true);
       } else {
         setShowWelcome(false);
@@ -117,8 +116,7 @@ export default function Home() {
   }
 
   const handleWelcomeComplete = () => {
-    localStorage.setItem(WELCOME_SHOWN_KEY, 'true');
-    localStorage.setItem('wellwell_welcome_date', new Date().toDateString());
+    sessionStorage.setItem(WELCOME_SESSION_SHOWN_KEY, 'true');
     setShowWelcome(false);
   };
 
