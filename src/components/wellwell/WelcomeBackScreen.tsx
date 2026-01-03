@@ -7,7 +7,7 @@ import { useDailyCheckins } from "@/hooks/useDailyCheckins";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import wellwellIcon from "@/assets/wellwell-icon.png";
-import { Flame, Sunrise, Sun, Moon, ArrowRight, Sparkles, X } from "lucide-react";
+import { Flame, Sunrise, Moon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ActivityType } from "@/types/database";
@@ -48,6 +48,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   const [currentActivity, setCurrentActivity] = useState<ActivityType | null>(null);
   const [activityComplete, setActivityComplete] = useState(false);
   const [wisdomIndex, setWisdomIndex] = useState(0);
+  const [selectedChallenge, setSelectedChallenge] = useState<{ challenge: string; type: 'dichotomy' | 'gratitude' | 'cognitive' | 'action' | 'mindfulness' } | null>(null);
   
   const isLoading = profileLoading || streakLoading || eventsLoading;
   const needsReOnboarding = daysSinceLastUse >= 21; // 3+ weeks
@@ -115,6 +116,10 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
         const prompts = REFLECTION_PROMPTS[timePeriod] || REFLECTION_PROMPTS.morning;
         return prompts[Math.floor(Math.random() * prompts.length)];
       case 'quick_challenge':
+        // Use the stored challenge if available, otherwise pick a random one
+        if (selectedChallenge) {
+          return selectedChallenge.challenge;
+        }
         return QUICK_CHALLENGES[Math.floor(Math.random() * QUICK_CHALLENGES.length)].challenge;
       case 'micro_commitment':
         return COMMITMENT_PROMPTS[Math.floor(Math.random() * COMMITMENT_PROMPTS.length)];
@@ -168,9 +173,16 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   };
 
   // Handle direct action navigation
+  // IMPORTANT: Navigate FIRST, then complete to avoid race condition
+  // where onComplete triggers unmount before navigate executes
   const handleQuickAction = (route: string) => {
-    onComplete();
+    // Navigate first to ensure route change happens
     navigate(route);
+    // Then mark welcome as complete (will be picked up by Home.tsx)
+    // Use microtask to ensure navigation has been initiated
+    queueMicrotask(() => {
+      onComplete();
+    });
   };
 
   // Refresh wisdom card
@@ -239,6 +251,13 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     // Select activity and show it
     const activity = selectActivity();
     setCurrentActivity(activity);
+    
+    // If quick_challenge, pre-select a challenge with its type
+    if (activity === 'quick_challenge') {
+      const randomChallenge = QUICK_CHALLENGES[Math.floor(Math.random() * QUICK_CHALLENGES.length)];
+      setSelectedChallenge(randomChallenge);
+    }
+    
     setPhase('activity');
   }, [isLoading]);
 
@@ -280,25 +299,38 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] flex flex-col overflow-hidden bg-background"
       >
-        {/* Header */}
-        <div className="shrink-0 flex items-center justify-between p-4 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <img src={wellwellIcon} alt="" className="w-8 h-8" />
-            <div>
-              <p className="text-sm font-medium text-foreground">{personalGreeting}</p>
-              {daysSinceLastUse > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {daysSinceLastUse === 1 ? 'Yesterday' : `${daysSinceLastUse} days ago`}
-                </p>
-              )}
+        {/* Header with welcome context */}
+        <div className="shrink-0 p-4 border-b border-white/5">
+          {/* Top row: Logo, greeting, and close button */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <img src={wellwellIcon} alt="" className="w-8 h-8" />
+              <div>
+                <p className="text-sm font-medium text-foreground">{personalGreeting}</p>
+                {daysSinceLastUse > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {daysSinceLastUse === 1 ? 'Yesterday' : `${daysSinceLastUse} days ago`}
+                  </p>
+                )}
+              </div>
             </div>
+            <button 
+              onClick={handleSkip}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button 
-            onClick={handleSkip}
-            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          
+          {/* Context: What this is and why */}
+          <div className="bg-white/5 rounded-xl p-3">
+            <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">
+              Quick Check-In
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Let's ease back in with a quick reflection. Takes ~30 seconds.
+            </p>
+          </div>
         </div>
 
         {/* Streak badge if applicable */}
@@ -327,9 +359,10 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
               />
             )}
 
-            {currentActivity === 'quick_challenge' && (
+            {currentActivity === 'quick_challenge' && selectedChallenge && (
               <QuickChallenge
-                challenge={getActivityPrompt('quick_challenge')}
+                challenge={selectedChallenge.challenge}
+                challengeType={selectedChallenge.type}
                 onComplete={(response) => handleActivityComplete('quick_challenge', response)}
                 onSkip={handleSkip}
                 isSubmitting={isCreating}
@@ -381,7 +414,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
           </AnimatePresence>
         </div>
 
-        {/* Quick actions at bottom */}
+        {/* Quick actions at bottom - only Pulse and Debrief (Freeform removed - navigates to current page) */}
         <div className="shrink-0 p-4 border-t border-white/5">
           <div className="flex gap-2">
             <Button
@@ -391,14 +424,6 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
             >
               <Sunrise className="w-4 h-4 text-amber-400" />
               <span className="text-xs">Pulse</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleQuickAction('/')}
-              className="flex-1 gap-2 bg-white/5 border-white/10 hover:bg-white/10"
-            >
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-xs">Freeform</span>
             </Button>
             <Button
               variant="outline"

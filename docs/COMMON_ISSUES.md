@@ -1,10 +1,26 @@
 # WellWell Common Issues & Troubleshooting
 
+This document provides solutions for common issues encountered during development and in production.
+
+---
+
+## Quick Fixes
+
+| Symptom | Likely Cause | Quick Fix |
+|---------|--------------|-----------|
+| "Configuration Problem" after login | Hooks violation | Check wrapper components always render children |
+| ErrorBoundary showing frequently | API errors not handled | Check hooks return safe defaults |
+| Welcome screen shows every time | localStorage not persisting | Check `handleWelcomeComplete` is called |
+| AI analysis stuck loading | No cancel mechanism | Kill browser tab, refresh |
+| Virtue scores not updating | RLS policy issue | Check profile_id matches |
+
+---
+
 ## Authentication Issues
 
 ### Issue: "Configuration Problem" error after login (React Error #300)
 
-**Status**: ✅ Resolved (2025-01-XX)
+**Status**: ✅ Resolved (January 2026)
 
 **Symptoms**: 
 - User sees "Configuration Problem" error page after successful login
@@ -12,11 +28,12 @@
 - Login itself succeeds (authentication works)
 
 **Root Cause**: 
-- React hooks violation caused by conditional rendering in `UsageLimitGate`
+- React hooks violation caused by conditional rendering in `ProtectedRoute` and `UsageLimitGate`
 - ErrorBoundary mis-categorized hooks violations as configuration errors
 
 **Solution**: 
-- Fixed `UsageLimitGate` to always render children (use overlay for loading)
+- Modified `ProtectedRoute.tsx` to always render children with overlay pattern
+- Modified `UsageLimitGate.tsx` to always render children with overlay pattern
 - Fixed ErrorBoundary to detect hooks violations before config errors
 - Enhanced error logging for better debugging
 
@@ -241,3 +258,176 @@ const { data } = await supabase
 - Filter by level in console
 - Use trace IDs to filter sessions
 - Reduce DEBUG level logging
+
+---
+
+## React Errors
+
+### Issue: React Error #300 (Hooks Violation)
+
+**Symptoms**: 
+- "Rendered fewer hooks than expected" error
+- ErrorBoundary triggered after navigation
+- App crashes on state transitions
+
+**Root Causes**:
+1. Wrapper components conditionally rendering children
+2. Early returns before all hooks are called
+3. Hooks inside conditionals
+
+**Common Violators**:
+- `ProtectedRoute` — Must always render children
+- `UsageLimitGate` — Must always render children
+- Any component with `if (loading) return <Spinner />`
+
+**Solution Pattern**:
+```typescript
+// ❌ WRONG - Violates hooks rules
+if (isLoading) {
+  return <Spinner />;
+}
+return <>{children}</>;
+
+// ✅ CORRECT - Always render children
+if (isLoading) {
+  return (
+    <>
+      <LoadingOverlay />
+      {children}
+    </>
+  );
+}
+return <>{children}</>;
+```
+
+**Full Details**: See [Issue History: Login Hooks Violation](./ISSUE_HISTORY_LOGIN_HOOKS_VIOLATION.md)
+
+---
+
+### Issue: ErrorBoundary Triggered Frequently
+
+**Status**: ✅ Resolved (January 2026)
+
+**Symptoms**:
+- "Something went wrong" page appears often
+- ErrorBoundary catches TypeError exceptions
+- Happens after API failures
+
+**Root Cause**:
+- Components don't check for undefined data
+- React Query enters error state when queryFn throws
+- Components access `data.property` without null check
+
+**Solution**:
+```typescript
+// ❌ WRONG - Throws when data is undefined
+const { data } = useProfile();
+return <div>{data.display_name}</div>;
+
+// ✅ CORRECT - Handle undefined data
+const { data } = useProfile();
+return <div>{data?.display_name ?? 'Loading...'}</div>;
+```
+
+**Prevention in Hooks**:
+```typescript
+// Return safe defaults instead of throwing
+if (error) {
+  logger.error('Failed to fetch', { error });
+  return null; // or [] for arrays
+}
+```
+
+**Full Details**: See [Issue History: Error Prevention](./ISSUE_HISTORY_ERROR_PREVENTION.md)
+
+---
+
+## State Management Issues
+
+### Issue: Welcome Screen Shows Every Refresh
+
+**Symptoms**: Welcome back screen appears on every page load
+
+**Root Cause**: 
+- Using `sessionStorage` (cleared on tab close)
+- Or `handleWelcomeComplete` not being called
+
+**Solution**:
+- Use `localStorage` for persistence across sessions
+- Verify `handleWelcomeComplete` is called on all dismiss paths
+
+**Code Location**: `src/pages/Home.tsx`
+
+---
+
+### Issue: AI Analysis State Lost on Navigation
+
+**Symptoms**:
+- User navigates away during AI call
+- State lost, must re-enter input
+- No way to recover previous analysis
+
+**Status**: ✅ Resolved (January 2026)
+
+**Solution**:
+- Analysis state saved to `sessionStorage`
+- State restored on component mount (if < 5 minutes old)
+- Cancel mechanism added with AbortController
+
+**Code Location**: `src/hooks/useStoicAnalyzer.tsx`
+
+---
+
+### Issue: Usage Tracked Before AI Success
+
+**Symptoms**:
+- User loses quota even when AI fails
+- Unfair quota consumption
+
+**Status**: ✅ Resolved (January 2026)
+
+**Solution**:
+- `trackUsage()` moved to after successful `analyze()` response
+- Wrapped in try-catch to prevent blocking on tracking failure
+
+**Code Location**: All tool pages (`Pulse.tsx`, `Intervene.tsx`, `Debrief.tsx`, `Home.tsx`)
+
+---
+
+## Deployment Issues
+
+### Issue: Edge Function Returns 401 Unauthorized
+
+**Symptoms**: AI analysis fails with 401 error
+
+**Causes**:
+1. Auth token not passed to edge function
+2. Supabase anon key invalid
+3. User session expired
+
+**Solutions**:
+1. Verify `Authorization: Bearer <token>` header is included
+2. Check Supabase anon key format (should start with `eyJ...`)
+3. Implement session refresh logic
+
+---
+
+### Issue: Environment Variables Not Loading
+
+**Symptoms**: 
+- Supabase client shows undefined URL/key
+- Console error about missing config
+
+**Solutions**:
+1. Restart dev server (Vite caches env vars)
+2. Verify `.env` file exists and has correct format
+3. Check variable names start with `VITE_`
+
+```bash
+# Verify env vars
+Get-Content .env | Select-String "VITE_SUPABASE"
+```
+
+---
+
+*Last Updated: January 3, 2026*

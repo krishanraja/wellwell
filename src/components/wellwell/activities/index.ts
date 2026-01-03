@@ -1,5 +1,6 @@
 export { ReflectionPrompt } from './ReflectionPrompt';
 export { QuickChallenge } from './QuickChallenge';
+export type { ChallengeType, ChallengeResponseData } from './QuickChallenge';
 export { WisdomCard } from './WisdomCard';
 export { EnergyCheckin } from './EnergyCheckin';
 export { MicroCommitment } from './MicroCommitment';

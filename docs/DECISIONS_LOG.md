@@ -238,9 +238,185 @@ This document tracks key architectural and design decisions with rationale.
 
 ---
 
+## 2025-01 | Error Prevention Strategy
+
+### Decision: Prevent Errors at Source, Not Boundaries
+**Context**: ErrorBoundary triggered frequently when API calls failed. Components didn't handle React Query error states.
+
+**Options Considered**:
+1. Add try-catch around every data access (rejected - too verbose)
+2. Add error checking in every component (rejected - inconsistent)
+3. Return safe defaults from hooks instead of throwing (chosen)
+
+**Decision**: Hooks return safe defaults (`null`, `[]`) instead of throwing errors
+
+**Rationale**:
+- Prevents React Query from entering error state
+- Components become more resilient automatically
+- Consistent pattern across all hooks
+- No need for error checking in every component
+
+**Implementation**:
+```typescript
+// BEFORE: Throws on error
+if (error) {
+  throw error;
+}
+
+// AFTER: Returns safe default
+if (error) {
+  logger.error('Failed to fetch', { error: error.message });
+  return null; // or [] for arrays
+}
+```
+
+**Impact**:
+- ErrorBoundary no longer triggered by API failures
+- Zero TypeError exceptions from undefined data access
+- App continues working with partial failures
+
+---
+
+## 2025-01 | Always Render Children Pattern
+
+### Decision: Wrapper Components Always Render Children
+**Context**: React hooks violations (Error #300) caused by conditional rendering in wrapper components.
+
+**Options Considered**:
+1. Remove wrapper components (rejected - lose encapsulation)
+2. Lift state up (rejected - complex refactoring)
+3. Always render children with overlay pattern (chosen)
+
+**Decision**: Wrapper components always render children, use overlays for loading/error states
+
+**Rationale**:
+- Ensures hooks are called consistently on every render
+- Follows React's Rules of Hooks
+- Loading states remain visible without blocking children
+- Children can have their own loading guards
+
+**Implementation**:
+```typescript
+// BEFORE: Conditional rendering violates hooks rules
+if (isLoading) {
+  return <Spinner />;
+}
+return <>{children}</>;
+
+// AFTER: Always render children with overlay
+if (isLoading) {
+  return (
+    <>
+      <LoadingOverlay />
+      {children} // Always render
+    </>
+  );
+}
+return <>{children}</>;
+```
+
+**Impact**:
+- Eliminated React Error #300
+- Consistent hook calls across all render paths
+- No more ErrorBoundary triggers on navigation
+
+---
+
+## 2025-01 | Secure Token Storage
+
+### Decision: Use sessionStorage Instead of localStorage for Auth Tokens
+**Context**: XSS attack could steal tokens from localStorage, compromising user accounts.
+
+**Options Considered**:
+1. Keep localStorage (rejected - XSS vulnerable)
+2. httpOnly cookies (rejected - requires backend changes)
+3. sessionStorage (chosen - cleared on tab close)
+
+**Decision**: Store auth tokens in sessionStorage
+
+**Rationale**:
+- Tokens cleared when tab closes (reduced exposure window)
+- Still accessible to JavaScript (required for Supabase SDK)
+- No backend changes required
+- Balance of security and convenience
+
+**Future Consideration**:
+- For maximum security, implement httpOnly cookies via edge function proxy
+
+---
+
+## 2025-01 | State Machine for Auth
+
+### Decision: Explicit Auth State Machine
+**Context**: Auth state transitions were implicit, making debugging difficult.
+
+**Options Considered**:
+1. Keep implicit state (rejected - hard to debug)
+2. Use XState library (rejected - overhead for simple case)
+3. Custom state machine with explicit states (chosen)
+
+**Decision**: Create explicit `AuthStateMachine` with defined states and transitions
+
+**States Defined**:
+- `anonymous_visitor`
+- `anonymous_with_progress`
+- `email_captured`
+- `signed_in_unverified`
+- `signed_in`
+- `session_expired`
+- `signed_out`
+
+**Rationale**:
+- Clear visibility into auth state
+- Explicit transitions for debugging
+- Can add logging/tracking to state changes
+- Enables session expiry detection
+
+---
+
+## 2025-01 | Generic Error Messages for Auth
+
+### Decision: Don't Reveal Account Existence
+**Context**: Specific error messages like "Email not found" enable account enumeration attacks.
+
+**Options Considered**:
+1. Show specific errors (rejected - security risk)
+2. Generic errors only (chosen)
+
+**Decision**: All auth failures show "Invalid email or password"
+
+**Rationale**:
+- Prevents attackers from enumerating valid accounts
+- Standard security practice
+- Users can use "Forgot Password" to verify account exists
+
+---
+
+## 2025-01 | Edge Function Authentication
+
+### Decision: Require Auth for All AI Edge Functions
+**Context**: `stoic-analyzer` edge function was unprotected, allowing unauthorized AI usage.
+
+**Options Considered**:
+1. Keep open (rejected - costs money, abuse risk)
+2. API key authentication (rejected - key management)
+3. JWT validation from Supabase Auth (chosen)
+
+**Decision**: Validate Supabase auth token in edge function
+
+**Rationale**:
+- Prevents unauthorized AI usage
+- Leverages existing auth system
+- No additional secrets to manage
+- Consistent with RLS security model
+
+---
+
 ## Future Decisions Pending
 
 - [ ] Push notification strategy
 - [ ] Offline support approach
 - [ ] Team/org multi-tenancy
 - [ ] Export/backup format
+- [ ] Content Security Policy (CSP) headers
+- [ ] httpOnly cookies for maximum token security

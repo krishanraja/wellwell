@@ -44,8 +44,11 @@ const REFLECTION_PROMPTS = {
   ],
 };
 
-// Quick challenges
-const QUICK_CHALLENGES = [
+// Quick challenge types for type-aware UI rendering
+export type QuickChallengeType = 'dichotomy' | 'gratitude' | 'cognitive' | 'action' | 'mindfulness';
+
+// Quick challenges with type for rendering the correct UI
+const QUICK_CHALLENGES: Array<{ challenge: string; type: QuickChallengeType }> = [
   { challenge: "Name 3 things completely in your control right now", type: "dichotomy" },
   { challenge: "Take 3 deep breaths and notice how you feel", type: "mindfulness" },
   { challenge: "Think of one person you're grateful for and why", type: "gratitude" },
