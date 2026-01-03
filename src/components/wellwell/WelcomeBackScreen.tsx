@@ -255,8 +255,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   if (isLoading || phase === 'loading') {
     return (
       <div 
-        className="fixed inset-0 z-[9999] flex items-center justify-center"
-        style={{ backgroundColor: 'hsl(220 25% 8%)' }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-background"
       >
         <motion.img 
           src={wellwellIcon} 
@@ -279,10 +278,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] flex flex-col overflow-hidden"
-        style={{ 
-          background: 'linear-gradient(180deg, hsl(220 25% 10%) 0%, hsl(220 25% 6%) 100%)'
-        }}
+        className="fixed inset-0 z-[9999] flex flex-col overflow-hidden bg-background"
       >
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between p-4 border-b border-white/5">
