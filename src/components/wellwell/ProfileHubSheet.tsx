@@ -13,7 +13,9 @@ import {
   RotateCcw,
   FileText,
   BookOpen,
-  Sparkles
+  Sparkles,
+  HelpCircle,
+  Newspaper
 } from "lucide-react";
 import {
   Sheet,
@@ -219,8 +221,30 @@ export function ProfileHubSheet({ className }: ProfileHubSheetProps) {
               })}
             </div>
             
-            {/* Footer - Settings, About, Sign Out */}
+            {/* Footer - FAQ, Blog, Settings, About, Sign Out */}
             <div className="shrink-0 border-t border-border/50 p-4 space-y-1">
+              {/* Support Links */}
+              <div className="flex gap-2 mb-2">
+                <SheetClose asChild>
+                  <button
+                    onClick={() => handleNavigate('/faq')}
+                    className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
+                  >
+                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-xs font-medium text-foreground">FAQ</span>
+                  </button>
+                </SheetClose>
+                <SheetClose asChild>
+                  <button
+                    onClick={() => handleNavigate('/blog')}
+                    className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
+                  >
+                    <Newspaper className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-xs font-medium text-foreground">Blog</span>
+                  </button>
+                </SheetClose>
+              </div>
+              
               <SheetClose asChild>
                 <button
                   onClick={() => handleNavigate('/settings')}

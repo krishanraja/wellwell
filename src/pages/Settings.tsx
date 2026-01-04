@@ -44,8 +44,8 @@ export default function Settings() {
   return (
     <>
       {ErrorModal}
-      <Layout>
-        <div className="space-y-6">
+      <Layout scrollable>
+        <div className="space-y-6 pb-4">
         <div className="animate-fade-up">
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">Settings</h1>
           <p className="text-muted-foreground">Customize your WellWell experience.</p>

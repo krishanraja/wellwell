@@ -3,8 +3,8 @@ import { StoicCard, StoicCardContent } from "@/components/wellwell/StoicCard";
 
 export default function About() {
   return (
-    <Layout>
-      <div className="space-y-6">
+    <Layout scrollable>
+      <div className="space-y-6 pb-4">
         {/* Header */}
         <div className="text-center animate-fade-up">
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">

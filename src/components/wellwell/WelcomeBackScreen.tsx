@@ -7,7 +7,7 @@ import { useDailyCheckins } from "@/hooks/useDailyCheckins";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import wellwellIcon from "@/assets/wellwell-icon.png";
-import { Flame, Sunrise, Moon, X } from "lucide-react";
+import { Flame, Sunrise, Moon, X, HelpCircle, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ActivityType } from "@/types/database";
@@ -48,6 +48,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   const [currentActivity, setCurrentActivity] = useState<ActivityType | null>(null);
   const [activityComplete, setActivityComplete] = useState(false);
   const [wisdomIndex, setWisdomIndex] = useState(0);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [selectedChallenge, setSelectedChallenge] = useState<{ challenge: string; type: 'dichotomy' | 'gratitude' | 'cognitive' | 'action' | 'mindfulness' } | null>(null);
   
   const isLoading = profileLoading || streakLoading || eventsLoading;
@@ -133,12 +134,14 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   // Handle activity completion
   const handleActivityComplete = async (type: ActivityType, responseData: Record<string, unknown>) => {
     setActivityComplete(true);
+    setSaveError(null);
     
     // Guard: Don't attempt to save if profile not loaded
     if (!profile?.id) {
       console.warn('Cannot save checkin: profile not loaded');
+      setSaveError('Profile not loaded - check-in not saved');
       // Still transition to complete phase
-      setTimeout(() => setPhase('complete'), 500);
+      setTimeout(() => setPhase('complete'), 1500);
       return;
     }
     
@@ -153,16 +156,21 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
       });
     } catch (error) {
       console.error('Failed to save checkin:', error);
+      // Show user-visible error feedback
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Unable to save check-in. Please try again.';
+      setSaveError(errorMessage);
       // Log more details for debugging
       if (error instanceof Error) {
-        console.error('Error details:', error.message);
+        console.error('Error details:', error.message, error.stack);
       }
     }
     
-    // Brief celebration before transitioning
+    // Brief celebration before transitioning (longer if error to show message)
     setTimeout(() => {
       setPhase('complete');
-    }, 500);
+    }, saveError ? 1500 : 500);
   };
 
   // Handle skip
@@ -310,6 +318,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] flex flex-col overflow-hidden bg-background"
+        style={{ height: '100dvh', minHeight: '-webkit-fill-available' }}
       >
         {/* Header with welcome context */}
         <div className="shrink-0 p-4 border-b border-white/5">
@@ -344,6 +353,22 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
             </p>
           </div>
         </div>
+
+        {/* Error feedback toast */}
+        <AnimatePresence>
+          {saveError && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="shrink-0 mx-4 mt-2"
+            >
+              <div className="bg-destructive/15 border border-destructive/30 text-destructive text-sm px-4 py-2 rounded-xl text-center">
+                {saveError}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Streak badge if applicable */}
         {streak >= 2 && (

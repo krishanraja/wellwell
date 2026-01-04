@@ -99,9 +99,26 @@
 
 @layer base {
   * { @apply border-border; }
-  html { height: 100%; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-  body { @apply bg-background text-foreground font-sans; height: 100%; overflow: hidden; overflow-x: hidden; }
-  #root { height: 100%; overflow: hidden; overflow-x: hidden; }
+  html { 
+    height: 100%; 
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    -webkit-font-smoothing: antialiased; 
+    overflow-x: hidden; 
+  }
+  body { 
+    @apply bg-background text-foreground font-sans; 
+    height: 100%; 
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    min-height: -webkit-fill-available; /* Safari iOS fix */
+    overflow: hidden; 
+    overflow-x: hidden; 
+  }
+  #root { 
+    height: 100%; 
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    overflow: hidden; 
+    overflow-x: hidden; 
+  }
   
   /* Prevent horizontal overflow on all elements */
   *, *::before, *::after {
@@ -131,6 +148,11 @@
   
   .app-container {
     @apply fixed inset-0 bg-background overflow-hidden;
+    /* Mobile viewport fix: use dvh for dynamic viewport height */
+    height: 100dvh;
+    height: 100vh; /* Fallback for older browsers */
+    /* Safari iOS fix */
+    min-height: -webkit-fill-available;
   }
   
   .app-wrapper {
