@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Zap, Target, MessageCircle, AlertTriangle, ChevronRight } from "lucide-react";
+import { Zap, Target, MessageCircle, AlertTriangle, ChevronRight, Sunrise, Moon } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -16,9 +16,30 @@ interface QuickTool {
   route: string;
   color: string;
   description: string;
+  category?: "ritual" | "situational";
 }
 
 const quickTools: QuickTool[] = [
+  // Daily Rituals
+  {
+    id: "pulse",
+    label: "Morning Pulse",
+    icon: Sunrise,
+    route: "/pulse",
+    color: "hsl(45 100% 60%)",
+    description: "Set your daily intention",
+    category: "ritual",
+  },
+  {
+    id: "debrief",
+    label: "Evening Debrief",
+    icon: Moon,
+    route: "/debrief",
+    color: "hsl(8 100% 71%)",
+    description: "Reflect on your day",
+    category: "ritual",
+  },
+  // Situational Tools
   {
     id: "decision",
     label: "Decision",
@@ -26,14 +47,16 @@ const quickTools: QuickTool[] = [
     route: "/decision",
     color: "hsl(187 100% 42%)",
     description: "Make a clear choice",
+    category: "situational",
   },
   {
     id: "conflict",
     label: "Conflict",
     icon: MessageCircle,
     route: "/conflict",
-    color: "hsl(30 100% 55%)", // warm orange for conflict
+    color: "hsl(30 100% 55%)",
     description: "Navigate disagreement",
+    category: "situational",
   },
   {
     id: "intervene",
@@ -42,6 +65,7 @@ const quickTools: QuickTool[] = [
     route: "/intervene",
     color: "hsl(8 100% 71%)",
     description: "Handle the moment",
+    category: "situational",
   },
 ];
 
@@ -105,34 +129,75 @@ export function QuickToolsSheet({ className }: QuickToolsSheetProps) {
             <div className="mx-5 h-px bg-border/50" />
             
             {/* Tools */}
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-2">
-                Choose Your Challenge
-              </p>
-              <div className="space-y-1">
-                {quickTools.map((tool) => {
-                  const Icon = tool.icon;
-                  return (
-                    <SheetClose key={tool.id} asChild>
-                      <button
-                        onClick={() => handleToolClick(tool.route)}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all active:scale-[0.98] group"
-                      >
-                        <div 
-                          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: `${tool.color}20` }}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+              {/* Daily Rituals */}
+              <div>
+                <div className="flex items-center gap-2 mb-2 px-2">
+                  <Sunrise className="w-4 h-4 text-[hsl(45_100%_60%)]" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Daily Rituals
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {quickTools.filter(t => t.category === "ritual").map((tool) => {
+                    const Icon = tool.icon;
+                    return (
+                      <SheetClose key={tool.id} asChild>
+                        <button
+                          onClick={() => handleToolClick(tool.route)}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all active:scale-[0.98] group"
                         >
-                          <Icon className="w-5 h-5" style={{ color: tool.color }} />
-                        </div>
-                        <div className="flex-1 text-left min-w-0">
-                          <p className="text-sm font-medium text-foreground">{tool.label}</p>
-                          <p className="text-xs text-muted-foreground truncate">{tool.description}</p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </button>
-                    </SheetClose>
-                  );
-                })}
+                          <div 
+                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: `${tool.color}20` }}
+                          >
+                            <Icon className="w-5 h-5" style={{ color: tool.color }} />
+                          </div>
+                          <div className="flex-1 text-left min-w-0">
+                            <p className="text-sm font-medium text-foreground">{tool.label}</p>
+                            <p className="text-xs text-muted-foreground truncate">{tool.description}</p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                      </SheetClose>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Situational Tools */}
+              <div>
+                <div className="flex items-center gap-2 mb-2 px-2">
+                  <Zap className="w-4 h-4 text-aqua" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Situational
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {quickTools.filter(t => t.category === "situational").map((tool) => {
+                    const Icon = tool.icon;
+                    return (
+                      <SheetClose key={tool.id} asChild>
+                        <button
+                          onClick={() => handleToolClick(tool.route)}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all active:scale-[0.98] group"
+                        >
+                          <div 
+                            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                            style={{ backgroundColor: `${tool.color}20` }}
+                          >
+                            <Icon className="w-5 h-5" style={{ color: tool.color }} />
+                          </div>
+                          <div className="flex-1 text-left min-w-0">
+                            <p className="text-sm font-medium text-foreground">{tool.label}</p>
+                            <p className="text-xs text-muted-foreground truncate">{tool.description}</p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                      </SheetClose>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 

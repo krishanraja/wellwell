@@ -1,13 +1,19 @@
 {
   "name": "WellWell",
   "short_name": "WellWell",
-  "description": "Stoic philosophy in your pocket. Think clean. Act clear.",
+  "description": "Stoic philosophy in your pocket. Think clean. Act clear. A product of Mindmaker LLC.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0D0F14",
   "theme_color": "#00FFD1",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
     {
       "src": "/favicon-192.png",
       "sizes": "192x192",

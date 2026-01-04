@@ -5,13 +5,18 @@ import { SignOutDialog } from "@/components/wellwell/SignOutDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { User, Bell, Moon, Shield, LogOut, Sparkles, CreditCard, Loader2, HelpCircle, BookOpen, ChevronRight } from "lucide-react";
+import { User, Bell, Moon, Shield, LogOut, Sparkles, CreditCard, Loader2, HelpCircle, BookOpen, ChevronRight, MessageSquare, Send, Bug, Lightbulb, Check } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useErrorModal } from "@/components/wellwell/ErrorModal";
 
+type FeedbackType = 'feedback' | 'bug' | 'feature';
+
 export default function Settings() {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { isPro, subscription, isLoading, refreshSubscription } = useSubscription();
   const { showError, ErrorModal } = useErrorModal();
   const navigate = useNavigate();
@@ -19,6 +24,12 @@ export default function Settings() {
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  
+  // Contact form state
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>('feedback');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("upgraded") === "true") {
@@ -38,6 +49,41 @@ export default function Settings() {
       showError("Failed to open subscription management.", "Error");
     } finally {
       setPortalLoading(false);
+    }
+  };
+
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackMessage.trim()) return;
+    
+    setFeedbackLoading(true);
+    try {
+      const typeLabels: Record<FeedbackType, string> = {
+        feedback: 'General Feedback',
+        bug: 'Bug Report',
+        feature: 'Feature Request',
+      };
+      
+      const { error } = await supabase.functions.invoke('send-lead-email', {
+        body: {
+          type: 'contact',
+          email: user?.email || 'anonymous@wellwell.app',
+          name: profile?.display_name || user?.email?.split('@')[0] || 'WellWell User',
+          message: `[${typeLabels[feedbackType]}]\n\n${feedbackMessage}`,
+          source: 'settings_contact_form'
+        }
+      });
+      
+      if (error) throw error;
+      
+      setFeedbackSuccess(true);
+      setFeedbackMessage('');
+      
+      // Reset success state after 3 seconds
+      setTimeout(() => setFeedbackSuccess(false), 3000);
+    } catch (err) {
+      showError("Failed to send feedback. Please try again.", "Error");
+    } finally {
+      setFeedbackLoading(false);
     }
   };
 
@@ -162,8 +208,72 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Privacy Section */}
+        {/* Contact & Feedback Section */}
         <div className="space-y-3 animate-fade-up" style={{ animationDelay: "300ms" }}>
+          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">Contact & Feedback</h2>
+          <div className="stoic-card space-y-4">
+            {/* Feedback type selector */}
+            <div className="flex gap-2">
+              {[
+                { type: 'feedback' as FeedbackType, icon: MessageSquare, label: 'Feedback' },
+                { type: 'bug' as FeedbackType, icon: Bug, label: 'Bug' },
+                { type: 'feature' as FeedbackType, icon: Lightbulb, label: 'Feature' },
+              ].map(({ type, icon: Icon, label }) => (
+                <button
+                  key={type}
+                  onClick={() => setFeedbackType(type)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
+                    feedbackType === type
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            
+            {/* Message input */}
+            <Textarea
+              placeholder={
+                feedbackType === 'bug' 
+                  ? "Describe the bug you encountered..." 
+                  : feedbackType === 'feature'
+                  ? "What feature would make WellWell better?"
+                  : "Share your thoughts with us..."
+              }
+              value={feedbackMessage}
+              onChange={(e) => setFeedbackMessage(e.target.value)}
+              className="min-h-[100px] resize-none bg-muted/30 border-border/50"
+              disabled={feedbackLoading || feedbackSuccess}
+            />
+            
+            {/* Submit button */}
+            <Button
+              onClick={handleFeedbackSubmit}
+              disabled={!feedbackMessage.trim() || feedbackLoading || feedbackSuccess}
+              className="w-full"
+              variant={feedbackSuccess ? "outline" : "default"}
+            >
+              {feedbackLoading ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</>
+              ) : feedbackSuccess ? (
+                <><Check className="w-4 h-4 mr-2 text-emerald-500" />Message Sent!</>
+              ) : (
+                <><Send className="w-4 h-4 mr-2" />Send to Mindmaker LLC</>
+              )}
+            </Button>
+            
+            {/* Company info */}
+            <p className="text-[10px] text-center text-muted-foreground">
+              WellWell is a product of Mindmaker LLC • krish@themindmaker.ai
+            </p>
+          </div>
+        </div>
+
+        {/* Privacy Section */}
+        <div className="space-y-3 animate-fade-up" style={{ animationDelay: "360ms" }}>
           <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">Privacy</h2>
           <div className="stoic-card">
             <div className="flex items-center gap-3">
@@ -174,7 +284,7 @@ export default function Settings() {
         </div>
 
         {/* Sign Out */}
-        <div className="animate-fade-up" style={{ animationDelay: "360ms" }}>
+        <div className="animate-fade-up" style={{ animationDelay: "420ms" }}>
           <SignOutDialog variant="outline" size="lg" className="w-full">
             <Button variant="outline" size="lg" className="w-full text-destructive hover:text-destructive">
               <LogOut className="w-4 h-4 mr-2" />Sign out

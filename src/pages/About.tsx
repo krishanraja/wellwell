@@ -75,9 +75,17 @@ export default function About() {
           </StoicCardContent>
         </StoicCard>
 
-        {/* Version */}
-        <div className="text-center text-sm text-muted-foreground animate-fade-up" style={{ animationDelay: "320ms" }}>
-          Version 1.0.0 • Made with 💚 for clarity seekers
+        {/* Company & Version */}
+        <div className="text-center animate-fade-up" style={{ animationDelay: "320ms" }}>
+          <p className="text-sm text-muted-foreground mb-1">
+            A product of <span className="text-foreground font-medium">Mindmaker LLC</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Version 1.5.0 • Made with 💚 for clarity seekers
+          </p>
+          <p className="text-[10px] text-muted-foreground/70 mt-2">
+            © {new Date().getFullYear()} Mindmaker LLC. All rights reserved.
+          </p>
         </div>
       </div>
     </Layout>

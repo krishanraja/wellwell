@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import wellwellIcon from "@/assets/wellwell-icon.png";
 import wellwellLogo from "@/assets/wellwell-logo.png";
@@ -15,6 +16,7 @@ interface HeaderProps {
 }
 
 export function Header({ showLogo = true, showGreeting = false, className }: HeaderProps) {
+  const navigate = useNavigate();
   const timeTheme = useTimeOfDay();
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -22,6 +24,10 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
   
   const TimeIcon = timeTheme.icon === "sunrise" ? Sunrise : timeTheme.icon === "sun" ? Sun : Moon;
   const displayName = profile?.display_name || user?.email?.split("@")[0] || "Stoic";
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
   
   return (
     <header className={cn(
@@ -51,11 +57,17 @@ export function Header({ showLogo = true, showGreeting = false, className }: Hea
           )}
         </div>
       ) : showLogo ? (
-        <img 
-          src={wellwellIcon} 
-          alt="WellWell" 
-          className="h-8 w-auto"
-        />
+        <button
+          onClick={handleLogoClick}
+          className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg transition-transform active:scale-95"
+          aria-label="Go to Home"
+        >
+          <img 
+            src={wellwellIcon} 
+            alt="WellWell" 
+            className="h-8 w-auto"
+          />
+        </button>
       ) : null}
     </header>
   );

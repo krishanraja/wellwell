@@ -8,8 +8,6 @@ import {
   Info, 
   LogOut, 
   ChevronRight,
-  Sunrise,
-  Moon,
   RotateCcw,
   FileText,
   BookOpen,
@@ -46,31 +44,13 @@ interface ToolCategory {
 
 const toolCategories: ToolCategory[] = [
   {
-    id: "daily-rituals",
-    label: "Daily Rituals",
-    icon: Sunrise,
-    color: "hsl(45 100% 60%)",
-    tools: [
-      { id: "pulse", label: "Morning Pulse", icon: Sunrise, route: "/pulse", color: "hsl(45 100% 60%)", description: "Set your daily intention" },
-      { id: "debrief", label: "Evening Debrief", icon: Moon, route: "/debrief", color: "hsl(8 100% 71%)", description: "Reflect on your day" },
-    ],
-  },
-  {
     id: "personal-growth",
-    label: "Personal Growth",
+    label: "Growth & Reflection",
     icon: Sparkles,
     color: "hsl(166 100% 50%)",
     tools: [
       { id: "weekly-reset", label: "Weekly Reset", icon: RotateCcw, route: "/weekly-reset", color: "hsl(166 100% 50%)", description: "Review your week" },
       { id: "monthly-story", label: "Monthly Story", icon: FileText, route: "/monthly-narrative", color: "hsl(166 100% 50%)", description: "Your narrative arc" },
-    ],
-  },
-  {
-    id: "wisdom-library",
-    label: "Wisdom Library",
-    icon: BookOpen,
-    color: "hsl(45 100% 60%)",
-    tools: [
       { id: "library", label: "Stoic Library", icon: BookOpen, route: "/library", color: "hsl(45 100% 60%)", description: "Explore ancient wisdom" },
     ],
   },
@@ -174,7 +154,7 @@ export function ProfileHubSheet({ className }: ProfileHubSheetProps) {
             <div className="mx-5 h-px bg-border/50" />
             
             {/* Tool Categories */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
               {toolCategories.map((category) => {
                 const CategoryIcon = category.icon;
                 return (
@@ -222,63 +202,58 @@ export function ProfileHubSheet({ className }: ProfileHubSheetProps) {
             </div>
             
             {/* Footer - FAQ, Blog, Settings, About, Sign Out */}
-            <div className="shrink-0 border-t border-border/50 p-4 space-y-1">
-              {/* Support Links */}
+            <div className="shrink-0 border-t border-border/50 p-3 space-y-0.5">
+              {/* Compact action row */}
               <div className="flex gap-2 mb-2">
                 <SheetClose asChild>
                   <button
                     onClick={() => handleNavigate('/faq')}
-                    className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
+                    className="flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
                   >
-                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                    <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
                     <span className="text-xs font-medium text-foreground">FAQ</span>
                   </button>
                 </SheetClose>
                 <SheetClose asChild>
                   <button
                     onClick={() => handleNavigate('/blog')}
-                    className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
+                    className="flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg bg-muted/50 hover:bg-muted transition-all active:scale-[0.98]"
                   >
-                    <Newspaper className="w-4 h-4 text-muted-foreground" />
+                    <Newspaper className="w-3.5 h-3.5 text-muted-foreground" />
                     <span className="text-xs font-medium text-foreground">Blog</span>
                   </button>
                 </SheetClose>
               </div>
               
-              <SheetClose asChild>
-                <button
-                  onClick={() => handleNavigate('/settings')}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all active:scale-[0.98] group"
-                >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">
-                    <Settings className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">Settings</span>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
-                </button>
-              </SheetClose>
+              {/* Settings & About row */}
+              <div className="flex gap-2 mb-2">
+                <SheetClose asChild>
+                  <button
+                    onClick={() => handleNavigate('/settings')}
+                    className="flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg hover:bg-muted/50 transition-all active:scale-[0.98]"
+                  >
+                    <Settings className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="text-xs font-medium text-foreground">Settings</span>
+                  </button>
+                </SheetClose>
+                <SheetClose asChild>
+                  <button
+                    onClick={() => handleNavigate('/about')}
+                    className="flex-1 flex items-center justify-center gap-1.5 p-2 rounded-lg hover:bg-muted/50 transition-all active:scale-[0.98]"
+                  >
+                    <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="text-xs font-medium text-foreground">About</span>
+                  </button>
+                </SheetClose>
+              </div>
               
-              <SheetClose asChild>
-                <button
-                  onClick={() => handleNavigate('/about')}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all active:scale-[0.98] group"
-                >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">
-                    <Info className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">About</span>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />
-                </button>
-              </SheetClose>
-              
+              {/* Sign Out */}
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-destructive/10 transition-all active:scale-[0.98] group"
+                className="w-full flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-destructive/10 transition-all active:scale-[0.98]"
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-destructive/10">
-                  <LogOut className="w-5 h-5 text-destructive" />
-                </div>
-                <span className="text-sm font-medium text-destructive">Sign Out</span>
+                <LogOut className="w-3.5 h-3.5 text-destructive" />
+                <span className="text-xs font-medium text-destructive">Sign Out</span>
               </button>
             </div>
           </div>
