@@ -12,12 +12,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { PersonaDescriptionSheet } from "@/components/wellwell/PersonaDescriptionSheet";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useErrorModal } from "@/components/wellwell/ErrorModal";
-import { User, Save, ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { User, Save, ArrowLeft, Loader2, Trash2, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Persona } from "@/types/database";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +47,8 @@ export default function EditProfile() {
   const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showPersonaSheet, setShowPersonaSheet] = useState(false);
+  const [personaForSheet, setPersonaForSheet] = useState<Persona | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -74,6 +77,19 @@ export default function EditProfile() {
         ? prev.filter(c => c !== value)
         : [...prev, value]
     );
+  };
+
+  const handlePersonaSelect = (value: string) => {
+    setSelectedPersona(value);
+    // Show persona description sheet when a new persona is selected
+    setPersonaForSheet(value as Persona);
+    setShowPersonaSheet(true);
+  };
+
+  const handleShowPersonaInfo = (e: React.MouseEvent, value: string) => {
+    e.stopPropagation(); // Don't trigger the selection
+    setPersonaForSheet(value as Persona);
+    setShowPersonaSheet(true);
   };
 
   const handleDeleteAccount = async () => {
@@ -117,6 +133,11 @@ export default function EditProfile() {
   return (
     <>
       {ErrorModal}
+      <PersonaDescriptionSheet
+        open={showPersonaSheet}
+        onOpenChange={setShowPersonaSheet}
+        persona={personaForSheet}
+      />
       <Layout scrollable={true}>
         <div className="space-y-6 pb-4">
         {/* Header */}
@@ -158,16 +179,27 @@ export default function EditProfile() {
             {personas.map((persona) => (
               <button
                 key={persona.value}
-                onClick={() => setSelectedPersona(persona.value)}
+                onClick={() => handlePersonaSelect(persona.value)}
                 className={cn(
-                  "p-3 rounded-xl text-left transition-all",
+                  "p-3 rounded-xl text-left transition-all relative group",
                   selectedPersona === persona.value
                     ? "bg-primary/10 border-2 border-primary"
                     : "bg-muted border-2 border-transparent hover:bg-muted/80"
                 )}
               >
-                <p className="font-medium text-foreground">{persona.label}</p>
-                <p className="text-xs text-muted-foreground">{persona.description}</p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">{persona.label}</p>
+                    <p className="text-xs text-muted-foreground">{persona.description}</p>
+                  </div>
+                  <button
+                    onClick={(e) => handleShowPersonaInfo(e, persona.value)}
+                    className="p-1 rounded-lg opacity-50 hover:opacity-100 hover:bg-primary/10 transition-all"
+                    title="Learn more about this persona"
+                  >
+                    <Info className="w-4 h-4 text-primary" />
+                  </button>
+                </div>
               </button>
             ))}
           </div>

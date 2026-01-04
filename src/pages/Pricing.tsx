@@ -95,7 +95,7 @@ export default function Pricing() {
   return (
     <>
       {ErrorModal}
-      <Layout>
+      <Layout scrollable={true}>
         <div className="flex-1 flex flex-col py-2">
         <div className="text-center mb-3 animate-fade-up">
           <h1 className="font-display text-xl font-bold text-foreground mb-1">Choose Your Path</h1>

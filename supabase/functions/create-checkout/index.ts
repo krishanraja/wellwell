@@ -91,6 +91,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      allow_promotion_codes: true, // Enable coupon/promo code field in Stripe Checkout
       success_url: `${req.headers.get("origin")}/settings?upgraded=true`,
       cancel_url: `${req.headers.get("origin")}/settings?canceled=true`,
       metadata: {
