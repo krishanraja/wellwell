@@ -50,7 +50,7 @@ const toolCategories: ToolCategory[] = [
     color: "hsl(45 100% 60%)",
     tools: [
       { id: "pulse", label: "Morning Pulse", icon: Sunrise, route: "/pulse", color: "hsl(45 100% 60%)", description: "Set your daily intention" },
-      { id: "debrief", label: "Evening Debrief", icon: Moon, route: "/debrief", color: "hsl(260 80% 65%)", description: "Reflect on your day" },
+      { id: "debrief", label: "Evening Debrief", icon: Moon, route: "/debrief", color: "hsl(8 100% 71%)", description: "Reflect on your day" },
     ],
   },
   {
@@ -67,9 +67,9 @@ const toolCategories: ToolCategory[] = [
     id: "wisdom-library",
     label: "Wisdom Library",
     icon: BookOpen,
-    color: "hsl(260 80% 65%)",
+    color: "hsl(45 100% 60%)",
     tools: [
-      { id: "library", label: "Stoic Library", icon: BookOpen, route: "/library", color: "hsl(260 80% 65%)", description: "Explore ancient wisdom" },
+      { id: "library", label: "Stoic Library", icon: BookOpen, route: "/library", color: "hsl(45 100% 60%)", description: "Explore ancient wisdom" },
     ],
   },
 ];
@@ -226,8 +226,8 @@ export function ProfileHubSheet({ className }: ProfileHubSheetProps) {
                   onClick={() => handleNavigate('/settings')}
                   className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all active:scale-[0.98] group"
                 >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-purple/10">
-                    <Settings className="w-5 h-5 text-purple" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted">
+                    <Settings className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <span className="text-sm font-medium text-foreground">Settings</span>
                   <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto" />

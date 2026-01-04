@@ -21,7 +21,7 @@ export default function Library() {
       description: "Excerpts from Marcus Aurelius.",
       count: "10 excerpts",
       path: "/library/meditations",
-      color: "hsl(260 80% 65%)",
+      color: "hsl(45 100% 60%)",
     },
     {
       icon: Lightbulb,

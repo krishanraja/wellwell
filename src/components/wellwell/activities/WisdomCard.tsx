@@ -43,8 +43,8 @@ export function WisdomCard({ quote, author, onComplete, onSkip, onRefresh }: Wis
         transition={{ delay: 0.1 }}
       >
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/10 border border-purple-500/20">
-            <Sparkles className="w-5 h-5 text-purple-400" />
+          <div className="p-2 rounded-xl bg-gradient-to-br from-gold/20 to-amber-500/10 border border-gold/20">
+            <Sparkles className="w-5 h-5 text-gold" />
           </div>
           <span className="text-sm font-medium text-muted-foreground">Daily Wisdom</span>
         </div>
@@ -74,15 +74,15 @@ export function WisdomCard({ quote, author, onComplete, onSkip, onRefresh }: Wis
             transition={{ duration: 0.3 }}
             className={cn(
               "rounded-2xl p-6 min-h-[200px] flex flex-col justify-center",
-              "bg-gradient-to-br from-purple-900/30 via-violet-900/20 to-indigo-900/30",
-              "border border-purple-500/20"
+              "bg-gradient-to-br from-amber-900/30 via-yellow-900/20 to-orange-900/30",
+              "border border-gold/20"
             )}
             onClick={() => setIsFlipped(!isFlipped)}
           >
             {!isFlipped ? (
               <>
                 {/* Quote mark */}
-                <Quote className="w-8 h-8 text-purple-400/30 absolute top-4 left-4" />
+                <Quote className="w-8 h-8 text-gold/30 absolute top-4 left-4" />
                 
                 {/* Quote text */}
                 <p className="text-xl font-display font-medium text-foreground leading-relaxed text-center px-4">
@@ -90,7 +90,7 @@ export function WisdomCard({ quote, author, onComplete, onSkip, onRefresh }: Wis
                 </p>
                 
                 {/* Author */}
-                <p className="text-sm text-purple-300 text-center mt-4">
+                <p className="text-sm text-gold text-center mt-4">
                   — {author}
                 </p>
                 
@@ -100,7 +100,7 @@ export function WisdomCard({ quote, author, onComplete, onSkip, onRefresh }: Wis
               </>
             ) : (
               <div className="flex flex-col gap-4">
-                <p className="text-sm text-purple-300 text-center">
+                <p className="text-sm text-gold text-center">
                   How does this resonate with you today?
                 </p>
                 <textarea
@@ -108,7 +108,7 @@ export function WisdomCard({ quote, author, onComplete, onSkip, onRefresh }: Wis
                   onChange={(e) => setReflection(e.target.value)}
                   placeholder="Your reflection..."
                   rows={3}
-                  className="w-full bg-black/20 rounded-xl p-3 text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                  className="w-full bg-black/20 rounded-xl p-3 text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-1 focus:ring-gold/50"
                   onClick={(e) => e.stopPropagation()}
                 />
                 <p className="text-xs text-muted-foreground/50 text-center">
@@ -154,7 +154,7 @@ export function WisdomCard({ quote, author, onComplete, onSkip, onRefresh }: Wis
         )}
         <button
           onClick={handleContinue}
-          className="flex-1 py-3 rounded-xl font-medium bg-gradient-to-r from-purple-500 to-violet-500 text-white hover:shadow-lg hover:shadow-purple-500/20 transition-all flex items-center justify-center gap-2"
+          className="flex-1 py-3 rounded-xl font-medium bg-gradient-to-r from-gold to-amber-400 text-black hover:shadow-lg hover:shadow-gold/20 transition-all flex items-center justify-center gap-2"
         >
           <span>Continue</span>
           <ArrowRight className="w-4 h-4" />

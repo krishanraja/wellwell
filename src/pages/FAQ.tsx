@@ -9,7 +9,7 @@ import { Helmet } from "react-helmet-async";
 const categoryConfig = {
   stoicism: { label: "Stoic Philosophy", icon: BookOpen, color: "hsl(45 100% 60%)" },
   app: { label: "Using WellWell", icon: Sparkles, color: "hsl(166 100% 50%)" },
-  "mental-health": { label: "Mental Wellness", icon: Brain, color: "hsl(260 80% 65%)" },
+  "mental-health": { label: "Mental Wellness", icon: Brain, color: "hsl(166 100% 50%)" },
   practices: { label: "Daily Practices", icon: HelpCircle, color: "hsl(187 100% 50%)" },
   pricing: { label: "Pricing & Plans", icon: CreditCard, color: "hsl(90 80% 65%)" },
 };

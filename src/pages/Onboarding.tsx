@@ -546,8 +546,8 @@ export default function Onboarding() {
               {/* Evening Debrief */}
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-purple-500/10">
-                    <Moon className="w-5 h-5 text-purple-500" />
+                  <div className="p-2 rounded-lg bg-coral/10">
+                    <Moon className="w-5 h-5 text-coral" />
                   </div>
                   <div>
                     <span className="font-medium text-foreground block">Evening Debrief</span>

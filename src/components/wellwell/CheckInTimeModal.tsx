@@ -122,8 +122,8 @@ export function CheckInTimeModal({ open, onOpenChange }: CheckInTimeModalProps) 
           {/* Evening Debrief */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="p-2 rounded-xl bg-purple-500/10">
-                <Moon className="w-4 h-4 text-purple-500" />
+              <div className="p-2 rounded-xl bg-coral/10">
+                <Moon className="w-4 h-4 text-coral" />
               </div>
               <span className="font-medium text-foreground">Evening Debrief</span>
             </div>
@@ -135,8 +135,8 @@ export function CheckInTimeModal({ open, onOpenChange }: CheckInTimeModalProps) 
                   className={cn(
                     "px-3 py-2 rounded-xl border-2 text-sm font-medium transition-all active:scale-95",
                     eveningTime === preset.value
-                      ? "border-purple-500 bg-purple-500/10 text-purple-600"
-                      : "border-border bg-card/50 text-muted-foreground hover:border-purple-500/50"
+                      ? "border-coral bg-coral/10 text-coral"
+                      : "border-border bg-card/50 text-muted-foreground hover:border-coral/50"
                   )}
                 >
                   {preset.label}

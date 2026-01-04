@@ -243,7 +243,7 @@ function getActivityConfig(type: ActivityType, period: 'morning' | 'afternoon' |
       title: 'Daily Wisdom',
       prompt: `"${randomWisdom.quote}" — ${randomWisdom.author}`,
       icon: 'Sparkles',
-      color: 'hsl(260 80% 65%)',
+      color: 'hsl(45 100% 60%)', // gold (knowledge/enlightenment) - brand compliant
       scoreImpact: 2,
     },
     energy_checkin: {

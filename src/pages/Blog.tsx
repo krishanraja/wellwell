@@ -7,7 +7,7 @@ import { Helmet } from "react-helmet-async";
 
 const categoryConfig: Record<BlogArticle['category'], { label: string; icon: typeof BookOpen; color: string }> = {
   stoicism: { label: "Stoicism", icon: BookOpen, color: "hsl(45 100% 60%)" },
-  "mental-health": { label: "Mental Health", icon: Brain, color: "hsl(260 80% 65%)" },
+  "mental-health": { label: "Mental Health", icon: Brain, color: "hsl(166 100% 50%)" },
   productivity: { label: "Productivity", icon: Briefcase, color: "hsl(166 100% 50%)" },
   relationships: { label: "Relationships", icon: Users, color: "hsl(8 100% 65%)" },
   guides: { label: "Guides", icon: FileText, color: "hsl(187 100% 50%)" },

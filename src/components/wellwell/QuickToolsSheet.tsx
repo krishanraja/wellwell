@@ -32,7 +32,7 @@ const quickTools: QuickTool[] = [
     label: "Conflict",
     icon: MessageCircle,
     route: "/conflict",
-    color: "hsl(260 80% 65%)",
+    color: "hsl(30 100% 55%)", // warm orange for conflict
     description: "Navigate disagreement",
   },
   {

@@ -21,7 +21,7 @@ import type { ActivityType } from "@/types/database";
 const toolConfig: Record<string, { label: string; icon: typeof Sunrise; color: string; scoreImpact: number }> = {
   pulse: { label: "Morning Pulse", icon: Sunrise, color: "hsl(45 100% 60%)", scoreImpact: 5 },
   intervene: { label: "Intervene", icon: Flame, color: "hsl(187 100% 50%)", scoreImpact: 3 },
-  debrief: { label: "Evening Debrief", icon: Moon, color: "hsl(260 80% 65%)", scoreImpact: 5 },
+  debrief: { label: "Evening Debrief", icon: Moon, color: "hsl(8 100% 71%)", scoreImpact: 5 },
   decision: { label: "Decision Engine", icon: Scale, color: "hsl(187 100% 50%)", scoreImpact: 3 },
   conflict: { label: "Conflict Copilot", icon: Swords, color: "hsl(8 100% 71%)", scoreImpact: 3 },
 };
@@ -30,7 +30,7 @@ const toolConfig: Record<string, { label: string; icon: typeof Sunrise; color: s
 const activityConfig: Record<ActivityType, { label: string; icon: typeof Sunrise; color: string }> = {
   reflection_prompt: { label: "Reflection", icon: MessageSquare, color: "hsl(45 100% 60%)" },
   quick_challenge: { label: "Challenge", icon: Target, color: "hsl(187 100% 50%)" },
-  wisdom_card: { label: "Wisdom", icon: Sparkles, color: "hsl(260 80% 65%)" },
+  wisdom_card: { label: "Wisdom", icon: Sparkles, color: "hsl(45 100% 60%)" },
   energy_checkin: { label: "Energy Check", icon: Activity, color: "hsl(166 100% 50%)" },
   micro_commitment: { label: "Commitment", icon: CheckCircle, color: "hsl(142 70% 45%)" },
   pattern_insight: { label: "Pattern", icon: TrendingUp, color: "hsl(200 80% 55%)" },

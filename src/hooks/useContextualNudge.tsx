@@ -62,7 +62,7 @@ const NUDGE_CONFIG: Record<NudgeType, Omit<ContextualNudge, 'priority'>> = {
     placeholder: "Tap to reflect on your day",
     processingText: "Synthesizing wisdom...",
     icon: Moon,
-    accentColor: "hsl(260 80% 65%)",
+    accentColor: "hsl(8 100% 71%)", // coral (sunset warmth) - brand compliant
     route: '/debrief',
   },
   decision: {

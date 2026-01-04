@@ -57,8 +57,8 @@ const personaDetails: Record<Persona, PersonaDetails> = {
     quote: "You have power over your mind—not outside events. Realize this, and you will find strength.",
     quoteAuthor: "Marcus Aurelius",
     traits: ["Calm", "Reflective", "Centered", "Patient"],
-    color: "hsl(260 80% 65%)",
-    gradient: "from-purple-500/20 to-indigo-500/20",
+    color: "hsl(187 100% 60%)",
+    gradient: "from-aqua/20 to-cyan-500/20",
   },
   commander: {
     icon: Sword,

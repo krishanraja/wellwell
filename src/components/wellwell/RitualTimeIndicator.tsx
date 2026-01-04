@@ -126,7 +126,7 @@ export function RitualTimeIndicator({
           hasCompletedDebriefToday 
             ? "bg-primary/10 text-primary" 
             : isDebriefActive
-              ? "bg-purple-500/10 text-purple-600 animate-pulse"
+              ? "bg-coral/10 text-coral animate-pulse"
               : "bg-muted/50 text-muted-foreground hover:bg-muted"
         )}
       >

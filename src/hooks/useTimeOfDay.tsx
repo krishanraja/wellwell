@@ -40,10 +40,10 @@ export function useTimeOfDay(): TimeTheme {
       return {
         period: "evening",
         greeting: "Good evening",
-        accent: "hsl(260 80% 65%)", // purple/indigo
-        accentGlow: "hsl(260 80% 65% / 0.3)",
-        gradientFrom: "hsl(260 80% 65%)",
-        gradientTo: "hsl(220 80% 55%)",
+        accent: "hsl(8 100% 71%)", // coral (sunset warmth) - brand compliant
+        accentGlow: "hsl(8 100% 71% / 0.3)",
+        gradientFrom: "hsl(8 100% 71%)",
+        gradientTo: "hsl(25 90% 55%)",
         icon: "moon",
       };
     }

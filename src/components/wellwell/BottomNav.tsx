@@ -35,7 +35,7 @@ export function BottomNav() {
     
     // Evening nudge (5pm-11pm) - show if Debrief not done
     if (hour >= 17 && hour < 23 && !hasDebriefToday) {
-      return { type: 'debrief', icon: Moon, color: 'hsl(260 80% 65%)' };
+      return { type: 'debrief', icon: Moon, color: 'hsl(8 100% 71%)' };
     }
     
     return null;

@@ -297,8 +297,8 @@ export default function Profile() {
             className="w-full flex items-center justify-between p-4 rounded-xl bg-card hover:bg-muted/50 border border-border/50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-violet-500/15">
-                <Clock className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+              <div className="p-2 rounded-lg bg-primary/15">
+                <Clock className="w-4 h-4 text-primary" />
               </div>
               <span className="text-sm font-medium text-foreground">View Full History</span>
             </div>

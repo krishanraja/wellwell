@@ -31,11 +31,11 @@ const CHALLENGE_ICONS: Record<ChallengeType, typeof Target> = {
   mindfulness: Wind,
 };
 
-// Color mapping for each challenge type
+// Color mapping for each challenge type - brand compliant colors
 const CHALLENGE_COLORS: Record<ChallengeType, { from: string; to: string; text: string }> = {
   dichotomy: { from: 'from-primary/20', to: 'to-cyan-500/10', text: 'text-primary' },
   gratitude: { from: 'from-rose-500/20', to: 'to-pink-500/10', text: 'text-rose-400' },
-  cognitive: { from: 'from-violet-500/20', to: 'to-purple-500/10', text: 'text-violet-400' },
+  cognitive: { from: 'from-aqua/20', to: 'to-cyan-500/10', text: 'text-aqua' },
   action: { from: 'from-amber-500/20', to: 'to-orange-500/10', text: 'text-amber-400' },
   mindfulness: { from: 'from-emerald-500/20', to: 'to-teal-500/10', text: 'text-emerald-400' },
 };
@@ -366,7 +366,7 @@ function CognitiveInput({ onComplete, isSubmitting, onSkip }: CognitiveInputProp
         <div className={cn(
           "rounded-xl transition-all p-4",
           isFocused
-            ? "bg-white/10 ring-1 ring-violet-400/50"
+            ? "bg-white/10 ring-1 ring-aqua/50"
             : "bg-white/5"
         )}>
           <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
@@ -393,7 +393,7 @@ function CognitiveInput({ onComplete, isSubmitting, onSkip }: CognitiveInputProp
         onComplete={handleComplete}
         onSkip={onSkip}
         isDisabled={!isValid || isSubmitting}
-        buttonColor="from-violet-500 to-purple-500"
+        buttonColor="from-aqua to-cyan-400"
       />
     </>
   );

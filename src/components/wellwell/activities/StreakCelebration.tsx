@@ -66,7 +66,7 @@ export function StreakCelebration({ streakDays, milestone, onComplete }: StreakC
           key={i}
           className="absolute w-2 h-2 rounded-full"
           style={{
-            background: ['hsl(45 100% 60%)', 'hsl(8 100% 65%)', 'hsl(187 100% 50%)', 'hsl(260 80% 65%)'][i % 4],
+            background: ['hsl(45 100% 60%)', 'hsl(8 100% 65%)', 'hsl(187 100% 50%)', 'hsl(166 100% 50%)'][i % 4],
           }}
           initial={{ 
             opacity: 0,

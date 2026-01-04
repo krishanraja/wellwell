@@ -134,9 +134,17 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   const handleActivityComplete = async (type: ActivityType, responseData: Record<string, unknown>) => {
     setActivityComplete(true);
     
+    // Guard: Don't attempt to save if profile not loaded
+    if (!profile?.id) {
+      console.warn('Cannot save checkin: profile not loaded');
+      // Still transition to complete phase
+      setTimeout(() => setPhase('complete'), 500);
+      return;
+    }
+    
     try {
       await createCheckin({
-        profile_id: profile?.id || '',
+        profile_id: profile.id,
         activity_type: type,
         prompt: getActivityPrompt(type),
         response_data: responseData,
@@ -145,6 +153,10 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
       });
     } catch (error) {
       console.error('Failed to save checkin:', error);
+      // Log more details for debugging
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+      }
     }
     
     // Brief celebration before transitioning
@@ -347,8 +359,8 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
           </motion.div>
         )}
 
-        {/* Activity content */}
-        <div className="flex-1 overflow-y-auto px-6 py-8">
+        {/* Activity content - reduced padding for mobile viewport fit */}
+        <div className="flex-1 overflow-y-auto px-4 py-4">
           <AnimatePresence mode="wait">
             {currentActivity === 'reflection_prompt' && (
               <ReflectionPrompt
@@ -430,7 +442,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
               onClick={() => handleQuickAction('/debrief')}
               className="flex-1 gap-2 bg-white/5 border-white/10 hover:bg-white/10"
             >
-              <Moon className="w-4 h-4 text-purple-400" />
+              <Moon className="w-4 h-4 text-coral" />
               <span className="text-xs">Debrief</span>
             </Button>
           </div>
