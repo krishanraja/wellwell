@@ -8,21 +8,9 @@ import { useAuth } from './useAuth';
 import { logger } from '@/lib/logger';
 import type { DailyCheckin, DailyCheckinInsert, ActivityType } from '@/types/database';
 
-// Stoic wisdom cards for rotation
-const WISDOM_CARDS = [
-  { quote: "You have power over your mind—not outside events. Realize this, and you will find strength.", author: "Marcus Aurelius" },
-  { quote: "We suffer more often in imagination than in reality.", author: "Seneca" },
-  { quote: "It's not what happens to you, but how you react to it that matters.", author: "Epictetus" },
-  { quote: "The happiness of your life depends upon the quality of your thoughts.", author: "Marcus Aurelius" },
-  { quote: "Waste no more time arguing about what a good man should be. Be one.", author: "Marcus Aurelius" },
-  { quote: "If it is not right, do not do it. If it is not true, do not say it.", author: "Marcus Aurelius" },
-  { quote: "How long are you going to wait before you demand the best for yourself?", author: "Epictetus" },
-  { quote: "The key is to keep company only with people who uplift you.", author: "Epictetus" },
-  { quote: "Begin at once to live, and count each separate day as a separate life.", author: "Seneca" },
-  { quote: "No man is free who is not master of himself.", author: "Epictetus" },
-  { quote: "First say to yourself what you would be; and then do what you have to do.", author: "Epictetus" },
-  { quote: "Difficulties strengthen the mind, as labor does the body.", author: "Seneca" },
-];
+// Import unified wisdom data - WISDOM_CARDS is now just for backwards compatibility
+// Use useDailyWisdom hook for the main daily quote feature
+import { WISDOM_CARDS } from '@/data/dailyWisdom';
 
 // Reflection prompts by time of day
 const REFLECTION_PROMPTS = {

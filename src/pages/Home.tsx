@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/wellwell/Layout";
 import { VoiceFirstInput } from "@/components/wellwell/VoiceFirstInput";
 import { StoicCard } from "@/components/wellwell/StoicCard";
@@ -19,20 +19,9 @@ import { useEvents } from "@/hooks/useEvents";
 import { useStreak } from "@/hooks/useStreak";
 import { usePendingActions } from "@/hooks/usePendingActions";
 import { useAuth } from "@/hooks/useAuth";
+import { useDailyWisdom } from "@/hooks/useDailyWisdom";
 import { RotateCcw, Target, Shield, Compass, Flame, X, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-// Daily Stoic quotes for inspiration - primary source material
-const stoicQuotes = [
-  { text: "The impediment to action advances action. What stands in the way becomes the way.", author: "Marcus Aurelius" },
-  { text: "We suffer more in imagination than in reality.", author: "Seneca" },
-  { text: "You have power over your mind—not outside events. Realize this, and you will find strength.", author: "Marcus Aurelius" },
-  { text: "Waste no more time arguing what a good man should be. Be one.", author: "Marcus Aurelius" },
-  { text: "It is not things that disturb us, but our judgments about things.", author: "Epictetus" },
-  { text: "You could leave life right now. Let that determine what you do and say and think.", author: "Marcus Aurelius" },
-  { text: "The best revenge is not to be like your enemy.", author: "Marcus Aurelius" },
-  { text: "If an evil has been pondered beforehand, the blow is gentle when it comes.", author: "Seneca" },
-];
 
 // Session storage key to track if welcome has been shown this session
 const WELCOME_SESSION_SHOWN_KEY = 'wellwell_welcome_session_shown';
@@ -77,6 +66,9 @@ export default function Home() {
     completeAction 
   } = usePendingActions();
   
+  // Daily wisdom hook - 365 calendar-based quotes with virtue personalization
+  const { todaysQuote, isPersonalized } = useDailyWisdom();
+  
   const [showTimeModal, setShowTimeModal] = useState(false);
   
   // Effect for welcome screen logic - MUST be before any early returns
@@ -96,12 +88,6 @@ export default function Home() {
       setIsFirstLoad(false);
     }
   }, [eventsLoading, isFirstLoad]);
-  
-  // Get daily quote based on date - MUST be before any early returns
-  const dailyQuote = useMemo(() => {
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    return stoicQuotes[dayOfYear % stoicQuotes.length];
-  }, []);
   
   // Loading guard: Don't render content until user is fully available
   // This prevents hooks violations during auth state transitions
@@ -344,13 +330,16 @@ export default function Home() {
 
             {/* Middle Section: Voice input */}
             <div className="flex-1 min-h-0 flex flex-col items-center justify-center relative">
-              {/* Inspirational quote */}
+              {/* Inspirational quote - rotates daily like The Daily Stoic */}
               <div className="absolute top-0 left-0 right-0 text-center px-4">
                 <p className="text-sm text-muted-foreground/80 italic">
-                  "{dailyQuote.text}"
+                  "{todaysQuote.quote}"
                 </p>
                 <p className="text-xs text-muted-foreground/60 mt-1">
-                  — {dailyQuote.author}
+                  — {todaysQuote.author}
+                  {isPersonalized && (
+                    <span className="ml-2 text-primary/60">✨</span>
+                  )}
                 </p>
               </div>
               

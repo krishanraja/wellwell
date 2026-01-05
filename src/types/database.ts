@@ -323,3 +323,34 @@ export interface CommitmentResponse {
   commitment: string;
   timeframe: 'today' | 'this_week' | 'ongoing';
 }
+
+// Quote History table - tracks daily wisdom quotes
+export interface QuoteHistory {
+  id: string;
+  profile_id: string;
+  day_of_year: number;
+  quote_text: string;
+  author: string;
+  virtue: Virtue | null;
+  viewed_at: string;
+  saved: boolean;
+  reflection: string | null;
+  year: number;
+}
+
+export interface QuoteHistoryInsert {
+  id?: string;
+  profile_id: string;
+  day_of_year: number;
+  quote_text: string;
+  author: string;
+  virtue?: Virtue | null;
+  saved?: boolean;
+  reflection?: string | null;
+  year?: number;
+}
+
+export interface QuoteHistoryUpdate {
+  saved?: boolean;
+  reflection?: string | null;
+}

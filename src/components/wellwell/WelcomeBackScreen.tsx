@@ -4,6 +4,7 @@ import { useStreak } from "@/hooks/useStreak";
 import { useTimeOfDay } from "@/hooks/useTimeOfDay";
 import { useEvents } from "@/hooks/useEvents";
 import { useDailyCheckins } from "@/hooks/useDailyCheckins";
+import { useDailyWisdom } from "@/hooks/useDailyWisdom";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import wellwellIcon from "@/assets/wellwell-icon.png";
@@ -38,16 +39,22 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     todayCheckins, 
     createCheckin, 
     isCreating,
-    WISDOM_CARDS, 
     REFLECTION_PROMPTS, 
     QUICK_CHALLENGES, 
     COMMITMENT_PROMPTS,
   } = useDailyCheckins();
   
+  // Use unified daily wisdom for consistent quotes across the app
+  const { 
+    todaysQuote: dailyWisdom,
+    refreshQuote,
+    saveQuote,
+    isSaved: isWisdomSaved,
+  } = useDailyWisdom();
+  
   const [phase, setPhase] = useState<'loading' | 'activity' | 'complete'>('loading');
   const [currentActivity, setCurrentActivity] = useState<ActivityType | null>(null);
   const [activityComplete, setActivityComplete] = useState(false);
-  const [wisdomIndex, setWisdomIndex] = useState(0);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [selectedChallenge, setSelectedChallenge] = useState<{ challenge: string; type: 'dichotomy' | 'gratitude' | 'cognitive' | 'action' | 'mindfulness' } | null>(null);
   
@@ -125,7 +132,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
       case 'micro_commitment':
         return COMMITMENT_PROMPTS[Math.floor(Math.random() * COMMITMENT_PROMPTS.length)];
       case 'wisdom_card':
-        return WISDOM_CARDS[wisdomIndex].quote;
+        return dailyWisdom.quote;
       default:
         return '';
     }
@@ -205,9 +212,9 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     });
   };
 
-  // Refresh wisdom card
+  // Refresh wisdom card - uses unified daily wisdom hook
   const handleRefreshWisdom = () => {
-    setWisdomIndex((prev) => (prev + 1) % WISDOM_CARDS.length);
+    refreshQuote();
   };
 
   // Generate pattern insight based on user data
@@ -265,9 +272,6 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   useEffect(() => {
     if (isLoading) return;
     
-    // Random wisdom index on mount
-    setWisdomIndex(Math.floor(Math.random() * WISDOM_CARDS.length));
-    
     // Select activity and show it
     const activity = selectActivity();
     setCurrentActivity(activity);
@@ -310,7 +314,8 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
 
   // Activity phase - show the selected mini-activity
   if (phase === 'activity' && currentActivity) {
-    const currentWisdom = WISDOM_CARDS[wisdomIndex];
+    // Use unified daily wisdom from the hook
+    const currentWisdom = { quote: dailyWisdom.quote, author: dailyWisdom.author };
 
     return (
       <motion.div 
@@ -413,6 +418,8 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
                 onComplete={(response) => handleActivityComplete('wisdom_card', response)}
                 onSkip={handleSkip}
                 onRefresh={handleRefreshWisdom}
+                onSave={saveQuote}
+                isSavedInitial={isWisdomSaved}
               />
             )}
 

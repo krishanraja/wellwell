@@ -1,30 +1,61 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RefreshCw, Heart, ArrowRight, Quote } from "lucide-react";
+import { Sparkles, RefreshCw, Heart, ArrowRight, Quote, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface WisdomCardProps {
   quote: string;
   author: string;
-  onComplete: (response: { reflected: boolean; saved: boolean; quote: string }) => void;
+  onComplete: (response: { reflected: boolean; saved: boolean; quote: string; reflection?: string }) => void;
   onSkip?: () => void;
   onRefresh?: () => void;
+  // New props for database persistence
+  onSave?: (reflection?: string) => Promise<void>;
+  isSavedInitial?: boolean;
+  isSaving?: boolean;
 }
 
-export function WisdomCard({ quote, author, onComplete, onSkip, onRefresh }: WisdomCardProps) {
-  const [isSaved, setIsSaved] = useState(false);
+export function WisdomCard({ 
+  quote, 
+  author, 
+  onComplete, 
+  onSkip, 
+  onRefresh,
+  onSave,
+  isSavedInitial = false,
+  isSaving = false,
+}: WisdomCardProps) {
+  const [isSaved, setIsSaved] = useState(isSavedInitial);
   const [isFlipped, setIsFlipped] = useState(false);
   const [reflection, setReflection] = useState("");
 
-  const handleSave = () => {
-    setIsSaved(!isSaved);
+  // Sync with initial saved state
+  useEffect(() => {
+    setIsSaved(isSavedInitial);
+  }, [isSavedInitial]);
+
+  const handleSave = async () => {
+    const newSavedState = !isSaved;
+    setIsSaved(newSavedState);
+    
+    // If we have an onSave callback (database persistence), call it
+    if (onSave && newSavedState) {
+      try {
+        await onSave(reflection || undefined);
+      } catch (error) {
+        // Revert on error
+        setIsSaved(false);
+        console.error('Failed to save quote:', error);
+      }
+    }
   };
 
   const handleContinue = () => {
     onComplete({ 
       reflected: reflection.length > 0, 
       saved: isSaved, 
-      quote 
+      quote,
+      reflection: reflection || undefined,
     });
   };
 
@@ -126,15 +157,23 @@ export function WisdomCard({ quote, author, onComplete, onSkip, onRefresh }: Wis
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
         onClick={handleSave}
+        disabled={isSaving}
         className={cn(
           "flex items-center justify-center gap-2 py-2 rounded-xl transition-all",
           isSaved 
             ? "bg-pink-500/20 text-pink-400" 
-            : "bg-white/5 text-muted-foreground hover:text-foreground"
+            : "bg-white/5 text-muted-foreground hover:text-foreground",
+          isSaving && "opacity-50 cursor-not-allowed"
         )}
       >
-        <Heart className={cn("w-4 h-4", isSaved && "fill-current")} />
-        <span className="text-sm">{isSaved ? "Saved to favorites" : "Save this wisdom"}</span>
+        {isSaving ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Heart className={cn("w-4 h-4", isSaved && "fill-current")} />
+        )}
+        <span className="text-sm">
+          {isSaving ? "Saving..." : isSaved ? "Saved to favorites" : "Save this wisdom"}
+        </span>
       </motion.button>
 
       {/* Actions */}
