@@ -2,7 +2,7 @@
 
 ## System Overview
 
-WellWell follows a client-server architecture with a React frontend and Lovable Cloud backend.
+WellWell follows a client-server architecture with a React frontend and Supabase backend.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -24,10 +24,10 @@ WellWell follows a client-server architecture with a React frontend and Lovable 
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                     Lovable Cloud                            │
+│                     Supabase Backend                          │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │   Database   │  │  Edge Fns    │  │   AI Gateway     │   │
-│  │  PostgreSQL  │  │stoic-analyzer│  │ Gemini 2.5 Flash │   │
+│  │   Database   │  │  Edge Fns    │  │   AI Service     │   │
+│  │  PostgreSQL  │  │stoic-analyzer│  │ Google Gemini API │   │
 │  └──────────────┘  └──────────────┘  └──────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -42,7 +42,7 @@ User Input → Event Created → AI Analysis → Insight Generated → Virtue Up
 
 1. **User Input**: Raw text captured from forms
 2. **Event Created**: Stored with profile_id, session_id, tool_name
-3. **AI Analysis**: Edge function calls Lovable AI with context
+3. **AI Analysis**: Edge function calls Google Gemini API with context
 4. **Insight Generated**: Structured scores and labels stored
 5. **Virtue Updated**: Aggregated scores recalculated
 
@@ -50,8 +50,8 @@ User Input → Event Created → AI Analysis → Insight Generated → Virtue Up
 
 ```
 ┌─────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Client    │───▶│  stoic-analyzer  │───▶│  Lovable AI     │
-│   Request   │    │  Edge Function   │    │  Gateway        │
+│   Client    │───▶│  stoic-analyzer  │───▶│  Google Gemini  │
+│   Request   │    │  Edge Function   │    │  API            │
 └─────────────┘    └──────────────────┘    └─────────────────┘
                            │
                            ▼

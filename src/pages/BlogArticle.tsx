@@ -100,11 +100,11 @@ export default function BlogArticle() {
         <title>{article.metaTitle} | WellWell</title>
         <meta name="description" content={article.metaDescription} />
         <meta name="keywords" content={article.tags.join(', ')} />
-        <link rel="canonical" href={`https://wellwell.app/blog/${article.slug}`} />
+        <link rel="canonical" href={`https://wellwell.ai/blog/${article.slug}`} />
         
         <meta property="og:title" content={article.metaTitle} />
         <meta property="og:description" content={article.metaDescription} />
-        <meta property="og:url" content={`https://wellwell.app/blog/${article.slug}`} />
+        <meta property="og:url" content={`https://wellwell.ai/blog/${article.slug}`} />
         <meta property="og:type" content="article" />
         <meta property="article:published_time" content={article.publishedAt} />
         <meta property="article:author" content={article.author} />

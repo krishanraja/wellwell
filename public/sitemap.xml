@@ -5,19 +5,19 @@
   
   <!-- Core Pages -->
   <url>
-    <loc>https://wellwell.app/</loc>
+    <loc>https://wellwell.ai/</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://wellwell.app/landing</loc>
+    <loc>https://wellwell.ai/landing</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://wellwell.app/auth</loc>
+    <loc>https://wellwell.ai/auth</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -25,13 +25,13 @@
   
   <!-- SEO Content Pages -->
   <url>
-    <loc>https://wellwell.app/faq</loc>
+    <loc>https://wellwell.ai/faq</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://wellwell.app/blog</loc>
+    <loc>https://wellwell.ai/blog</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -39,31 +39,31 @@
   
   <!-- Blog Articles -->
   <url>
-    <loc>https://wellwell.app/blog/how-to-stay-calm-under-pressure</loc>
+    <loc>https://wellwell.ai/blog/how-to-stay-calm-under-pressure</loc>
     <lastmod>2025-01-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://wellwell.app/blog/stoic-morning-routine-5-minutes</loc>
+    <loc>https://wellwell.ai/blog/stoic-morning-routine-5-minutes</loc>
     <lastmod>2025-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://wellwell.app/blog/dealing-with-difficult-people-stoic</loc>
+    <loc>https://wellwell.ai/blog/dealing-with-difficult-people-stoic</loc>
     <lastmod>2025-01-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://wellwell.app/blog/stoic-journaling-prompts</loc>
+    <loc>https://wellwell.ai/blog/stoic-journaling-prompts</loc>
     <lastmod>2025-01-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://wellwell.app/blog/stoicism-for-beginners</loc>
+    <loc>https://wellwell.ai/blog/stoicism-for-beginners</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -71,13 +71,13 @@
   
   <!-- Info Pages -->
   <url>
-    <loc>https://wellwell.app/about</loc>
+    <loc>https://wellwell.ai/about</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://wellwell.app/pricing</loc>
+    <loc>https://wellwell.ai/pricing</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

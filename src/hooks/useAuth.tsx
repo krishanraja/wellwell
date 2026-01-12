@@ -11,6 +11,7 @@ interface AuthContextType {
   configError: Error | null;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signInWithOAuth: (provider: 'google') => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error: Error | null }>;
   refreshSession: () => Promise<{ error: Error | null }>;
@@ -198,6 +199,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signInWithOAuth = async (provider: 'google') => {
+    logger.authFunnel('auth_oauth_started', { provider });
+    logger.interaction('OAuth sign in attempt', { provider });
+    
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+
+      if (error) {
+        logger.error('OAuth sign in failed', { error: error.message, provider });
+        logger.authFunnel('auth_oauth_failed', { error_type: error.message, provider });
+        return { error };
+      }
+
+      // OAuth redirects away, so we don't need to handle success here
+      logger.info('OAuth redirect initiated', { provider });
+      return { error: null };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      logger.error('OAuth sign in exception', { error: error.message, provider });
+      return { error };
+    }
+  };
+
   const signOut = async () => {
     logger.interaction('Sign out');
     
@@ -315,6 +345,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       configError,
       signUp, 
       signIn, 
+      signInWithOAuth,
       signOut, 
       deleteAccount,
       refreshSession,

@@ -604,7 +604,7 @@ export function getArticleSchema(article: BlogArticle) {
     "@type": "Article",
     "headline": article.title,
     "description": article.metaDescription,
-    "image": article.image || "https://wellwell.app/favicon.png",
+    "image": article.image || "https://wellwell.ai/favicon.png",
     "author": {
       "@type": "Organization",
       "name": article.author
@@ -614,14 +614,14 @@ export function getArticleSchema(article: BlogArticle) {
       "name": "WellWell",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://wellwell.app/favicon.png"
+        "url": "https://wellwell.ai/favicon.png"
       }
     },
     "datePublished": article.publishedAt,
     "dateModified": article.updatedAt || article.publishedAt,
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://wellwell.app/blog/${article.slug}`
+      "@id": `https://wellwell.ai/blog/${article.slug}`
     }
   };
 }

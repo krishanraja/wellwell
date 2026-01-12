@@ -71,10 +71,10 @@ export default function Blog() {
         <title>Stoic Wisdom Blog | WellWell</title>
         <meta name="description" content="Practical Stoic philosophy for modern life. Articles on staying calm under pressure, morning routines, dealing with difficult people, and building mental resilience." />
         <meta name="keywords" content="stoicism blog, stoic philosophy articles, mental health tips, productivity advice, calm under pressure" />
-        <link rel="canonical" href="https://wellwell.app/blog" />
+        <link rel="canonical" href="https://wellwell.ai/blog" />
         <meta property="og:title" content="Stoic Wisdom Blog | WellWell" />
         <meta property="og:description" content="Practical Stoic philosophy for modern life. Articles on mental resilience, productivity, and emotional clarity." />
-        <meta property="og:url" content="https://wellwell.app/blog" />
+        <meta property="og:url" content="https://wellwell.ai/blog" />
         <meta property="og:type" content="website" />
       </Helmet>
 

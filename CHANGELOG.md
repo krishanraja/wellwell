@@ -236,7 +236,7 @@ When React Query's `queryFn` throws, the hook sets `error` state but `data` beco
 ### 2024-01 | Initial Architecture
 - **Mobile-first, dark-mode default** — 80%+ expected mobile usage
 - **Events as primary record** — Two-layer data model (events → insights)
-- **Lovable AI Gateway** — Zero configuration, cost included
+- **Google Gemini API** — AI-powered Stoic analysis
 - **React Query + Context** — No Redux complexity needed
 - **0-100 virtue scoring** — Granular, intuitive percentage scale
 - **shadcn/ui base** — Unstyled, accessible, Tailwind-native
@@ -269,7 +269,7 @@ When React Query's `queryFn` throws, the hook sets `error` state but `data` beco
 ## Contributors
 
 This project has been developed with AI assistance from:
-- **Lovable** — Initial development and feature implementation
+- **AI-Assisted Development** — Initial development and feature implementation
 - **Cursor (Claude)** — Bug fixes, security audits, documentation
 - **Various AI Agents** — Specialized fixes and improvements
 

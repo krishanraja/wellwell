@@ -1,8 +1,8 @@
 # WellWell Robots.txt
-# https://wellwell.app
+# https://wellwell.ai
 
 # Sitemap location
-Sitemap: https://wellwell.app/sitemap.xml
+Sitemap: https://wellwell.ai/sitemap.xml
 
 # Allow all major crawlers
 User-agent: Googlebot

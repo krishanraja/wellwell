@@ -40,7 +40,7 @@ Edge functions use environment variables configured in the Supabase dashboard. E
 - `check-subscription`: Uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
 - `create-checkout`: Uses `SUPABASE_URL` and `SUPABASE_ANON_KEY`
 - `customer-portal`: Uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
-- `stoic-analyzer`: Does not use Supabase directly (uses Lovable AI Gateway)
+- `stoic-analyzer`: Uses `GOOGLE_AI_API_KEY` for Google Gemini API calls
 
 ## Verification Checklist
 

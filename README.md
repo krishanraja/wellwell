@@ -187,7 +187,7 @@ See [Design System](./docs/DESIGN_SYSTEM.md) and [Branding](./docs/BRANDING.md) 
 
 ## 🤝 Contributing
 
-This project uses AI-assisted development through Lovable and Cursor. Key guidelines:
+This project uses AI-assisted development through Cursor and other tools. Key guidelines:
 - Follow existing code patterns and conventions
 - Update documentation when making changes
 - Add to the decisions log for architectural changes

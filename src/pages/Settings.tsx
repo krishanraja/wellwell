@@ -66,7 +66,7 @@ export default function Settings() {
       const { error } = await supabase.functions.invoke('send-lead-email', {
         body: {
           type: 'contact',
-          email: user?.email || 'anonymous@wellwell.app',
+          email: user?.email || 'anonymous@wellwell.ai',
           name: profile?.display_name || user?.email?.split('@')[0] || 'WellWell User',
           message: `[${typeLabels[feedbackType]}]\n\n${feedbackMessage}`,
           source: 'settings_contact_form'

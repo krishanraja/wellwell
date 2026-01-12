@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm your WellWell account</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0D0F0E;
+      color: #F5FAF8;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #121514;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #1F2322;
+    }
+    .email-header {
+      background: #0D0F0E;
+      padding: 20px 24px;
+      text-align: center;
+      border-bottom: 1px solid #1F2322;
+      position: relative;
+      overflow: hidden;
+    }
+    .email-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #C8FF7A15 0%, #00D9FF15 100%);
+      pointer-events: none;
+    }
+    .logo {
+      height: 60px;
+      width: auto;
+      margin-bottom: 0;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+    }
+    .email-content {
+      padding: 40px 32px;
+    }
+    .greeting {
+      font-size: 24px;
+      font-weight: 600;
+      color: #F5FAF8;
+      margin-bottom: 16px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .body-text {
+      font-size: 16px;
+      color: #F5FAF8;
+      margin-bottom: 24px;
+      line-height: 1.7;
+    }
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #C8FF7A 0%, #00D9FF 100%);
+      color: #0D0F0E;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      text-align: center;
+      margin: 24px 0;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px -4px #00D9FF40;
+    }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px -8px #00D9FF60;
+    }
+    .cta-container {
+      text-align: center;
+      margin: 32px 0;
+    }
+    .alternative-link {
+      font-size: 14px;
+      color: #9CA3AF;
+      margin-top: 24px;
+      word-break: break-all;
+      padding: 16px;
+      background: #1F2322;
+      border-radius: 8px;
+      border: 1px solid #1F2322;
+    }
+    .email-footer {
+      padding: 32px;
+      text-align: center;
+      border-top: 1px solid #1F2322;
+      background: #1F2322;
+    }
+    .footer-text {
+      font-size: 14px;
+      color: #9CA3AF;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .footer-tagline {
+      font-size: 12px;
+      color: #9CA3AF;
+      font-style: italic;
+      margin-top: 16px;
+    }
+    .divider {
+      height: 1px;
+      background: #1F2322;
+      margin: 32px 0;
+    }
+    @media only screen and (max-width: 600px) {
+      .email-content {
+        padding: 32px 24px;
+      }
+      .email-header {
+        padding: 16px 20px;
+      }
+      .logo {
+        height: 50px;
+        max-width: 180px;
+      }
+      .greeting {
+        font-size: 20px;
+      }
+      .body-text {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div style="padding: 20px 10px;">
+    <div class="email-container">
+      <div class="email-header">
+        <!-- Logo from Supabase Storage -->
+        <!-- Logo source: src/assets/wellwell-logo.png -->
+        <!-- Hosted at: Supabase Storage > Public bucket -->
+        <img src="https://www.wellwell.ai/assets/wellwell-logo-B2MASsdB.png" alt="WellWell" class="logo" width="200" height="60" style="display: block; max-width: 200px; height: 60px; width: auto; margin: 0 auto;" />
+      </div>
+      
+      <div class="email-content">
+        <div class="greeting">Welcome to WellWell</div>
+        
+        <div class="body-text">
+          
+      <p>You're one step away from building your Stoic practice.</p>
+      <p>Click the button below to confirm your email and start your journey toward greater composure, clarity, and resilience.</p>
+      <p>This link will expire in 24 hours. If you didn't create this account, you can safely ignore this email.</p>
+    
+        </div>
+        
+        
+        <div class="cta-container">
+          <a href="{{ .ConfirmationURL }}" class="cta-button">Confirm Email</a>
+        </div>
+        
+        <div class="alternative-link">
+          <strong>Or copy and paste this link:</strong><br>
+          <a href="{{ .ConfirmationURL }}" style="color: #00D9FF; text-decoration: none;">{{ .ConfirmationURL }}</a>
+        </div>
+        
+      </div>
+      
+      <div class="email-footer">
+        <div class="footer-text">
+          If you have questions, just reply to this email. We're here to help.
+        </div>
+        <div class="footer-tagline">
+          Pre-load your Stoic stance before the day destabilises you.
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

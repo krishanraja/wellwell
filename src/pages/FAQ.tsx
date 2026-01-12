@@ -81,10 +81,10 @@ export default function FAQ() {
         <title>FAQ - WellWell | Stoic Philosophy & Mental Wellness Questions</title>
         <meta name="description" content="Frequently asked questions about Stoicism, mental wellness, and using WellWell. Learn how to stay calm under pressure, practice daily Stoic exercises, and build mental resilience." />
         <meta name="keywords" content="stoicism FAQ, mental health FAQ, how to stay calm, stoic philosophy questions, wellwell help" />
-        <link rel="canonical" href="https://wellwell.app/faq" />
+        <link rel="canonical" href="https://wellwell.ai/faq" />
         <meta property="og:title" content="FAQ - WellWell | Stoic Philosophy & Mental Wellness" />
         <meta property="og:description" content="Answers to common questions about Stoicism, mental wellness, and building daily practices for inner calm." />
-        <meta property="og:url" content="https://wellwell.app/faq" />
+        <meta property="og:url" content="https://wellwell.ai/faq" />
       </Helmet>
       
       <Layout scrollable>
@@ -175,7 +175,7 @@ export default function FAQ() {
               Still have questions?
             </p>
             <a 
-              href="mailto:support@wellwell.app" 
+              href="mailto:support@wellwell.ai" 
               className="text-primary font-medium hover:underline"
             >
               Contact Support →

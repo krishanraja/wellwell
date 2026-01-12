@@ -2,31 +2,56 @@
 
 ## Color Palette
 
-### Primary Colors (HSL)
+### Primary Brand Colors (HSL)
+
+| Token | HSL Value | Hex (approx) | Usage |
+|-------|-----------|--------------|-------|
+| `--mint` | 90 100% 79% | #C8FF7A | Primary accent, success states, virtue highlights |
+| `--aqua` | 187 100% 60% | #00D9FF | Secondary accent, gradients, primary actions |
+| `--primary` | 187 100% 42% (light) / 187 100% 60% (dark) | #00A3CC / #00D9FF | CTAs, links, interactive elements |
+| `--accent` | 90 100% 79% | #C8FF7A | Highlights, emphasis |
+
+### Base Colors (HSL)
+
+| Token | Light Mode | Dark Mode | Usage |
+|-------|------------|-----------|-------|
+| `--background` | 160 20% 98% | 165 20% 5% | App background |
+| `--foreground` | 165 20% 5% | 160 20% 98% | Primary text |
+| `--card` | 160 15% 97% | 165 15% 8% | Card backgrounds |
+| `--secondary` | 160 30% 95% | 165 15% 12% | Secondary surfaces, inputs |
+| `--muted` | 160 15% 93% | 165 15% 15% | Subtle backgrounds |
+| `--muted-foreground` | 165 10% 45% | 160 10% 60% | Secondary text |
+| `--border` | 160 15% 90% | 165 15% 15% | Borders, dividers |
+| `--ring` | 187 100% 60% | 187 100% 60% | Focus rings |
+
+### Extended Palette
 
 | Token | HSL Value | Usage |
 |-------|-----------|-------|
-| `--mint` | 166 100% 50% | Primary accent, success states |
-| `--aqua` | 180 100% 50% | Secondary accent, gradients |
-| `--background` | 220 25% 6% | App background |
-| `--foreground` | 210 40% 98% | Primary text |
-
-### Semantic Colors
-
-| Token | Light | Dark | Usage |
-|-------|-------|------|-------|
-| `--primary` | mint | mint | CTAs, links |
-| `--secondary` | 220 20% 12% | 220 20% 12% | Cards, inputs |
-| `--muted` | 220 20% 16% | 220 20% 16% | Subtle backgrounds |
-| `--muted-foreground` | 215 20% 65% | 215 20% 65% | Secondary text |
-| `--accent` | 166 100% 15% | 166 100% 15% | Highlights |
+| `--off-white` | 160 20% 98% | Light backgrounds |
+| `--ink-black` | 165 20% 5% | Dark text |
+| `--sand` | 45 20% 90% | Warm neutral |
+| `--cinder` | 200 5% 25% | Dark neutral |
+| `--coral` | 8 100% 71% | Error states |
+| `--gold` | 45 100% 60% | Warning states |
+| `--purple` | 260 80% 65% | Special accents |
 
 ### Gradients
 
 ```css
---brand-gradient: linear-gradient(135deg, var(--mint), var(--aqua));
---card-gradient: linear-gradient(180deg, rgba(26, 30, 38, 0.8), rgba(26, 30, 38, 0.4));
---glow-gradient: radial-gradient(circle at 50% 0%, rgba(0, 255, 209, 0.15), transparent 50%);
+--gradient-brand: linear-gradient(135deg, hsl(90 100% 79%) 0%, hsl(187 100% 60%) 100%);
+--gradient-glow: radial-gradient(ellipse at center, hsl(187 100% 60% / 0.15) 0%, transparent 70%);
+--gradient-glass: linear-gradient(135deg, hsl(160 20% 98% / 0.8) 0%, hsl(160 20% 96% / 0.6) 100%);
+```
+
+### Shadows
+
+```css
+--shadow-soft: 0 4px 20px -4px hsl(187 100% 60% / 0.15);
+--shadow-glow: 0 0 40px hsl(187 100% 60% / 0.2);
+--shadow-card: 0 2px 12px -2px hsl(165 20% 5% / 0.05);
+--shadow-elevated: 0 8px 30px -8px hsl(165 20% 5% / 0.12);
+--shadow-nav: 0 -4px 24px -4px hsl(165 20% 5% / 0.08);
 ```
 
 ---

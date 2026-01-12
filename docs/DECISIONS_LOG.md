@@ -43,23 +43,23 @@ This document tracks key architectural and design decisions with rationale.
 
 ---
 
-## 2024-01 | AI Integration: Lovable AI Gateway
+## 2024-01 | AI Integration: Google Gemini API
 
-### Decision: Use Lovable AI instead of direct OpenAI
+### Decision: Use Google Gemini API for AI analysis
 **Context**: Need AI analysis for Stoic insights.
 
 **Options Considered**:
-1. Direct OpenAI API (requires user API key)
+1. Direct OpenAI API (requires API key)
 2. Anthropic Claude (requires setup)
-3. Lovable AI Gateway (no setup required)
+3. Google Gemini API (chosen)
 
-**Decision**: Lovable AI with google/gemini-2.5-flash
+**Decision**: Google Gemini API with gemini-2.0-flash model
 
 **Rationale**:
-- Zero configuration for users
-- Cost included in platform
-- Sufficient quality for text analysis
-- Easy upgrade path if needed
+- High quality text analysis
+- Cost-effective pricing
+- Fast response times
+- Reliable API with good documentation
 
 ---
 
