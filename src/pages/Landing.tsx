@@ -270,7 +270,7 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
             </button>
             
             {/* SEO Footer Links */}
-            <div className="flex items-center justify-center gap-4 text-[10px] text-[hsl(160_15%_60%)]">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[10px] text-[hsl(160_15%_60%)]">
               <button onClick={() => navigate("/blog")} className="hover:text-primary transition-colors">
                 Blog
               </button>
@@ -281,6 +281,14 @@ const Landing = forwardRef<HTMLDivElement>((_, ref) => {
               <span>•</span>
               <button onClick={() => navigate("/about")} className="hover:text-primary transition-colors">
                 About
+              </button>
+              <span>•</span>
+              <button onClick={() => navigate("/privacy")} className="hover:text-primary transition-colors">
+                Privacy
+              </button>
+              <span>•</span>
+              <button onClick={() => navigate("/terms")} className="hover:text-primary transition-colors">
+                Terms
               </button>
             </div>
           </div>
