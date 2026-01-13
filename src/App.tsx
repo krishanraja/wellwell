@@ -34,6 +34,8 @@ import NotFound from "./pages/NotFound";
 import FAQ from "./pages/FAQ";
 import Blog from "./pages/Blog";
 import BlogArticle from "./pages/BlogArticle";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,6 +66,8 @@ const App = () => (
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogArticle />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
                 
                 {/* Protected app routes */}
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
