@@ -56,16 +56,22 @@ export function useDailyCheckins() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Get today's check-ins
+  // Get today's check-ins (UTC-consistent)
   const todayQuery = useQuery({
     queryKey: ['daily_checkins', user?.id, 'today'],
     queryFn: async (): Promise<DailyCheckin[]> => {
       if (!user?.id) return [];
       
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
+      // Use UTC midnight for consistent timezone handling
+      const now = new Date();
+      const todayStart = new Date(Date.UTC(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        0, 0, 0, 0
+      ));
       
-      logger.db('SELECT', 'daily_checkins', { userId: user.id, purpose: 'today' });
+      logger.db('SELECT', 'daily_checkins', { userId: user.id, purpose: 'today', since: todayStart.toISOString() });
       
       const { data, error } = await supabase
         .from('daily_checkins')
@@ -75,25 +81,34 @@ export function useDailyCheckins() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        logger.error('Failed to fetch today checkins', { error: error.message });
+        logger.error('Failed to fetch today checkins', { error: error.message, code: error.code });
         return [];
       }
 
+      logger.debug('Today checkins fetched', { count: data?.length || 0 });
       return (data || []) as DailyCheckin[];
     },
     enabled: !!user?.id,
+    // Refetch more frequently to ensure fresh data
+    staleTime: 30 * 1000, // 30 seconds
   });
 
-  // Get recent check-ins (last 7 days)
+  // Get recent check-ins (last 7 days, UTC-consistent)
   const recentQuery = useQuery({
     queryKey: ['daily_checkins', user?.id, 'recent'],
     queryFn: async (): Promise<DailyCheckin[]> => {
       if (!user?.id) return [];
       
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
+      // Use UTC for consistent timezone handling
+      const now = new Date();
+      const weekAgo = new Date(Date.UTC(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - 7,
+        0, 0, 0, 0
+      ));
       
-      logger.db('SELECT', 'daily_checkins', { userId: user.id, purpose: 'recent' });
+      logger.db('SELECT', 'daily_checkins', { userId: user.id, purpose: 'recent', since: weekAgo.toISOString() });
       
       const { data, error } = await supabase
         .from('daily_checkins')
@@ -103,13 +118,16 @@ export function useDailyCheckins() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        logger.error('Failed to fetch recent checkins', { error: error.message });
+        logger.error('Failed to fetch recent checkins', { error: error.message, code: error.code });
         return [];
       }
 
+      logger.debug('Recent checkins fetched', { count: data?.length || 0 });
       return (data || []) as DailyCheckin[];
     },
     enabled: !!user?.id,
+    // Refetch more frequently to ensure fresh data
+    staleTime: 30 * 1000, // 30 seconds
   });
 
   // Create a new check-in

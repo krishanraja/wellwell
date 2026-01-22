@@ -57,6 +57,10 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   const [activityComplete, setActivityComplete] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [selectedChallenge, setSelectedChallenge] = useState<{ challenge: string; type: 'dichotomy' | 'gratitude' | 'cognitive' | 'action' | 'mindfulness' } | null>(null);
+  // Transition lock to prevent multiple simultaneous transitions (fixes glitching)
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  // Track if activity was already selected to prevent re-selection on re-render
+  const [activitySelected, setActivitySelected] = useState(false);
   
   const isLoading = profileLoading || streakLoading || eventsLoading;
   const needsReOnboarding = daysSinceLastUse >= 21; // 3+ weeks
@@ -138,8 +142,15 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     }
   };
 
-  // Handle activity completion
+  // Handle activity completion with proper error handling and retry logic
   const handleActivityComplete = async (type: ActivityType, responseData: Record<string, unknown>) => {
+    // Prevent multiple simultaneous transitions
+    if (isTransitioning) {
+      console.warn('Already transitioning, ignoring duplicate completion');
+      return;
+    }
+    
+    setIsTransitioning(true);
     setActivityComplete(true);
     setSaveError(null);
     
@@ -147,41 +158,64 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     if (!profile?.id) {
       console.warn('Cannot save checkin: profile not loaded');
       setSaveError('Profile not loaded - check-in not saved');
-      // Still transition to complete phase
-      setTimeout(() => setPhase('complete'), 1500);
+      // Show error briefly then transition
+      setTimeout(() => {
+        setPhase('complete');
+      }, 1500);
       return;
     }
     
-    try {
-      await createCheckin({
-        profile_id: profile.id,
-        activity_type: type,
-        prompt: getActivityPrompt(type),
-        response_data: responseData,
-        completed: true,
-        score_impact: getScoreImpact(type),
-      });
-    } catch (error) {
-      console.error('Failed to save checkin:', error);
-      // Show user-visible error feedback
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Unable to save check-in. Please try again.';
-      setSaveError(errorMessage);
-      // Log more details for debugging
-      if (error instanceof Error) {
-        console.error('Error details:', error.message, error.stack);
+    let saveSucceeded = false;
+    let lastError: string | null = null;
+    
+    // Retry logic: attempt up to 3 times for transient failures
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await createCheckin({
+          profile_id: profile.id,
+          activity_type: type,
+          prompt: getActivityPrompt(type),
+          response_data: responseData,
+          completed: true,
+          score_impact: getScoreImpact(type),
+        });
+        saveSucceeded = true;
+        break; // Success - exit retry loop
+      } catch (error) {
+        console.error(`Failed to save checkin (attempt ${attempt}/3):`, error);
+        lastError = error instanceof Error 
+          ? error.message 
+          : 'Unable to save check-in. Please try again.';
+        
+        // Log more details for debugging
+        if (error instanceof Error) {
+          console.error('Error details:', error.message, error.stack);
+        }
+        
+        // Wait before retry (exponential backoff)
+        if (attempt < 3) {
+          await new Promise(resolve => setTimeout(resolve, attempt * 500));
+        }
       }
     }
     
-    // Brief celebration before transitioning (longer if error to show message)
+    // Set error state if all retries failed
+    if (!saveSucceeded && lastError) {
+      setSaveError(lastError);
+    }
+    
+    // Transition after appropriate delay
+    // Use longer delay if there was an error so user can see the message
+    const transitionDelay = !saveSucceeded ? 1500 : 500;
     setTimeout(() => {
       setPhase('complete');
-    }, saveError ? 1500 : 500);
+    }, transitionDelay);
   };
 
-  // Handle skip
+  // Handle skip with transition lock
   const handleSkip = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
     setPhase('complete');
   };
 
@@ -269,12 +303,14 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     return basePattern;
   };
 
+  // Select activity only once when loading completes (prevents re-selection glitch)
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || activitySelected) return;
     
     // Select activity and show it
     const activity = selectActivity();
     setCurrentActivity(activity);
+    setActivitySelected(true);
     
     // If quick_challenge, pre-select a challenge with its type
     if (activity === 'quick_challenge') {
@@ -283,14 +319,18 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     }
     
     setPhase('activity');
-  }, [isLoading]);
+  }, [isLoading, activitySelected]);
 
-  // Handle completion phase
+  // Handle completion phase - single transition point (no nested timeouts)
   useEffect(() => {
     if (phase === 'complete') {
-      setTimeout(() => {
+      // Small delay for exit animation, then complete
+      const timer = setTimeout(() => {
         onComplete();
       }, 200);
+      
+      // Cleanup on unmount to prevent memory leaks
+      return () => clearTimeout(timer);
     }
   }, [phase, onComplete]);
 

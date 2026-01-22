@@ -1,7 +1,148 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Target, CheckCircle, ArrowRight, Heart, Brain, Zap, Wind } from "lucide-react";
+import { Target, CheckCircle, ArrowRight, Heart, Brain, Zap, Wind, Mic, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Voice input hook for reuse across challenge types
+function useVoiceInput(onTranscript: (text: string) => void) {
+  const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isSupported, setIsSupported] = useState(true);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      setIsSupported(false);
+    }
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  const transcribeAudio = useCallback(async (audioBlob: Blob) => {
+    setIsTranscribing(true);
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      if (!supabaseUrl || !supabaseAnonKey) throw new Error('Config missing');
+      
+      const res = await fetch(`${supabaseUrl}/functions/v1/whisper-transcribe`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${supabaseAnonKey}` },
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Transcription failed');
+      const data = await res.json();
+      if (data?.text) {
+        onTranscript(data.text);
+        return data.text;
+      }
+    } catch (error) {
+      console.error('Transcription error:', error);
+    } finally {
+      setIsTranscribing(false);
+    }
+    return null;
+  }, [onTranscript]);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+      });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+      mediaRecorder.onstop = async () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        if (audioChunksRef.current.length > 0) {
+          const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
+          await transcribeAudio(audioBlob);
+        }
+      };
+      mediaRecorder.start();
+      setIsListening(true);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+    }
+  }, [transcribeAudio]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isListening) {
+      mediaRecorderRef.current.stop();
+      setIsListening(false);
+    }
+  }, [isListening]);
+
+  const toggleListening = useCallback(() => {
+    if (isListening) stopRecording();
+    else startRecording();
+  }, [isListening, startRecording, stopRecording]);
+
+  return { isListening, isTranscribing, isSupported, toggleListening };
+}
+
+// Voice button component for reuse
+function VoiceButton({ 
+  isListening, 
+  isTranscribing, 
+  onClick, 
+  disabled,
+  color = 'primary'
+}: { 
+  isListening: boolean; 
+  isTranscribing: boolean; 
+  onClick: () => void; 
+  disabled?: boolean;
+  color?: string;
+}) {
+  const colorClasses = {
+    primary: { bg: 'bg-primary', glow: 'hsl(var(--primary) / 0.5)', border: 'border-primary/30' },
+    rose: { bg: 'bg-rose-500', glow: 'hsl(350 89% 60% / 0.5)', border: 'border-rose-500/30' },
+    aqua: { bg: 'bg-aqua', glow: 'hsl(187 100% 50% / 0.5)', border: 'border-aqua/30' },
+    amber: { bg: 'bg-amber-500', glow: 'hsl(38 92% 50% / 0.5)', border: 'border-amber-500/30' },
+  };
+  const c = colorClasses[color as keyof typeof colorClasses] || colorClasses.primary;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled || isTranscribing}
+      className={cn(
+        "relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
+        isListening || isTranscribing ? `${c.bg} scale-110` : "bg-muted/60 hover:bg-muted",
+        (disabled || isTranscribing) && "opacity-50 cursor-not-allowed"
+      )}
+      style={{ boxShadow: isListening || isTranscribing ? `0 0 20px ${c.glow}` : undefined }}
+    >
+      {(isListening || isTranscribing) && (
+        <div className={cn("absolute -inset-1 rounded-full border animate-ping", c.border)} style={{ animationDuration: "2s" }} />
+      )}
+      {isTranscribing ? (
+        <Loader2 className="w-5 h-5 text-black animate-spin" />
+      ) : (
+        <Mic className={cn("w-5 h-5", isListening ? "text-black" : "text-muted-foreground")} />
+      )}
+    </button>
+  );
+}
 
 // Challenge types that determine the UI rendered
 export type ChallengeType = 'dichotomy' | 'gratitude' | 'cognitive' | 'action' | 'mindfulness';
@@ -244,7 +385,7 @@ function DichotomyInput({ onComplete, isSubmitting, onSkip }: DichotomyInputProp
 }
 
 // ===========================================
-// GRATITUDE INPUT: Person + Reason
+// GRATITUDE INPUT: Person + Reason (Voice-First)
 // ===========================================
 interface GratitudeInputProps {
   onComplete: (response: ChallengeResponseData) => void;
@@ -256,6 +397,10 @@ function GratitudeInput({ onComplete, isSubmitting, onSkip }: GratitudeInputProp
   const [person, setPerson] = useState("");
   const [reason, setReason] = useState("");
   const [focusedField, setFocusedField] = useState<'person' | 'reason' | null>(null);
+  const [activeVoiceField, setActiveVoiceField] = useState<'person' | 'reason' | null>(null);
+
+  const personVoice = useVoiceInput((text) => setPerson(prev => prev + (prev ? ' ' : '') + text));
+  const reasonVoice = useVoiceInput((text) => setReason(prev => prev + (prev ? ' ' : '') + text));
 
   const handleComplete = () => {
     if (person.trim()) {
@@ -278,46 +423,74 @@ function GratitudeInput({ onComplete, isSubmitting, onSkip }: GratitudeInputProp
         transition={{ delay: 0.3 }}
         className="space-y-4"
       >
-        {/* Person input */}
+        {/* Person input with voice */}
         <div className={cn(
           "rounded-xl transition-all p-3",
-          focusedField === 'person'
+          focusedField === 'person' || personVoice.isListening
             ? "bg-white/10 ring-1 ring-rose-400/50"
             : "bg-white/5"
         )}>
           <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
             Who are you grateful for?
           </label>
-          <input
-            type="text"
-            value={person}
-            onChange={(e) => setPerson(e.target.value)}
-            onFocus={() => setFocusedField('person')}
-            onBlur={() => setFocusedField(null)}
-            placeholder="Their name..."
-            className="w-full bg-transparent text-foreground text-lg placeholder:text-muted-foreground/50 focus:outline-none"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={person}
+              onChange={(e) => setPerson(e.target.value)}
+              onFocus={() => setFocusedField('person')}
+              onBlur={() => setFocusedField(null)}
+              placeholder="Their name..."
+              className="flex-1 bg-transparent text-foreground text-lg placeholder:text-muted-foreground/50 focus:outline-none"
+            />
+            {personVoice.isSupported && (
+              <VoiceButton
+                isListening={personVoice.isListening}
+                isTranscribing={personVoice.isTranscribing}
+                onClick={personVoice.toggleListening}
+                disabled={isSubmitting}
+                color="rose"
+              />
+            )}
+          </div>
+          {personVoice.isListening && (
+            <p className="text-xs text-rose-400 mt-2 animate-pulse">Listening...</p>
+          )}
         </div>
 
-        {/* Reason textarea */}
+        {/* Reason textarea with voice */}
         <div className={cn(
           "rounded-xl transition-all p-3",
-          focusedField === 'reason'
+          focusedField === 'reason' || reasonVoice.isListening
             ? "bg-white/10 ring-1 ring-rose-400/50"
             : "bg-white/5"
         )}>
           <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
             Why are you grateful for them?
           </label>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            onFocus={() => setFocusedField('reason')}
-            onBlur={() => setFocusedField(null)}
-            placeholder="Because they..."
-            rows={3}
-            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none"
-          />
+          <div className="flex items-start gap-2">
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              onFocus={() => setFocusedField('reason')}
+              onBlur={() => setFocusedField(null)}
+              placeholder="Because they..."
+              rows={3}
+              className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none"
+            />
+            {reasonVoice.isSupported && (
+              <VoiceButton
+                isListening={reasonVoice.isListening}
+                isTranscribing={reasonVoice.isTranscribing}
+                onClick={reasonVoice.toggleListening}
+                disabled={isSubmitting}
+                color="rose"
+              />
+            )}
+          </div>
+          {reasonVoice.isListening && (
+            <p className="text-xs text-rose-400 mt-2 animate-pulse">Listening...</p>
+          )}
         </div>
       </motion.div>
 
@@ -332,7 +505,7 @@ function GratitudeInput({ onComplete, isSubmitting, onSkip }: GratitudeInputProp
 }
 
 // ===========================================
-// COGNITIVE INPUT: Single assumption textarea
+// COGNITIVE INPUT: Single assumption textarea (Voice-First)
 // ===========================================
 interface CognitiveInputProps {
   onComplete: (response: ChallengeResponseData) => void;
@@ -343,6 +516,8 @@ interface CognitiveInputProps {
 function CognitiveInput({ onComplete, isSubmitting, onSkip }: CognitiveInputProps) {
   const [assumption, setAssumption] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  
+  const voice = useVoiceInput((text) => setAssumption(prev => prev + (prev ? ' ' : '') + text));
 
   const handleComplete = () => {
     if (assumption.trim()) {
@@ -365,23 +540,37 @@ function CognitiveInput({ onComplete, isSubmitting, onSkip }: CognitiveInputProp
       >
         <div className={cn(
           "rounded-xl transition-all p-4",
-          isFocused
+          isFocused || voice.isListening
             ? "bg-white/10 ring-1 ring-aqua/50"
             : "bg-white/5"
         )}>
           <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
             What assumption are you making?
           </label>
-          <textarea
-            value={assumption}
-            onChange={(e) => setAssumption(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder="I'm assuming that..."
-            rows={4}
-            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none"
-          />
-          {assumption.length > 0 && (
+          <div className="flex items-start gap-2">
+            <textarea
+              value={assumption}
+              onChange={(e) => setAssumption(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder="I'm assuming that..."
+              rows={4}
+              className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none"
+            />
+            {voice.isSupported && (
+              <VoiceButton
+                isListening={voice.isListening}
+                isTranscribing={voice.isTranscribing}
+                onClick={voice.toggleListening}
+                disabled={isSubmitting}
+                color="aqua"
+              />
+            )}
+          </div>
+          {voice.isListening && (
+            <p className="text-xs text-aqua mt-2 animate-pulse">Listening...</p>
+          )}
+          {assumption.length > 0 && !voice.isListening && (
             <p className="text-xs text-muted-foreground/50 mt-2">
               Noticing assumptions is the first step to questioning them.
             </p>
@@ -400,7 +589,7 @@ function CognitiveInput({ onComplete, isSubmitting, onSkip }: CognitiveInputProp
 }
 
 // ===========================================
-// ACTION INPUT: Small win + timeframe
+// ACTION INPUT: Small win + timeframe (Voice-First)
 // ===========================================
 interface ActionInputProps {
   onComplete: (response: ChallengeResponseData) => void;
@@ -412,6 +601,8 @@ function ActionInput({ onComplete, isSubmitting, onSkip }: ActionInputProps) {
   const [action, setAction] = useState("");
   const [timeframe, setTimeframe] = useState<'now' | 'next_hour' | 'today'>('next_hour');
   const [isFocused, setIsFocused] = useState(false);
+  
+  const voice = useVoiceInput((text) => setAction(prev => prev + (prev ? ' ' : '') + text));
 
   const handleComplete = () => {
     if (action.trim()) {
@@ -440,25 +631,39 @@ function ActionInput({ onComplete, isSubmitting, onSkip }: ActionInputProps) {
         transition={{ delay: 0.3 }}
         className="space-y-4"
       >
-        {/* Action input */}
+        {/* Action input with voice */}
         <div className={cn(
           "rounded-xl transition-all p-3",
-          isFocused
+          isFocused || voice.isListening
             ? "bg-white/10 ring-1 ring-amber-400/50"
             : "bg-white/5"
         )}>
           <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
             Your small win
           </label>
-          <input
-            type="text"
-            value={action}
-            onChange={(e) => setAction(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder="I will..."
-            className="w-full bg-transparent text-foreground text-lg placeholder:text-muted-foreground/50 focus:outline-none"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={action}
+              onChange={(e) => setAction(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder="I will..."
+              className="flex-1 bg-transparent text-foreground text-lg placeholder:text-muted-foreground/50 focus:outline-none"
+            />
+            {voice.isSupported && (
+              <VoiceButton
+                isListening={voice.isListening}
+                isTranscribing={voice.isTranscribing}
+                onClick={voice.toggleListening}
+                disabled={isSubmitting}
+                color="amber"
+              />
+            )}
+          </div>
+          {voice.isListening && (
+            <p className="text-xs text-amber-400 mt-2 animate-pulse">Listening...</p>
+          )}
         </div>
 
         {/* Timeframe selector */}
