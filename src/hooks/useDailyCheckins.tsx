@@ -130,42 +130,107 @@ export function useDailyCheckins() {
     staleTime: 30 * 1000, // 30 seconds
   });
 
-  // Create a new check-in
+  // Create a new check-in with comprehensive error handling
   const createCheckinMutation = useMutation({
     mutationFn: async (checkin: DailyCheckinInsert) => {
-      if (!user?.id) throw new Error('Not authenticated');
-      
-      logger.db('INSERT', 'daily_checkins', { userId: user.id, type: checkin.activity_type });
-      
-      const { data, error } = await supabase
-        .from('daily_checkins')
-        .insert({
-          ...checkin,
-          profile_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        logger.error('Failed to create checkin', { error: error.message });
+      // Validate authentication
+      if (!user?.id) {
+        const error = new Error('Not authenticated - please sign in again');
+        logger.error('Check-in failed: not authenticated');
         throw error;
       }
+      
+      // Validate required fields
+      if (!checkin.activity_type) {
+        const error = new Error('Invalid check-in: missing activity type');
+        logger.error('Check-in failed: missing activity_type');
+        throw error;
+      }
+      
+      logger.db('INSERT', 'daily_checkins', { 
+        userId: user.id, 
+        type: checkin.activity_type,
+        hasPrompt: !!checkin.prompt,
+        hasResponse: !!checkin.response_data
+      });
+      
+      try {
+        const { data, error } = await supabase
+          .from('daily_checkins')
+          .insert({
+            ...checkin,
+            profile_id: user.id,
+          })
+          .select()
+          .single();
 
-      // Update profile's updated_at timestamp
-      // Note: total_checkins and last_welcome_activity fields may not exist in DB yet
-      await supabase
-        .from('profiles')
-        .update({ 
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+        if (error) {
+          // Parse Supabase error for better user feedback
+          logger.error('Failed to create checkin', { 
+            error: error.message, 
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+          });
+          
+          // Create user-friendly error messages based on error type
+          if (error.code === '42501' || error.message?.includes('permission')) {
+            throw new Error('Permission denied - your session may have expired');
+          } else if (error.code === '23503' || error.message?.includes('foreign key')) {
+            throw new Error('Profile not found - please try signing out and back in');
+          } else if (error.code === '23505' || error.message?.includes('duplicate')) {
+            throw new Error('This check-in was already saved');
+          } else if (error.message?.includes('JWT') || error.message?.includes('token')) {
+            throw new Error('Session expired - please sign in again');
+          } else {
+            throw new Error(error.message || 'Failed to save check-in');
+          }
+        }
 
-      logger.info('Checkin created', { checkinId: data.id, type: checkin.activity_type });
-      return data as DailyCheckin;
+        if (!data) {
+          throw new Error('No data returned from save operation');
+        }
+
+        // Update profile's updated_at timestamp (non-blocking, don't fail if this fails)
+        try {
+          await supabase
+            .from('profiles')
+            .update({ 
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', user.id);
+        } catch (profileUpdateError) {
+          // Log but don't fail - the check-in was saved successfully
+          logger.warn('Failed to update profile timestamp', { 
+            error: profileUpdateError instanceof Error ? profileUpdateError.message : 'Unknown' 
+          });
+        }
+
+        logger.info('Checkin created successfully', { 
+          checkinId: data.id, 
+          type: checkin.activity_type,
+          userId: user.id
+        });
+        return data as DailyCheckin;
+      } catch (err) {
+        // Re-throw if already a proper Error
+        if (err instanceof Error) {
+          throw err;
+        }
+        // Wrap unknown errors
+        logger.error('Unexpected error creating checkin', { error: String(err) });
+        throw new Error('An unexpected error occurred while saving your check-in');
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      logger.debug('Check-in mutation succeeded, invalidating queries', { checkinId: data?.id });
       queryClient.invalidateQueries({ queryKey: ['daily_checkins', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+    },
+    onError: (error) => {
+      logger.error('Check-in mutation failed', { 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
     },
   });
 

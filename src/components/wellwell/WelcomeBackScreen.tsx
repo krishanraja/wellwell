@@ -1,14 +1,15 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useStreak } from "@/hooks/useStreak";
 import { useTimeOfDay } from "@/hooks/useTimeOfDay";
 import { useEvents } from "@/hooks/useEvents";
 import { useDailyCheckins } from "@/hooks/useDailyCheckins";
 import { useDailyWisdom } from "@/hooks/useDailyWisdom";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import wellwellIcon from "@/assets/wellwell-icon.png";
-import { Flame, Sunrise, Moon, X, HelpCircle, BookOpen } from "lucide-react";
+import { Flame, Sunrise, Moon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ActivityType } from "@/types/database";
@@ -30,6 +31,7 @@ interface WelcomeBackScreenProps {
 }
 
 const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScreenProps) => {
+  const { user } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { streak, isLoading: streakLoading } = useStreak();
   const { events, isLoading: eventsLoading } = useEvents();
@@ -39,6 +41,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     todayCheckins, 
     createCheckin, 
     isCreating,
+    isLoading: checkinsLoading,
     REFLECTION_PROMPTS, 
     QUICK_CHALLENGES, 
     COMMITMENT_PROMPTS,
@@ -61,8 +64,19 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
   const [isTransitioning, setIsTransitioning] = useState(false);
   // Track if activity was already selected to prevent re-selection on re-render
   const [activitySelected, setActivitySelected] = useState(false);
+  // Track if we're actively saving to prevent premature transitions
+  const [isSaving, setIsSaving] = useState(false);
+  // Store the prompt when activity is selected to ensure consistency
+  const [currentPrompt, setCurrentPrompt] = useState<string>('');
+  // Ref to track if component is mounted (prevents state updates after unmount)
+  const isMountedRef = useRef(true);
   
-  const isLoading = profileLoading || streakLoading || eventsLoading;
+  // CRITICAL FIX: Wait for BOTH loading to complete AND profile to exist
+  // Previously only checked if loading was done, not if profile was successfully loaded
+  const isLoading = profileLoading || streakLoading || eventsLoading || checkinsLoading;
+  const isProfileReady = !profileLoading && !!profile?.id;
+  const isFullyReady = !isLoading && isProfileReady;
+  
   const needsReOnboarding = daysSinceLastUse >= 21; // 3+ weeks
   const isWeeklyReturn = daysSinceLastUse >= 7 && daysSinceLastUse < 21;
 
@@ -121,8 +135,8 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     return 'wisdom_card';
   };
 
-  // Get random prompt based on activity type
-  const getActivityPrompt = (type: ActivityType): string => {
+  // Get random prompt based on activity type - memoized to prevent regeneration
+  const generatePrompt = useCallback((type: ActivityType): string => {
     switch (type) {
       case 'reflection_prompt':
         const prompts = REFLECTION_PROMPTS[timePeriod] || REFLECTION_PROMPTS.morning;
@@ -140,56 +154,102 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
       default:
         return '';
     }
-  };
+  }, [timePeriod, selectedChallenge, dailyWisdom.quote, REFLECTION_PROMPTS, QUICK_CHALLENGES, COMMITMENT_PROMPTS]);
+  
+  // Use stored prompt for saving (ensures consistency between display and save)
+  const getActivityPrompt = useCallback((type: ActivityType): string => {
+    // Use the stored prompt if available (set when activity was selected)
+    if (currentPrompt) {
+      return currentPrompt;
+    }
+    // Fallback to generating a new one (shouldn't happen in normal flow)
+    return generatePrompt(type);
+  }, [currentPrompt, generatePrompt]);
 
   // Handle activity completion with proper error handling and retry logic
   const handleActivityComplete = async (type: ActivityType, responseData: Record<string, unknown>) => {
     // Prevent multiple simultaneous transitions
-    if (isTransitioning) {
-      console.warn('Already transitioning, ignoring duplicate completion');
+    if (isTransitioning || isSaving) {
+      console.warn('Already transitioning or saving, ignoring duplicate completion');
+      return;
+    }
+    
+    // CRITICAL: Check profile is ready BEFORE starting save
+    // This was a major bug - we were checking profile.id but profile might not be loaded yet
+    if (!isProfileReady || !profile?.id) {
+      console.error('Cannot save checkin: profile not ready', { 
+        isProfileReady, 
+        profileId: profile?.id,
+        profileLoading 
+      });
+      setSaveError('Profile not loaded. Please wait a moment and try again.');
+      return; // Don't transition - let user retry
+    }
+    
+    // Also verify user is authenticated
+    if (!user?.id) {
+      console.error('Cannot save checkin: user not authenticated');
+      setSaveError('Not authenticated. Please sign in again.');
       return;
     }
     
     setIsTransitioning(true);
+    setIsSaving(true);
     setActivityComplete(true);
     setSaveError(null);
-    
-    // Guard: Don't attempt to save if profile not loaded
-    if (!profile?.id) {
-      console.warn('Cannot save checkin: profile not loaded');
-      setSaveError('Profile not loaded - check-in not saved');
-      // Show error briefly then transition
-      setTimeout(() => {
-        setPhase('complete');
-      }, 1500);
-      return;
-    }
     
     let saveSucceeded = false;
     let lastError: string | null = null;
     
+    // Get the prompt to save (use stored prompt for consistency)
+    const promptToSave = getActivityPrompt(type);
+    
+    console.log('Starting check-in save:', { 
+      type, 
+      profileId: profile.id, 
+      prompt: promptToSave.substring(0, 50) + '...',
+      responseData 
+    });
+    
     // Retry logic: attempt up to 3 times for transient failures
     for (let attempt = 1; attempt <= 3; attempt++) {
+      // Check if component is still mounted before each attempt
+      if (!isMountedRef.current) {
+        console.warn('Component unmounted during save, aborting');
+        return;
+      }
+      
       try {
-        await createCheckin({
+        const result = await createCheckin({
           profile_id: profile.id,
           activity_type: type,
-          prompt: getActivityPrompt(type),
+          prompt: promptToSave,
           response_data: responseData,
           completed: true,
           score_impact: getScoreImpact(type),
         });
+        
+        console.log('Check-in saved successfully:', { checkinId: result?.id, type });
         saveSucceeded = true;
         break; // Success - exit retry loop
       } catch (error) {
         console.error(`Failed to save checkin (attempt ${attempt}/3):`, error);
-        lastError = error instanceof Error 
-          ? error.message 
-          : 'Unable to save check-in. Please try again.';
         
-        // Log more details for debugging
+        // Parse error for user-friendly message
         if (error instanceof Error) {
+          const errorMsg = error.message.toLowerCase();
+          if (errorMsg.includes('not authenticated') || errorMsg.includes('jwt')) {
+            lastError = 'Session expired. Please sign in again.';
+          } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+            lastError = 'Network error. Please check your connection.';
+          } else if (errorMsg.includes('permission') || errorMsg.includes('policy')) {
+            lastError = 'Permission denied. Please try signing out and back in.';
+          } else {
+            lastError = error.message || 'Unable to save check-in. Please try again.';
+          }
           console.error('Error details:', error.message, error.stack);
+        } else {
+          lastError = 'Unable to save check-in. Please try again.';
         }
         
         // Wait before retry (exponential backoff)
@@ -199,17 +259,32 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
       }
     }
     
+    // Check if still mounted before updating state
+    if (!isMountedRef.current) {
+      console.warn('Component unmounted after save, not updating state');
+      return;
+    }
+    
+    setIsSaving(false);
+    
     // Set error state if all retries failed
     if (!saveSucceeded && lastError) {
       setSaveError(lastError);
+      console.error('All save attempts failed:', lastError);
+      // DON'T transition on error - let user see the error and potentially retry
+      // Reset transitioning state so they can try again
+      setIsTransitioning(false);
+      setActivityComplete(false);
+      return;
     }
     
-    // Transition after appropriate delay
-    // Use longer delay if there was an error so user can see the message
-    const transitionDelay = !saveSucceeded ? 1500 : 500;
+    // Only transition to complete phase AFTER successful save
+    // Use a small delay for visual feedback
     setTimeout(() => {
-      setPhase('complete');
-    }, transitionDelay);
+      if (isMountedRef.current) {
+        setPhase('complete');
+      }
+    }, 300);
   };
 
   // Handle skip with transition lock
@@ -303,9 +378,25 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     return basePattern;
   };
 
-  // Select activity only once when loading completes (prevents re-selection glitch)
+  // Track component mount state for async operations
   useEffect(() => {
-    if (isLoading || activitySelected) return;
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+  
+  // Select activity only once when FULLY ready (loading done AND profile exists)
+  // CRITICAL FIX: Wait for isFullyReady, not just isLoading
+  useEffect(() => {
+    // Don't proceed if still loading or already selected
+    if (!isFullyReady || activitySelected) return;
+    
+    // Double-check profile exists before proceeding
+    if (!profile?.id) {
+      console.warn('Activity selection blocked: profile not available yet');
+      return;
+    }
     
     // Select activity and show it
     const activity = selectActivity();
@@ -313,13 +404,38 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     setActivitySelected(true);
     
     // If quick_challenge, pre-select a challenge with its type
+    let challenge = null;
     if (activity === 'quick_challenge') {
-      const randomChallenge = QUICK_CHALLENGES[Math.floor(Math.random() * QUICK_CHALLENGES.length)];
-      setSelectedChallenge(randomChallenge);
+      challenge = QUICK_CHALLENGES[Math.floor(Math.random() * QUICK_CHALLENGES.length)];
+      setSelectedChallenge(challenge);
     }
     
+    // Generate and store the prompt NOW so it's consistent between display and save
+    // This fixes the bug where a different prompt could be saved than displayed
+    let prompt = '';
+    switch (activity) {
+      case 'reflection_prompt':
+        const prompts = REFLECTION_PROMPTS[timePeriod] || REFLECTION_PROMPTS.morning;
+        prompt = prompts[Math.floor(Math.random() * prompts.length)];
+        break;
+      case 'quick_challenge':
+        prompt = challenge?.challenge || '';
+        break;
+      case 'micro_commitment':
+        prompt = COMMITMENT_PROMPTS[Math.floor(Math.random() * COMMITMENT_PROMPTS.length)];
+        break;
+      case 'wisdom_card':
+        prompt = dailyWisdom.quote;
+        break;
+      default:
+        prompt = '';
+    }
+    setCurrentPrompt(prompt);
+    
+    console.log('Activity selected:', { activity, prompt: prompt.substring(0, 50) + '...', profileId: profile.id });
+    
     setPhase('activity');
-  }, [isLoading, activitySelected]);
+  }, [isFullyReady, activitySelected, profile?.id, timePeriod, dailyWisdom.quote, REFLECTION_PROMPTS, QUICK_CHALLENGES, COMMITMENT_PROMPTS]);
 
   // Handle completion phase - single transition point (no nested timeouts)
   useEffect(() => {
@@ -334,11 +450,12 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
     }
   }, [phase, onComplete]);
 
-  // Loading state
-  if (isLoading || phase === 'loading') {
+  // Loading state - CRITICAL: Wait for profile to be fully ready, not just loading to finish
+  // This prevents the "profile not loaded" error when user submits quickly
+  if (!isFullyReady || phase === 'loading') {
     return (
       <div 
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-background"
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background gap-3"
       >
         <motion.img 
           src={wellwellIcon} 
@@ -348,6 +465,17 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
           animate={{ opacity: 0.5, scale: 1 }}
           transition={{ duration: 0.3 }}
         />
+        {/* Show helpful message if profile is taking too long */}
+        {!profileLoading && !profile?.id && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2 }}
+            className="text-sm text-muted-foreground text-center px-4"
+          >
+            Setting up your profile...
+          </motion.p>
+        )}
       </div>
     );
   }
@@ -432,12 +560,12 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
         {/* Activity content - reduced padding for mobile viewport fit */}
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <AnimatePresence mode="wait">
-            {currentActivity === 'reflection_prompt' && (
+            {currentActivity === 'reflection_prompt' && currentPrompt && (
               <ReflectionPrompt
-                prompt={getActivityPrompt('reflection_prompt')}
+                prompt={currentPrompt}
                 onSubmit={(text) => handleActivityComplete('reflection_prompt', { text, wordCount: text.split(/\s+/).length })}
                 onSkip={handleSkip}
-                isSubmitting={isCreating}
+                isSubmitting={isCreating || isSaving}
               />
             )}
 
@@ -447,7 +575,7 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
                 challengeType={selectedChallenge.type}
                 onComplete={(response) => handleActivityComplete('quick_challenge', response)}
                 onSkip={handleSkip}
-                isSubmitting={isCreating}
+                isSubmitting={isCreating || isSaving}
               />
             )}
 
@@ -467,16 +595,16 @@ const WelcomeBackScreen = ({ onComplete, daysSinceLastUse = 0 }: WelcomeBackScre
               <EnergyCheckin
                 onComplete={(response) => handleActivityComplete('energy_checkin', response)}
                 onSkip={handleSkip}
-                isSubmitting={isCreating}
+                isSubmitting={isCreating || isSaving}
               />
             )}
 
-            {currentActivity === 'micro_commitment' && (
+            {currentActivity === 'micro_commitment' && currentPrompt && (
               <MicroCommitment
-                prompt={getActivityPrompt('micro_commitment')}
+                prompt={currentPrompt}
                 onComplete={(response) => handleActivityComplete('micro_commitment', response)}
                 onSkip={handleSkip}
-                isSubmitting={isCreating}
+                isSubmitting={isCreating || isSaving}
               />
             )}
 
